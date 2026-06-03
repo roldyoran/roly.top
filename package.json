@@ -11,6 +11,8 @@
     "dev:back": "bun --cwd backend dev",
     "build:front": "bun --cwd frontend build",
     "build:back": "bun --cwd backend build",
+    "build": "bun run build:front && bun run build:back",
+    "deploy": "bun run build:front && bun --cwd backend run deploy",
     "check:front": "bun --cwd frontend check",
     "format:front": "bun --cwd frontend format",
     "lint:front": "bun --cwd frontend lint"

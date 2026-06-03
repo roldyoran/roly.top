@@ -1,4 +1,6 @@
 import type { Context } from "hono";
+import { HTTPException } from "hono/http-exception";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { AppError, ValidationError } from "@/domain/app-error";
 
 /**
@@ -56,12 +58,38 @@ export function errorResponse(c: Context, error: AppError): Response {
 /**
  * Manejador global de errores para Hono (app.onError).
  * Todos los errores no capturados en rutas o middleware llegan aquí.
- * Los AppError se formatean con errorResponse; el resto se convierte en 500.
+ * - AppError → se formatea con errorResponse (código de dominio → status HTTP).
+ * - HTTPException → se reformatea al estándar de la API (ej: "Malformed JSON in request body"
+ *   lanzado por el body parser de Hono deja de ser un 500 genérico y pasa a ser 400).
+ * - Cualquier otro error → se convierte en 500.
  */
 // biome-ignore lint/suspicious/noExplicitAny: Hono onError acepta any
 export function onError(error: Error, c: Context): Response {
 	if (error instanceof AppError) {
 		return errorResponse(c, error);
+	}
+
+	if (error instanceof HTTPException) {
+		const status = error.status;
+		const code =
+			status === 400
+				? "VALIDATION_ERROR"
+				: status === 401
+					? "UNAUTHORIZED"
+					: status === 404
+						? "NOT_FOUND"
+						: "INTERNAL_SERVER_ERROR";
+		return c.json<ApiErrorResponse>(
+			{
+				success: false,
+				error: {
+					code,
+					message: error.message,
+					statusCode: status,
+				},
+			},
+			status as ContentfulStatusCode,
+		);
 	}
 
 	console.error("[UNHANDLED ERROR]", error);
@@ -92,5 +120,24 @@ export function validationHook(result: any, c: Context): Response | void {
 			.map((i: any) => i.message)
 			.join("; ");
 		return errorResponse(c, new ValidationError(messages));
+	}
+}
+
+/**
+ * Variante de validationHook usada por el router de redirección (/:shortCode).
+ * En lugar de devolver 400 JSON cuando el shortCode no cumple el formato
+ * (por ejemplo: contiene guiones, mayúsculas, o más de 9 caracteres),
+ * redirige al index (/) para que el SPA cargue.
+ *
+ * Esto preserva el contrato "toda ruta no-API devuelve HTML" sin necesidad
+ * de un catch-all en Hono.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: zValidator hook acepta tipos genéricos
+export function redirectValidationHook(
+	result: any,
+	c: Context,
+): Response | void {
+	if (!result.success) {
+		return c.redirect("/", 302);
 	}
 }

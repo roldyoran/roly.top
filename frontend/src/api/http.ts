@@ -5,8 +5,7 @@ export function getApiBaseUrl(): string {
 	const envUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
 	const stored = localStorage.getItem("apiUrl");
 	return (
-		(envUrl && envUrl.length > 0 ? envUrl : stored) ||
-		"https://shorturl.roldyoran.workers.dev"
+		(envUrl && envUrl.length > 0 ? envUrl : stored) || "https://roldy.cua"
 	);
 }
 

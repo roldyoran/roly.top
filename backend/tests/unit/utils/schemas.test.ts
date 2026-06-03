@@ -13,8 +13,8 @@ describe("shortCodeSchema", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("debe aceptar un shortCode alfanumérico de exactamente 6 caracteres", () => {
-			const result = shortCodeSchema.safeParse({ shortCode: "ab1cd2" });
+		it("debe aceptar un shortCode alfanumérico de exactamente 9 caracteres", () => {
+			const result = shortCodeSchema.safeParse({ shortCode: "ab1cd2ef3" });
 			expect(result.success).toBe(true);
 		});
 
@@ -30,8 +30,8 @@ describe("shortCodeSchema", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("debe rechazar un shortCode de más de 6 caracteres", () => {
-			const result = shortCodeSchema.safeParse({ shortCode: "toolong" });
+		it("debe rechazar un shortCode de más de 9 caracteres", () => {
+			const result = shortCodeSchema.safeParse({ shortCode: "toolong1234" });
 			expect(result.success).toBe(false);
 		});
 

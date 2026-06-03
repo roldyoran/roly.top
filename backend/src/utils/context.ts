@@ -7,6 +7,8 @@ export type Bindings = {
 	CLOUFLARE_D1_DATABASES_BINDING: string;
 	CLOUDFLARE_DATABASE_ID: string;
 	SERVICE_ADMIN_API_KEY: string;
+	// Workers Assets binding (declarado en wrangler.jsonc -> assets.binding: "ASSETS")
+	ASSETS: Fetcher;
 };
 
 const ENV_KEYS: (keyof Bindings)[] = [

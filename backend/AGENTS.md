@@ -7,7 +7,7 @@ Guía de arquitectura y estructura del proyecto para agentes de IA y desarrollad
 ## ¿Qué hace este proyecto?
 
 API REST de acortador de URLs construida con **Hono** sobre **Cloudflare Workers**.
-Permite crear URLs cortas con un `shortCode` de máximo 6 caracteres alfanuméricos en minúsculas (auto-generado o personalizado), listar todas las URLs, buscar por código corto, redirigir a la URL original (incrementando el contador de visitas) y administrar registros mediante endpoints protegidos por API key.
+Permite crear URLs cortas con un `shortCode` de máximo 9 caracteres alfanuméricos en minúsculas (auto-generado o personalizado), listar todas las URLs, buscar por código corto, redirigir a la URL original (incrementando el contador de visitas) y administrar registros mediante endpoints protegidos por API key.
 La base de datos es **Cloudflare D1** (SQLite serverless), gestionada con **Drizzle ORM**.
 
 ---
@@ -122,7 +122,7 @@ Orquestan la lógica de negocio recibiendo el puerto como dependencia (inyecció
 - **`DeleteAllUrlsUseCase`**: elimina todos los registros de la tabla.
 
 ### `infrastructure/` — Adaptadores secundarios
-- **`UrlRepository`**: implementa `UrlRepositoryPort` usando Drizzle ORM sobre D1. Contiene `generateShortCode()` para crear códigos aleatorios de 6 chars `[a-z0-9]`. Implementa `incrementVisits` con un `UPDATE ... SET visits = visits + 1 ... RETURNING` atómico.
+- **`UrlRepository`**: implementa `UrlRepositoryPort` usando Drizzle ORM sobre D1. Contiene `generateShortCode()` para crear códigos aleatorios de 9 chars `[a-z0-9]`. Implementa `incrementVisits` con un `UPDATE ... SET visits = visits + 1 ... RETURNING` atómico.
 - **`http/error-handler.ts`**: **punto único de control de errores**.
   - `ApiErrorResponse` — tipo del formato estándar de respuesta de error.
   - `errorResponse(c, error)` — construye la respuesta JSON con el formato estándar.
