@@ -151,6 +151,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useUrlStore } from "@/stores/urlStore";
+import { useAuthStore } from "@/stores/authStore";
 import "vue-sonner/style.css";
 import NavbarHeader from "@/components/layout/NavbarHeader.vue";
 import HomeView from "@/views/HomeView.vue";
@@ -163,6 +164,7 @@ type Tab = "info" | "myurls" | "list" | "qr";
 
 const mode = useColorMode();
 const urlStore = useUrlStore();
+const authStore = useAuthStore();
 
 watchEffect(() => {
 	if (mode.value === "dark") {
@@ -181,6 +183,7 @@ const attempts = ref(urlStore.urlCount);
 
 onMounted(() => {
 	urlStore.initialize();
+	authStore.initialize();
 	activeTab.value =
 		urlStore.currentTab === "shorten" ? "info" : (urlStore.currentTab as Tab);
 	attempts.value = urlStore.urlCount;

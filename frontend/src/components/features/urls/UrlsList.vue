@@ -294,7 +294,7 @@ import {
 	TooltipProvider,
 } from "@/components/ui/tooltip";
 import QRCode from "qrcode-generator";
-import { getUrlsRequest, getApiBaseUrl } from "@/api/http";
+import { getUrlsRequest, getPublicUrlsRequest, getApiBaseUrl } from "@/api/http";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlStore } from "@/stores/urlStore";
 import { formatDate, truncateText } from "@/lib/utils";
@@ -563,7 +563,9 @@ const loadUrls = async () => {
 	}
 	isLoading.value = true;
 	try {
-		const response = await getUrlsRequest();
+		const response = isMyList.value
+			? await getUrlsRequest()
+			: await getPublicUrlsRequest();
 		if (response && Array.isArray(response)) {
 			shortUrls.value = response.sort(
 				(a, b) =>

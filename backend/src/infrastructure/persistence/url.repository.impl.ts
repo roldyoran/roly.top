@@ -40,10 +40,45 @@ export class UrlRepository implements UrlRepositoryPort {
 		return url ?? null;
 	}
 
+	async findByUserId(userId: string): Promise<UrlEntity[]> {
+		return this.db
+			.select()
+			.from(urlsTable)
+			.where(eq(urlsTable.userId, userId))
+			.all();
+	}
+
+	async findByUserShortCode(
+		userId: string,
+		shortCode: string,
+	): Promise<UrlEntity | null> {
+		const [url] = await this.db
+			.select()
+			.from(urlsTable)
+			.where(
+				eq(urlsTable.shortCode, shortCode) && eq(urlsTable.userId, userId),
+			)
+			.limit(1);
+		return url ?? null;
+	}
+
 	async deleteByShortCode(shortCode: string): Promise<UrlEntity | null> {
 		const [deleted] = await this.db
 			.delete(urlsTable)
 			.where(eq(urlsTable.shortCode, shortCode))
+			.returning();
+		return deleted ?? null;
+	}
+
+	async deleteByUserShortCode(
+		userId: string,
+		shortCode: string,
+	): Promise<UrlEntity | null> {
+		const [deleted] = await this.db
+			.delete(urlsTable)
+			.where(
+				eq(urlsTable.shortCode, shortCode) && eq(urlsTable.userId, userId),
+			)
 			.returning();
 		return deleted ?? null;
 	}
@@ -64,6 +99,23 @@ export class UrlRepository implements UrlRepositoryPort {
 		return created;
 	}
 
+	async createForUser(userId: string, input: CreateUrlInput): Promise<UrlEntity> {
+		const shortCode = input.shortCode ?? generateShortCode();
+		const createdAt = new Date().toISOString();
+
+		const [created] = await this.db
+			.insert(urlsTable)
+			.values({
+				originalUrl: input.originalUrl,
+				shortCode,
+				createdAt,
+				userId,
+			})
+			.returning();
+
+		return created;
+	}
+
 	async incrementVisits(shortCode: string): Promise<UrlEntity | null> {
 		const [updated] = await this.db
 			.update(urlsTable)
@@ -71,5 +123,12 @@ export class UrlRepository implements UrlRepositoryPort {
 			.where(eq(urlsTable.shortCode, shortCode))
 			.returning();
 		return updated ?? null;
+	}
+
+	async assignAllToUser(userId: string): Promise<void> {
+		await this.db
+			.update(urlsTable)
+			.set({ userId })
+			.where(sql`${urlsTable.userId} IS NULL`);
 	}
 }

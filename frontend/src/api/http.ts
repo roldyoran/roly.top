@@ -3,10 +3,12 @@ import axios from "axios";
 // Devuelve la URL base de la API, preferencia: env VITE_API_BASE_URL -> localStorage apiUrl -> fallback
 export function getApiBaseUrl(): string {
 	const envUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
+	if (envUrl && envUrl.length > 0) return envUrl;
 	const stored = localStorage.getItem("apiUrl");
-	return (
-		(envUrl && envUrl.length > 0 ? envUrl : stored) || "https://roldy.cua"
-	);
+	if (stored) return stored;
+	// En dev, el proxy de Vite redirige /api al backend
+	if (import.meta.env.DEV) return "";
+	return "https://roldy.cua";
 }
 
 // Obtiene la instancia de axios configurada
@@ -16,6 +18,7 @@ export function getAxiosInstance() {
 
 	return axios.create({
 		baseURL,
+		withCredentials: true,
 		headers: {
 			"Content-Type": "application/json",
 			"x-api-key": apiKey,
@@ -50,9 +53,16 @@ export async function getUrlInfoRequest(shortCode: string) {
 	return response.data;
 }
 
-// Funcion para obtener todas las URLs
+// Funcion para obtener todas las URLs del usuario autenticado
 export async function getUrlsRequest() {
 	const axiosInstance = getAxiosInstance();
 	const response = await axiosInstance.get("/v1/urls");
+	return response.data;
+}
+
+// Funcion para obtener URLs públicas (sin auth)
+export async function getPublicUrlsRequest() {
+	const axiosInstance = getAxiosInstance();
+	const response = await axiosInstance.get("/v1/urls/public");
 	return response.data;
 }

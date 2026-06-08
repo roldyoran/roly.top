@@ -9,6 +9,11 @@ export type Bindings = {
 	SERVICE_ADMIN_API_KEY: string;
 	// Workers Assets binding (declarado en wrangler.jsonc -> assets.binding: "ASSETS")
 	ASSETS: Fetcher;
+	// Better Auth
+	BETTER_AUTH_SECRET: string;
+	BETTER_AUTH_URL: string;
+	GOOGLE_CLIENT_ID: string;
+	GOOGLE_CLIENT_SECRET: string;
 };
 
 const ENV_KEYS: (keyof Bindings)[] = [
@@ -16,6 +21,10 @@ const ENV_KEYS: (keyof Bindings)[] = [
 	"CLOUDFLARE_DATABASE_ID",
 	"CLOUDFLARE_DATABASE_ID",
 	"SERVICE_ADMIN_API_KEY",
+	"BETTER_AUTH_SECRET",
+	"BETTER_AUTH_URL",
+	"GOOGLE_CLIENT_ID",
+	"GOOGLE_CLIENT_SECRET",
 ];
 
 /**

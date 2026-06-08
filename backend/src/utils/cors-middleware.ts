@@ -17,11 +17,17 @@ export const corsMiddleware = (options?: {
 	maxAge?: number;
 }) => {
 	return async (c: Context, next: Next): Promise<Response | void> => {
+		// Las rutas /api/auth/* ya tienen su propio CORS con credentials
+		if (c.req.path.startsWith("/api/auth/")) {
+			await next();
+			return;
+		}
+
 		// Configuración por defecto
 		const defaultOptions = {
-			origin: "*",
+			origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
 			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-			allowedHeaders: ["Content-Type", "x-api-key"],
+			allowedHeaders: ["Content-Type", "x-api-key", "Authorization"],
 			maxAge: 86400, // 24 horas
 		};
 

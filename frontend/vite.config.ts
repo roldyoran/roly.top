@@ -11,4 +11,30 @@ export default defineConfig({
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},
+	server: {
+		proxy: {
+			"/api": {
+				target: "http://localhost:8787",
+				changeOrigin: true,
+				configure: (proxy) => {
+					proxy.on("proxyReq", (_proxyReq, req) => {
+						if (req.headers.cookie) {
+							_proxyReq.setHeader("Cookie", req.headers.cookie);
+						}
+					});
+				},
+			},
+			"/v1": {
+				target: "http://localhost:8787",
+				changeOrigin: true,
+				configure: (proxy) => {
+					proxy.on("proxyReq", (_proxyReq, req) => {
+						if (req.headers.cookie) {
+							_proxyReq.setHeader("Cookie", req.headers.cookie);
+						}
+					});
+				},
+			},
+		},
+	},
 });

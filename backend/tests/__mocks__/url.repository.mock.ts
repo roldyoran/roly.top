@@ -11,10 +11,21 @@ export type MockedRepository = {
 	findAll: Mock<() => Promise<UrlEntity[]>>;
 	findByShortCode: Mock<(shortCode: string) => Promise<UrlEntity | null>>;
 	findByOriginalUrl: Mock<(originalUrl: string) => Promise<UrlEntity | null>>;
+	findByUserId: Mock<(userId: string) => Promise<UrlEntity[]>>;
+	findByUserShortCode: Mock<
+		(userId: string, shortCode: string) => Promise<UrlEntity | null>
+	>;
 	create: Mock<(input: CreateUrlInput) => Promise<UrlEntity>>;
+	createForUser: Mock<
+		(userId: string, input: CreateUrlInput) => Promise<UrlEntity>
+	>;
 	deleteByShortCode: Mock<(shortCode: string) => Promise<UrlEntity | null>>;
+	deleteByUserShortCode: Mock<
+		(userId: string, shortCode: string) => Promise<UrlEntity | null>
+	>;
 	deleteAll: Mock<() => Promise<void>>;
 	incrementVisits: Mock<(shortCode: string) => Promise<UrlEntity | null>>;
+	assignAllToUser: Mock<(userId: string) => Promise<void>>;
 } & UrlRepositoryPort;
 
 /**
@@ -30,16 +41,29 @@ export function createMockRepository(): MockedRepository {
 		findByOriginalUrl: mock((_originalUrl: string) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
+		findByUserId: mock((_userId: string) =>
+			Promise.resolve([] as UrlEntity[]),
+		),
+		findByUserShortCode: mock((_userId: string, _shortCode: string) =>
+			Promise.resolve(null as UrlEntity | null),
+		),
 		create: mock((_input: CreateUrlInput) =>
 			Promise.resolve({} as UrlEntity),
 		),
+		createForUser: mock((_userId: string, _input: CreateUrlInput) =>
+			Promise.resolve({} as UrlEntity),
+		),
 		deleteByShortCode: mock((_shortCode: string) =>
+			Promise.resolve(null as UrlEntity | null),
+		),
+		deleteByUserShortCode: mock((_userId: string, _shortCode: string) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
 		deleteAll: mock(() => Promise.resolve()),
 		incrementVisits: mock((_shortCode: string) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
+		assignAllToUser: mock((_userId: string) => Promise.resolve()),
 	} as MockedRepository;
 }
 

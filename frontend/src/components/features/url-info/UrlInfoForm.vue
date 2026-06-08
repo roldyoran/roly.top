@@ -151,7 +151,7 @@ const handleSubmit = async (event: Event) => {
 				description: "Se ha encontrado la información de la URL",
 			});
 		}
-} catch (err: any) {
+	} catch (err: any) {
 		const status = err?.response?.status;
 		if (status === 404) {
 			const searchedCode = shortCode.value.trim();
@@ -161,7 +161,8 @@ const handleSubmit = async (event: Event) => {
 			});
 		} else {
 			const errorMessage =
-				err?.response?.data?.message || "Error al obtener información de la URL";
+				err?.response?.data?.message ||
+				"Error al obtener información de la URL";
 			error.value = errorMessage;
 			toast.error("Error al obtener información", {
 				description: errorMessage,

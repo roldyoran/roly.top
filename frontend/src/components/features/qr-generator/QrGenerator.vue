@@ -134,9 +134,7 @@ const copyQrDataUrl = async () => {
 		const byteArray = new Uint8Array(byteNumbers);
 		const blob = new Blob([byteArray], { type: "image/png" });
 
-		await navigator.clipboard.write([
-			new ClipboardItem({ "image/png": blob }),
-		]);
+		await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
 
 		toast.success("Imagen del QR copiada al portapapeles");
 	} catch {

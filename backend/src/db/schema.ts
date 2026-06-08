@@ -13,6 +13,8 @@ export const urlsTable = sqliteTable("urls", {
 		.$defaultFn(() => new Date().toISOString()),
 	// Contador de visitas
 	visits: int().notNull().default(0),
+	// ID del usuario propietario (Better Auth user.id). Null = URL pública/heredada
+	userId: text("user_id"),
 });
 
 export type InsertUrl = typeof urlsTable.$inferInsert;
