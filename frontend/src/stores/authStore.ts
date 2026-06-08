@@ -34,6 +34,7 @@ export const useAuthStore = defineStore("authStore", () => {
 	const userName = computed(() => currentUser.value?.name ?? "");
 	const userEmail = computed(() => currentUser.value?.email ?? "");
 	const userImage = computed(() => currentUser.value?.image ?? null);
+	const isAdmin = computed(() => user.value?.role === "admin");
 
 	async function initialize() {
 		if (isInitialized.value) return;
@@ -49,6 +50,7 @@ export const useAuthStore = defineStore("authStore", () => {
 	return {
 		user,
 		isAuthenticated,
+		isAdmin,
 		isLoading,
 		isInitialized,
 		currentUser,

@@ -17,12 +17,6 @@ export const corsMiddleware = (options?: {
 	maxAge?: number;
 }) => {
 	return async (c: Context, next: Next): Promise<Response | void> => {
-		// Las rutas /api/auth/* ya tienen su propio CORS con credentials
-		if (c.req.path.startsWith("/api/auth/")) {
-			await next();
-			return;
-		}
-
 		// Configuración por defecto
 		const defaultOptions = {
 			origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -34,11 +28,18 @@ export const corsMiddleware = (options?: {
 		// Fusionar opciones personalizadas con las predeterminadas
 		const config = { ...defaultOptions, ...options };
 
-		// Configurar cabeceras CORS
-		c.header(
-			"Access-Control-Allow-Origin",
-			Array.isArray(config.origin) ? config.origin.join(", ") : config.origin,
-		);
+		// Echo individual del origin (no unir con coma)
+		const requestOrigin = c.req.header("Origin");
+		const allowedOrigins = Array.isArray(config.origin)
+			? config.origin
+			: [config.origin];
+
+		if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+			c.header("Access-Control-Allow-Origin", requestOrigin);
+			c.header("Vary", "Origin");
+		} else if (!Array.isArray(config.origin)) {
+			c.header("Access-Control-Allow-Origin", config.origin);
+		}
 
 		c.header("Access-Control-Allow-Methods", config.methods.join(", "));
 		c.header("Access-Control-Allow-Headers", config.allowedHeaders.join(", "));

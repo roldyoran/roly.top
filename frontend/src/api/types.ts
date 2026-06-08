@@ -22,7 +22,6 @@ export interface SavedUrlItem {
 
 export interface UserSession {
 	remainingAttempts: number;
-	isAdmin: boolean;
 	sessionId: string;
 	lastReset: string;
 }

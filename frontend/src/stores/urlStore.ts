@@ -10,7 +10,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 	const savedUrls = ref<SavedUrlItem[]>([]);
 	const userSession = ref<UserSession>({
 		remainingAttempts: 3,
-		isAdmin: false,
 		sessionId: generateSessionId(),
 		lastReset: new Date().toISOString(),
 	});
@@ -29,9 +28,7 @@ export const useUrlStore = defineStore("urlStore", () => {
 		() => userSession.value.remainingAttempts > 0,
 	);
 	const urlCount = computed(() => savedUrls.value.length);
-	const canUseService = computed(
-		() => userSession.value.isAdmin || hasRemainingAttempts.value,
-	);
+	const canUseService = computed(() => hasRemainingAttempts.value);
 
 	// Funciones de utilidad
 	function generateSessionId(): string {
@@ -83,7 +80,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 	function resetUserSession() {
 		userSession.value = {
 			remainingAttempts: 3,
-			isAdmin: false,
 			sessionId: generateSessionId(),
 			lastReset: new Date().toISOString(),
 		};
@@ -97,33 +93,12 @@ export const useUrlStore = defineStore("urlStore", () => {
 	}
 
 	function decrementAttempts() {
-		if (userSession.value.isAdmin) return true;
-
 		if (userSession.value.remainingAttempts > 0) {
 			userSession.value.remainingAttempts--;
 			saveUserSession();
 			return true;
 		}
 		return false;
-	}
-
-	function setAdminStatus(isAdmin: boolean, apiKey?: string) {
-		// Verificar si tiene la API key correcta (opcional)
-		if (isAdmin && apiKey) {
-			const envApiKey = import.meta.env.VITE_API_KEY;
-			if (envApiKey && apiKey === envApiKey) {
-				userSession.value.isAdmin = true;
-				userSession.value.remainingAttempts = 999; // Unlimited para admins
-			} else {
-				userSession.value.isAdmin = false;
-			}
-		} else {
-			userSession.value.isAdmin = isAdmin;
-			if (isAdmin) {
-				userSession.value.remainingAttempts = 999;
-			}
-		}
-		saveUserSession();
 	}
 
 	// Funciones para URLs guardadas
@@ -291,7 +266,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 		resetUserSession,
 		resetAttempts,
 		decrementAttempts,
-		setAdminStatus,
 
 		// Acciones - URLs
 		loadSavedUrls,

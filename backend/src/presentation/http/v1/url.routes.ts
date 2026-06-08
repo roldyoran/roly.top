@@ -1,58 +1,38 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Bindings } from "@/utils/context";
-import type { Auth } from "@/auth";
+import type { Bindings, Variables } from "@/utils/context";
 import { createDb } from "@/db";
-import { urlsTable } from "@/db/schema";
 import { users } from "@/db/auth-schema";
-import { UrlRepository } from "@/infrastructure/persistence/url.repository.impl";
-import { GetAllUrlsUseCase } from "@/application/url/get-all-urls.usecase";
-import { GetUrlByShortCodeUseCase } from "@/application/url/get-url-by-shortcode.usecase";
-import { CreateUrlUseCase } from "@/application/url/create-url.usecase";
+import { GetPublicUrlsUseCase } from "@/application/url/get-public-urls.usecase";
 import { shortCodeSchema, createUrlSchema } from "@/utils/schemas";
 import { NotFoundError, UnauthorizedError } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-type Variables = {
-	auth: Auth;
-	user: Auth["$Infer"]["Session"]["user"] | null;
-	session: Auth["$Infer"]["Session"]["session"] | null;
+type UrlVariables = Variables & {
+	user: { id: string } | null;
+	session: unknown | null;
 };
 
-const urlRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
-
-// Middleware de sesión: inyecta user y session en el contexto
-urlRoutes.use("*", async (c, next) => {
-	const auth = c.get("auth");
-	const session = await auth.api.getSession({ headers: c.req.raw.headers });
-	c.set("user", session?.user ?? null);
-	c.set("session", session?.session ?? null);
-	await next();
-});
+const urlRoutes = new Hono<{ Bindings: Bindings; Variables: UrlVariables }>();
 
 // GET /v1/urls/public — lista pública de URLs (solo de usuarios admin)
 urlRoutes.get("/public", async (c) => {
-	const db = createDb(c.env.DB);
+	const urlRepo = c.get("urlRepo");
 
-	// Obtener IDs de usuarios con role "admin"
-	const adminUsers = await db
-		.select({ id: users.id })
-		.from(users)
-		.where(eq(users.role, "admin"));
+	const adminProvider = {
+		async getAdminUserIds(): Promise<string[]> {
+			const db = createDb(c.env.DB);
+			const adminUsers = await db
+				.select({ id: users.id })
+				.from(users)
+				.where(eq(users.role, "admin"));
+			return adminUsers.map((u) => u.id);
+		},
+	};
 
-	const adminIds = adminUsers.map((u) => u.id);
-
-	if (adminIds.length === 0) {
-		return c.json([]);
-	}
-
-	// Obtener URLs solo de usuarios admin
-	const urls = await db
-		.select()
-		.from(urlsTable)
-		.where(inArray(urlsTable.userId, adminIds));
-
+	const useCase = new GetPublicUrlsUseCase(urlRepo, adminProvider);
+	const urls = await useCase.execute();
 	return c.json(urls);
 });
 
@@ -64,9 +44,8 @@ urlRoutes.get("/", async (c) => {
 		throw new UnauthorizedError("Debes iniciar sesión para ver tus URLs");
 	}
 
-	const db = createDb(c.env.DB);
-	const repo = new UrlRepository(db);
-	const urls = await repo.findByUserId(user.id);
+	const urlRepo = c.get("urlRepo");
+	const urls = await urlRepo.findByUserId(user.id);
 	return c.json(urls);
 });
 
@@ -85,16 +64,15 @@ urlRoutes.post(
 		}
 
 		const { originalUrl, shortCode } = c.req.valid("json");
-		const db = createDb(c.env.DB);
-		const repo = new UrlRepository(db);
+		const urlRepo = c.get("urlRepo");
 
 		// Verificar si la URL ya existe para este usuario
-		const existing = await repo.findByOriginalUrl(originalUrl);
+		const existing = await urlRepo.findByOriginalUrl(originalUrl);
 		if (existing) {
 			return c.json(existing, 200);
 		}
 
-		const created = await repo.createForUser(user.id, { originalUrl, shortCode });
+		const created = await urlRepo.createForUser(user.id, { originalUrl, shortCode });
 		return c.json(created, 201);
 	},
 );
@@ -113,9 +91,8 @@ urlRoutes.get(
 			);
 		}
 
-		const db = createDb(c.env.DB);
-		const repo = new UrlRepository(db);
-		const url = await repo.findByUserShortCode(user.id, shortCode);
+		const urlRepo = c.get("urlRepo");
+		const url = await urlRepo.findByUserShortCode(user.id, shortCode);
 
 		if (!url) {
 			throw new NotFoundError("URL no encontrada");

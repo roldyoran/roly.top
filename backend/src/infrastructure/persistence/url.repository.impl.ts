@@ -7,9 +7,11 @@ import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
 // Generador de shortCode aleatorio: 9 chars [a-z0-9]
 function generateShortCode(length = 9): string {
 	const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+	const bytes = new Uint8Array(length);
+	crypto.getRandomValues(bytes);
 	let result = "";
 	for (let i = 0; i < length; i++) {
-		result += chars[Math.floor(Math.random() * chars.length)];
+		result += chars[bytes[i] % chars.length];
 	}
 	return result;
 }

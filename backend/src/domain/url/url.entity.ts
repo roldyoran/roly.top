@@ -6,6 +6,7 @@ export interface UrlEntity {
 	shortCode: string;
 	createdAt: string;
 	visits: number;
+	userId: string | null;
 }
 
 export interface CreateUrlInput {

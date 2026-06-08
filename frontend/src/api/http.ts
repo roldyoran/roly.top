@@ -8,7 +8,7 @@ export function getApiBaseUrl(): string {
 	if (stored) return stored;
 	// En dev, el proxy de Vite redirige /api al backend
 	if (import.meta.env.DEV) return "";
-	return "https://roldy.cua";
+	return "";
 }
 
 // Obtiene la instancia de axios configurada

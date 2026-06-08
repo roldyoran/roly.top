@@ -1,10 +1,9 @@
 import { betterAuth } from "better-auth";
-import { withCloudflare } from "better-auth-cloudflare";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { drizzle } from "drizzle-orm/d1";
 import { admin } from "better-auth/plugins";
-import * as appSchema from "@/db/schema";
+import { withCloudflare } from "better-auth-cloudflare";
+import { drizzle } from "drizzle-orm/d1";
 import * as authSchema from "@/db/auth-schema";
+import * as appSchema from "@/db/schema";
 
 type CloudflareBindings = {
 	DB: D1Database;
@@ -12,23 +11,15 @@ type CloudflareBindings = {
 	BETTER_AUTH_URL: string;
 	GOOGLE_CLIENT_ID: string;
 	GOOGLE_CLIENT_SECRET: string;
+	DEV_MODE: string;
+	TRUSTED_ORIGINS?: string;
 };
 
 export function createAuth(env?: CloudflareBindings) {
 	if (!env) {
-		return betterAuth({
-			database: drizzleAdapter({} as D1Database, {
-				provider: "sqlite",
-				usePlural: true,
-				schema: { ...appSchema, ...authSchema },
-			}),
-			socialProviders: {
-				google: {
-					clientId: "placeholder",
-					clientSecret: "placeholder",
-				},
-			},
-		});
+		throw new Error(
+			"Auth requires environment bindings. Cannot create placeholder auth instance.",
+		);
 	}
 
 	const db = drizzle(env.DB, { schema: { ...appSchema, ...authSchema } });
@@ -56,17 +47,21 @@ export function createAuth(env?: CloudflareBindings) {
 			},
 		),
 		baseURL: env.BETTER_AUTH_URL,
-		trustedOrigins: ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8787"],
+		trustedOrigins: env.TRUSTED_ORIGINS
+			? env.TRUSTED_ORIGINS.split(",").map((o) => o.trim())
+			: [
+					"http://localhost:5173",
+					"http://127.0.0.1:5173",
+					"http://localhost:8787",
+				],
 		account: {
 			skipStateCookieCheck: true,
 		},
-		plugins: [
-			admin(),
-		],
+		plugins: [admin()],
 		advanced: {
 			defaultCookieAttributes: {
 				sameSite: "lax",
-				secure: false,
+				secure: !env.DEV_MODE,
 				httpOnly: true,
 				path: "/",
 			},

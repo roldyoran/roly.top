@@ -1,34 +1,14 @@
 import { Hono } from "hono";
-import type { Auth } from "@/auth";
-import type { Bindings } from "@/utils/context";
-import { createDb } from "@/db";
-import { UrlRepository } from "@/infrastructure/persistence/url.repository.impl";
+import type { Bindings, Variables } from "@/utils/context";
 import { UnauthorizedError } from "@/domain/app-error";
 
-type Variables = {
-	auth: Auth;
-	user: Auth["$Infer"]["Session"]["user"] | null;
-	session: Auth["$Infer"]["Session"]["session"] | null;
+type UserVariables = Variables & {
+	user: { id: string; name: string; email: string; image: string | null } | null;
+	session: unknown | null;
 };
 
 // Router de usuario: rutas que requieren sesión autenticada
-export const userRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
-
-// Middleware de sesión: inyecta user y session en el contexto
-userRoutes.use("*", async (c, next) => {
-	const auth = c.get("auth");
-	const session = await auth.api.getSession({ headers: c.req.raw.headers });
-
-	if (!session) {
-		c.set("user", null);
-		c.set("session", null);
-	} else {
-		c.set("user", session.user);
-		c.set("session", session.session);
-	}
-
-	await next();
-});
+export const userRoutes = new Hono<{ Bindings: Bindings; Variables: UserVariables }>();
 
 // GET /v1/user/session — Obtener sesión actual
 userRoutes.get("/session", (c) => {
@@ -58,9 +38,8 @@ userRoutes.get("/urls", async (c) => {
 		throw new UnauthorizedError("Debes iniciar sesión para ver tus URLs");
 	}
 
-	const db = createDb(c.env.DB);
-	const repository = new UrlRepository(db);
-	const urls = await repository.findByUserId(user.id);
+	const urlRepo = c.get("urlRepo");
+	const urls = await urlRepo.findByUserId(user.id);
 
 	return c.json({ urls });
 });
@@ -76,9 +55,8 @@ userRoutes.delete("/urls/:shortCode", async (c) => {
 		);
 	}
 
-	const db = createDb(c.env.DB);
-	const repository = new UrlRepository(db);
-	const deleted = await repository.deleteByUserShortCode(user.id, shortCode);
+	const urlRepo = c.get("urlRepo");
+	const deleted = await urlRepo.deleteByUserShortCode(user.id, shortCode);
 
 	if (!deleted) {
 		return c.json(

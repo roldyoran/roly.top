@@ -17,7 +17,7 @@ export function useAuth() {
 		try {
 			await authClient.signIn.social({
 				provider: "google",
-				callbackURL: "http://localhost:5173",
+				callbackURL: window.location.origin,
 			});
 		} catch (error) {
 			console.error("Error signing in with Google:", error);
@@ -33,6 +33,9 @@ export function useAuth() {
 			await authClient.signOut();
 			user.value = null;
 			session.value = null;
+			localStorage.removeItem("savedUrls");
+			localStorage.removeItem("userSession");
+			localStorage.removeItem("publicListCache");
 		} catch (error) {
 			console.error("Error signing out:", error);
 			throw error;

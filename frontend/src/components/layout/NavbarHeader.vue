@@ -131,23 +131,10 @@
                 </DialogContent>
               </Dialog>
 
-              <Dialog>
-                <DialogTrigger as-child>
-                  <Button variant="outline" class="w-full justify-start gap-2">
-                    <User class="w-4 h-4" />
-                    Admin
-                  </Button>
-                </DialogTrigger>
-                <DialogContent class="max-w-md">
-                  <div class="space-y-4">
-                    <Label for="admin-pass-mobile">Contraseña Admin</Label>
-                    <Input id="admin-pass-mobile" v-model="adminPassword" type="password" placeholder="Ingresa contraseña" />
-                    <div class="flex justify-end">
-                      <Button @click="submitAdmin">Iniciar sesión</Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <div v-if="authStore.isAdmin" class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/50 bg-primary/10">
+                <Shield class="w-3.5 h-3.5 text-primary" />
+                <span class="font-mono text-[10px] tracking-wider text-primary font-bold">ADMIN</span>
+              </div>
 
               <Button variant="outline" as-child class="w-full justify-start gap-2">
                 <a href="https://github.com/roldyoran/shorturl" target="_blank">
@@ -170,23 +157,10 @@
           </DialogContent>
         </Dialog>
 
-        <Dialog>
-          <DialogTrigger as-child>
-            <Button variant="ghost" size="sm" class="hidden sm:flex items-center gap-1.5 px-3 h-8 text-muted-foreground hover:text-foreground hover:bg-muted">
-              <User class="w-3.5 h-3.5" />
-              <span class="font-mono text-[10px] tracking-wider">ADMIN</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent class="max-w-md">
-            <div class="space-y-4">
-              <Label for="admin-pass">Contraseña Admin</Label>
-              <Input id="admin-pass" v-model="adminPassword" type="password" placeholder="Ingresa contraseña" />
-              <div class="flex justify-end">
-                <Button @click="submitAdmin">Iniciar sesión</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div v-if="authStore.isAdmin" class="hidden sm:flex items-center gap-1.5 px-3 h-8 rounded-full border border-primary/50 bg-primary/10">
+          <Shield class="w-3.5 h-3.5 text-primary" />
+          <span class="font-mono text-[10px] tracking-wider text-primary font-bold">ADMIN</span>
+        </div>
 
         <Button variant="ghost" size="sm" as-child class="hidden sm:flex items-center gap-1.5 px-3 h-8 text-muted-foreground hover:text-foreground hover:bg-muted">
           <a href="https://github.com/roldyoran/shorturl" target="_blank">
@@ -200,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link, Info, Github, User, Menu, LogOut } from "lucide-vue-next";
+import { Link, Info, Github, User, Menu, LogOut, Shield } from "lucide-vue-next";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
 	Drawer,
@@ -213,11 +187,9 @@ import {
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle.vue";
 import ApiConfigDialog from "@/components/config/ApiConfigDialog.vue";
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useUrlStore } from "@/stores/urlStore";
 import { useAuthStore } from "@/stores/authStore";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "vue-sonner";
 
 defineProps<{
@@ -226,26 +198,9 @@ defineProps<{
 
 const urlStore = useUrlStore();
 const authStore = useAuthStore();
-const adminPassword = ref("");
-const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS as string | undefined;
 const remainingAttempts = computed(
 	() => urlStore.userSession?.remainingAttempts ?? 0,
 );
-
-function submitAdmin() {
-	if (adminPassword.value === ADMIN_PASS && ADMIN_PASS) {
-		urlStore.setAdminStatus(true);
-		toast.success("Modo admin activado", {
-			description: "Tienes 999 intentos restantes.",
-		});
-	} else {
-		urlStore.setAdminStatus(false);
-		toast.error("Contraseña incorrecta", {
-			description: "La contraseña admin es incorrecta.",
-		});
-	}
-	adminPassword.value = "";
-}
 
 async function handleSignOut() {
 	try {

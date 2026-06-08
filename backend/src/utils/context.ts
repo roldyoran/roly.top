@@ -1,4 +1,5 @@
 import type { MiddlewareHandler } from "hono";
+import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
 
 // Bindings defines the environment variables/bindings available in Cloudflare Workers
 export type Bindings = {
@@ -16,9 +17,12 @@ export type Bindings = {
 	GOOGLE_CLIENT_SECRET: string;
 };
 
+export type Variables = {
+	urlRepo: UrlRepositoryPort;
+};
+
 const ENV_KEYS: (keyof Bindings)[] = [
 	"CLOUFLARE_D1_DATABASES_BINDING",
-	"CLOUDFLARE_DATABASE_ID",
 	"CLOUDFLARE_DATABASE_ID",
 	"SERVICE_ADMIN_API_KEY",
 	"BETTER_AUTH_SECRET",

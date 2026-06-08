@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { corsMiddleware } from "@/utils/cors-middleware";
 import { checkEnvMiddleware, type Bindings } from "@/utils/context";
 import { createAuth, type Auth } from "@/auth";
@@ -26,19 +25,6 @@ const app = new Hono<{ Bindings: Bindings; Variables: { auth: Auth } }>();
 
 // Middleware para verificar la presencia de variables de entorno y emitir warnings
 app.use("*", checkEnvMiddleware);
-
-// CORS para rutas de Better Auth (requiere credentials: true)
-app.use(
-	"/api/auth/*",
-	cors({
-		origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-		allowHeaders: ["Content-Type", "Authorization"],
-		allowMethods: ["POST", "GET", "OPTIONS"],
-		exposeHeaders: ["Content-Length"],
-		maxAge: 600,
-		credentials: true,
-	}),
-);
 
 // Middleware para configurar CORS global
 app.use("*", corsMiddleware());
