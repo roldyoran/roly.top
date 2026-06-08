@@ -20,8 +20,8 @@ app.use("*", corsMiddleware());
 app.route("/v1", v1Router);
 
 // Rutas de Swagger UI
-app.route("/", swaggerRoutes);
-app.route("/", openapiRoutes);
+// app.route("/", swaggerRoutes);
+// app.route("/", openapiRoutes);
 
 // Redirección directa: GET /:shortCode → 302 a originalUrl, 302 a / si no existe o formato inválido
 app.route("/", redirectRoutes);
