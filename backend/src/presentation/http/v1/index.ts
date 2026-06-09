@@ -3,6 +3,7 @@ import type { Bindings, Variables } from "@/utils/context";
 import type { Auth } from "@/auth";
 import { createDb } from "@/db";
 import { UrlRepository } from "@/infrastructure/persistence/url.repository.impl";
+import { UserRepository } from "@/infrastructure/persistence/user.repository.impl";
 import { urlRoutes } from "./url.routes";
 import { adminRoutes } from "./admin.routes";
 import { userRoutes } from "./user.routes";
@@ -23,7 +24,8 @@ const v1Router = new Hono<{
 // Inyecta urlRepo en el contexto para todas las rutas v1
 v1Router.use("*", async (c, next) => {
 	const db = createDb(c.env.DB);
-	c.set("urlRepo", new UrlRepository(db));
+	c.set("urlRepo", UrlRepository.getInstance(db));
+	c.set("userRepo", UserRepository.getInstance(db));
 	await next();
 });
 

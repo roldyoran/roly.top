@@ -5,7 +5,10 @@ import type { UrlEntity, CreateUrlInput } from "./url.entity";
 export interface UrlRepositoryPort {
 	findAll(): Promise<UrlEntity[]>;
 	findByShortCode(shortCode: string): Promise<UrlEntity | null>;
-	findByOriginalUrl(originalUrl: string): Promise<UrlEntity | null>;
+	findByOriginalUrl(
+		originalUrl: string,
+		userId?: string | null,
+	): Promise<UrlEntity | null>;
 	findByUserId(userId: string): Promise<UrlEntity[]>;
 	findByUserShortCode(
 		userId: string,

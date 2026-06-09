@@ -44,132 +44,222 @@
 				<p class="text-sm font-medium text-muted-foreground">No se encontraron usuarios</p>
 				<p class="text-xs text-muted-foreground/60 mt-1">Los usuarios registrados aparecerán aquí</p>
 			</div>
-			<Table v-else class="admin-table">
-				<TableHeader>
-					<TableRow class="hover:bg-transparent border-b bg-muted/20">
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
-							Usuario
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
-							Rol
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-16">
-							URLs
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-16">
-							Límite
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-24">
-							Estado
-						</TableHead>
-						<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-16">
-							Acciones
-						</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					<TableRow
-						v-for="user in adminStore.users.data"
-						:key="user.id"
-						class="group transition-all duration-150 hover:bg-muted/40 border-b border-border/50 last:border-b-0"
-					>
-						<TableCell class="pl-5 py-3">
-							<div class="flex items-center gap-3">
-								<div class="relative flex-shrink-0">
-									<img
-										v-if="user.image"
-										:src="user.image"
-										:alt="user.name"
-										class="w-9 h-9 rounded-full ring-2 ring-background object-cover"
-									/>
-									<div
-										v-else
-										class="w-9 h-9 rounded-full bg-gradient-to-br from-primary/25 to-primary/5 flex items-center justify-center text-xs font-bold text-primary ring-2 ring-background"
-									>
-										{{ user.name.charAt(0).toUpperCase() }}
+
+			<div v-else class="hidden md:block">
+				<Table class="admin-table">
+					<TableHeader>
+						<TableRow class="hover:bg-transparent border-b bg-muted/20">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
+								Usuario
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
+								Rol
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-16">
+								URLs
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-16">
+								Límite
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-24">
+								Estado
+							</TableHead>
+							<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-16">
+								Acciones
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						<TableRow
+							v-for="user in adminStore.users.data"
+							:key="user.id"
+							class="group transition-all duration-150 hover:bg-muted/40 border-b border-border/50 last:border-b-0"
+						>
+							<TableCell class="pl-5 py-3">
+								<div class="flex items-center gap-3">
+									<div class="relative flex-shrink-0">
+										<img
+											v-if="user.image"
+											:src="user.image"
+											:alt="user.name"
+											class="w-9 h-9 rounded-full ring-2 ring-background object-cover"
+										/>
+										<div
+											v-else
+											class="w-9 h-9 rounded-full bg-gradient-to-br from-primary/25 to-primary/5 flex items-center justify-center text-xs font-bold text-primary ring-2 ring-background"
+										>
+											{{ user.name.charAt(0).toUpperCase() }}
+										</div>
+										<div
+											class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card"
+											:class="user.banned ? 'bg-destructive' : 'bg-emerald-500'"
+										/>
 									</div>
-									<div
-										class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card"
-										:class="user.banned ? 'bg-destructive' : 'bg-emerald-500'"
-									/>
+									<div class="min-w-0">
+										<p class="font-medium text-sm truncate leading-tight">{{ user.name }}</p>
+										<p class="text-[11px] text-muted-foreground/60 truncate leading-tight mt-0.5">{{ user.email }}</p>
+									</div>
 								</div>
-								<div class="min-w-0">
-									<p class="font-medium text-sm truncate leading-tight">{{ user.name }}</p>
-									<p class="text-[11px] text-muted-foreground/60 truncate leading-tight mt-0.5">{{ user.email }}</p>
-								</div>
-							</div>
-						</TableCell>
-						<TableCell class="py-3 w-20">
-							<Badge
-								:variant="user.role === 'admin' ? 'default' : 'secondary'"
-								class="text-[10px] px-1.5 py-0 h-5 font-semibold rounded-md"
-							>
-								{{ user.role }}
-							</Badge>
-						</TableCell>
-						<TableCell class="py-3 w-16">
-							<div class="flex items-center gap-1.5">
-								<div class="w-1 h-1 rounded-full bg-primary/40" />
-								<span class="text-sm font-semibold tabular-nums">{{ user.urlCount }}</span>
-							</div>
-						</TableCell>
-						<TableCell class="py-3 w-16">
-							<span class="text-sm font-medium tabular-nums text-muted-foreground/70">{{ user.urlLimit }}</span>
-						</TableCell>
-						<TableCell class="py-3 w-24">
-							<div class="flex items-center gap-2">
-								<div class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="user.banned ? 'bg-destructive' : 'bg-emerald-500'" />
+							</TableCell>
+							<TableCell class="py-3 w-20">
 								<Badge
-									:variant="user.banned ? 'destructive' : 'outline'"
-									class="text-[10px] px-1.5 py-0 h-5 font-medium rounded-md"
+									:variant="user.role === 'admin' ? 'default' : 'secondary'"
+									class="text-[10px] px-1.5 py-0 h-5 font-semibold rounded-md"
 								>
-									{{ user.banned ? 'Baneado' : 'Activo' }}
+									{{ user.role }}
 								</Badge>
-							</div>
-						</TableCell>
-						<TableCell class="text-right py-3 pr-5 w-16">
-							<DropdownMenu>
-								<DropdownMenuTrigger as-child>
-									<Button
-										variant="ghost"
-										size="sm"
-										class="h-7 w-7 p-0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+							</TableCell>
+							<TableCell class="py-3 w-16">
+								<div class="flex items-center gap-1.5">
+									<div class="w-1 h-1 rounded-full bg-primary/40" />
+									<span class="text-sm font-semibold tabular-nums">{{ user.urlCount }}</span>
+								</div>
+							</TableCell>
+							<TableCell class="py-3 w-16">
+								<span class="text-sm font-medium tabular-nums text-muted-foreground/70">{{ user.urlLimit }}</span>
+							</TableCell>
+							<TableCell class="py-3 w-24">
+								<div class="flex items-center gap-2">
+									<div class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="user.banned ? 'bg-destructive' : 'bg-emerald-500'" />
+									<Badge
+										:variant="user.banned ? 'destructive' : 'outline'"
+										class="text-[10px] px-1.5 py-0 h-5 font-medium rounded-md"
 									>
-										<MoreHorizontal class="h-4 w-4" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end" class="rounded-xl w-44">
-									<DropdownMenuItem class="rounded-lg text-xs gap-2" @click="openEditLimit(user)">
-										<Settings class="h-3.5 w-3.5 text-muted-foreground" />
-										Cambiar límite
-									</DropdownMenuItem>
-									<DropdownMenuItem v-if="!user.banned" class="rounded-lg text-xs gap-2 text-destructive" @click="handleBan(user)">
-										<Ban class="h-3.5 w-3.5" />
-										Banear
-									</DropdownMenuItem>
-									<DropdownMenuItem v-else class="rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400" @click="handleUnban(user)">
-										<CheckCircle class="h-3.5 w-3.5" />
-										Desbanear
-									</DropdownMenuItem>
-									<DropdownMenuSeparator class="my-1" />
-									<DropdownMenuItem class="rounded-lg text-xs gap-2 text-destructive" @click="confirmDelete(user)">
-										<Trash2 class="h-3.5 w-3.5" />
-										Eliminar
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</TableCell>
-					</TableRow>
-				</TableBody>
-			</Table>
+										{{ user.banned ? 'Baneado' : 'Activo' }}
+									</Badge>
+								</div>
+							</TableCell>
+							<TableCell class="text-right py-3 pr-5 w-16">
+								<DropdownMenu>
+									<DropdownMenuTrigger as-child>
+										<Button
+											variant="ghost"
+											size="sm"
+											class="h-7 w-7 p-0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+										>
+											<MoreHorizontal class="h-4 w-4" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end" class="rounded-xl w-44">
+										<DropdownMenuItem class="rounded-lg text-xs gap-2" @click="openEditLimit(user)">
+											<Settings class="h-3.5 w-3.5 text-muted-foreground" />
+											Cambiar límite
+										</DropdownMenuItem>
+										<DropdownMenuItem v-if="!user.banned" class="rounded-lg text-xs gap-2 text-destructive" @click="handleBan(user)">
+											<Ban class="h-3.5 w-3.5" />
+											Banear
+										</DropdownMenuItem>
+										<DropdownMenuItem v-else class="rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400" @click="handleUnban(user)">
+											<CheckCircle class="h-3.5 w-3.5" />
+											Desbanear
+										</DropdownMenuItem>
+										<DropdownMenuSeparator class="my-1" />
+										<DropdownMenuItem class="rounded-lg text-xs gap-2 text-destructive" @click="confirmDelete(user)">
+											<Trash2 class="h-3.5 w-3.5" />
+											Eliminar
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</TableCell>
+						</TableRow>
+					</TableBody>
+				</Table>
+			</div>
+
+			<div v-if="adminStore.users?.data.length" class="md:hidden divide-y divide-border/50">
+				<div
+					v-for="user in adminStore.users.data"
+					:key="user.id"
+					class="p-4 space-y-3"
+				>
+					<div class="flex items-center gap-3">
+						<div class="relative flex-shrink-0">
+							<img
+								v-if="user.image"
+								:src="user.image"
+								:alt="user.name"
+								class="w-10 h-10 rounded-full ring-2 ring-background object-cover"
+							/>
+							<div
+								v-else
+								class="w-10 h-10 rounded-full bg-gradient-to-br from-primary/25 to-primary/5 flex items-center justify-center text-sm font-bold text-primary ring-2 ring-background"
+							>
+								{{ user.name.charAt(0).toUpperCase() }}
+							</div>
+							<div
+								class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card"
+								:class="user.banned ? 'bg-destructive' : 'bg-emerald-500'"
+							/>
+						</div>
+						<div class="min-w-0 flex-1">
+							<p class="font-medium text-sm truncate leading-tight">{{ user.name }}</p>
+							<p class="text-[11px] text-muted-foreground/60 truncate leading-tight mt-0.5">{{ user.email }}</p>
+						</div>
+						<DropdownMenu>
+							<DropdownMenuTrigger as-child>
+								<Button
+									variant="ghost"
+									size="sm"
+									class="h-8 w-8 p-0 rounded-lg"
+								>
+									<MoreHorizontal class="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" class="rounded-xl w-44">
+								<DropdownMenuItem class="rounded-lg text-xs gap-2" @click="openEditLimit(user)">
+									<Settings class="h-3.5 w-3.5 text-muted-foreground" />
+									Cambiar límite
+								</DropdownMenuItem>
+								<DropdownMenuItem v-if="!user.banned" class="rounded-lg text-xs gap-2 text-destructive" @click="handleBan(user)">
+									<Ban class="h-3.5 w-3.5" />
+									Banear
+								</DropdownMenuItem>
+								<DropdownMenuItem v-else class="rounded-lg text-xs gap-2 text-emerald-600 dark:text-emerald-400" @click="handleUnban(user)">
+									<CheckCircle class="h-3.5 w-3.5" />
+									Desbanear
+								</DropdownMenuItem>
+								<DropdownMenuSeparator class="my-1" />
+								<DropdownMenuItem class="rounded-lg text-xs gap-2 text-destructive" @click="confirmDelete(user)">
+									<Trash2 class="h-3.5 w-3.5" />
+									Eliminar
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+					<div class="flex items-center gap-2 flex-wrap">
+						<Badge
+							:variant="user.role === 'admin' ? 'default' : 'secondary'"
+							class="text-[10px] px-1.5 py-0 h-5 font-semibold rounded-md"
+						>
+							{{ user.role }}
+						</Badge>
+						<div class="flex items-center gap-1">
+							<div class="w-1 h-1 rounded-full bg-primary/40" />
+							<span class="text-xs font-medium tabular-nums">{{ user.urlCount }} URLs</span>
+						</div>
+						<span class="text-xs text-muted-foreground/50">·</span>
+						<span class="text-xs text-muted-foreground/60">Límite: {{ user.urlLimit }}</span>
+						<span class="text-xs text-muted-foreground/50">·</span>
+						<div class="flex items-center gap-1">
+							<div class="w-1.5 h-1.5 rounded-full" :class="user.banned ? 'bg-destructive' : 'bg-emerald-500'" />
+							<Badge
+								:variant="user.banned ? 'destructive' : 'outline'"
+								class="text-[10px] px-1.5 py-0 h-5 font-medium rounded-md"
+							>
+								{{ user.banned ? 'Baneado' : 'Activo' }}
+							</Badge>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div
 			v-if="adminStore.users && adminStore.users.totalPages > 1"
-			class="flex items-center justify-between animate-fade-in-up"
+			class="flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in-up"
 			style="animation-delay: 300ms;"
 		>
-			<p class="text-xs text-muted-foreground">
+			<p class="text-xs text-muted-foreground text-center sm:text-left">
 				Mostrando {{ (adminStore.users.page - 1) * adminStore.users.pageSize + 1 }}
 				- {{ Math.min(adminStore.users.page * adminStore.users.pageSize, adminStore.users.total) }}
 				de {{ adminStore.users.total }} usuarios
@@ -178,7 +268,7 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-8 rounded-lg text-xs"
+					class="h-9 sm:h-8 rounded-lg text-xs px-3"
 					:disabled="adminStore.users.page <= 1"
 					@click="goToPage(adminStore.users.page - 1)"
 				>
@@ -190,7 +280,7 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-8 rounded-lg text-xs"
+					class="h-9 sm:h-8 rounded-lg text-xs px-3"
 					:disabled="adminStore.users.page >= adminStore.users.totalPages"
 					@click="goToPage(adminStore.users.page + 1)"
 				>
@@ -199,7 +289,6 @@
 			</div>
 		</div>
 
-		<!-- Edit Limit Dialog -->
 		<Dialog v-model:open="editLimitOpen">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>
@@ -221,7 +310,6 @@
 			</DialogContent>
 		</Dialog>
 
-		<!-- Ban Dialog -->
 		<Dialog v-model:open="banOpen">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>
@@ -243,7 +331,6 @@
 			</DialogContent>
 		</Dialog>
 
-		<!-- Delete Dialog -->
 		<Dialog v-model:open="deleteOpen">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>

@@ -10,7 +10,9 @@ import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
 export type MockedRepository = {
 	findAll: Mock<() => Promise<UrlEntity[]>>;
 	findByShortCode: Mock<(shortCode: string) => Promise<UrlEntity | null>>;
-	findByOriginalUrl: Mock<(originalUrl: string) => Promise<UrlEntity | null>>;
+	findByOriginalUrl: Mock<
+		(originalUrl: string, userId?: string | null) => Promise<UrlEntity | null>
+	>;
 	findByUserId: Mock<(userId: string) => Promise<UrlEntity[]>>;
 	findByUserShortCode: Mock<
 		(userId: string, shortCode: string) => Promise<UrlEntity | null>
@@ -38,7 +40,7 @@ export function createMockRepository(): MockedRepository {
 		findByShortCode: mock((_shortCode: string) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
-		findByOriginalUrl: mock((_originalUrl: string) =>
+		findByOriginalUrl: mock((_originalUrl: string, _userId?: string | null) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
 		findByUserId: mock((_userId: string) =>

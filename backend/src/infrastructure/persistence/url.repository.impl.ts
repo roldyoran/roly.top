@@ -1,23 +1,36 @@
-import { eq, sql, count, and } from "drizzle-orm";
+import { eq, sql, count, and, isNull } from "drizzle-orm";
 import type { DrizzleDB } from "@/db";
 import { urlsTable } from "@/db/schema";
 import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
 import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
 
-// Generador de shortCode aleatorio: 9 chars [a-z0-9]
+// Generador de shortCode aleatorio sin sesgo (unbiased): 9 chars [a-z0-9]
 function generateShortCode(length = 9): string {
 	const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-	const bytes = new Uint8Array(length);
-	crypto.getRandomValues(bytes);
 	let result = "";
-	for (let i = 0; i < length; i++) {
-		result += chars[bytes[i] % chars.length];
+	const byte = new Uint8Array(1);
+	while (result.length < length) {
+		crypto.getRandomValues(byte);
+		const val = byte[0];
+		// 36 * 7 = 252. Descartamos valores >= 252 para eliminar el sesgo del módulo (modulo bias).
+		if (val < 252) {
+			result += chars[val % chars.length];
+		}
 	}
 	return result;
 }
 
 // Adaptador secundario: implementación del puerto usando Drizzle + Cloudflare D1
 export class UrlRepository implements UrlRepositoryPort {
+	private static instance: UrlRepository | null = null;
+
+	static getInstance(db: DrizzleDB): UrlRepository {
+		if (!this.instance) {
+			this.instance = new UrlRepository(db);
+		}
+		return this.instance;
+	}
+
 	constructor(private readonly db: DrizzleDB) {}
 
 	async findAll(): Promise<UrlEntity[]> {
@@ -33,11 +46,23 @@ export class UrlRepository implements UrlRepositoryPort {
 		return url ?? null;
 	}
 
-	async findByOriginalUrl(originalUrl: string): Promise<UrlEntity | null> {
+	async findByOriginalUrl(
+		originalUrl: string,
+		userId?: string | null,
+	): Promise<UrlEntity | null> {
+		const conditions = [eq(urlsTable.originalUrl, originalUrl)];
+		if (userId !== undefined) {
+			if (userId === null) {
+				conditions.push(isNull(urlsTable.userId));
+			} else {
+				conditions.push(eq(urlsTable.userId, userId));
+			}
+		}
+
 		const [url] = await this.db
 			.select()
 			.from(urlsTable)
-			.where(eq(urlsTable.originalUrl, originalUrl))
+			.where(and(...conditions))
 			.limit(1);
 		return url ?? null;
 	}
@@ -86,7 +111,9 @@ export class UrlRepository implements UrlRepositoryPort {
 	): Promise<UrlEntity | null> {
 		const [deleted] = await this.db
 			.delete(urlsTable)
-			.where(eq(urlsTable.shortCode, shortCode) && eq(urlsTable.userId, userId))
+			.where(
+				and(eq(urlsTable.shortCode, shortCode), eq(urlsTable.userId, userId)),
+			)
 			.returning();
 		return deleted ?? null;
 	}
@@ -140,6 +167,6 @@ export class UrlRepository implements UrlRepositoryPort {
 		await this.db
 			.update(urlsTable)
 			.set({ userId })
-			.where(sql`${urlsTable.userId} IS NULL`);
+			.where(isNull(urlsTable.userId));
 	}
 }

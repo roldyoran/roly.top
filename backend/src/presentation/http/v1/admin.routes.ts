@@ -3,8 +3,6 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { Bindings, Variables } from "@/utils/context";
 import { createDb } from "@/db";
-import { users } from "@/db/auth-schema";
-import { urlsTable } from "@/db/schema";
 import { DeleteUrlUseCase } from "@/application/url/delete-url.usecase";
 import { DeleteAllUrlsUseCase } from "@/application/url/delete-all-urls.usecase";
 import { SetAdminRoleUseCase } from "@/application/admin/set-admin-role.usecase";
@@ -21,7 +19,6 @@ import { shortCodeSchema } from "@/utils/schemas";
 import { UnauthorizedError, NotFoundError } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
 import { AdminRepository } from "@/infrastructure/persistence/admin.repository.impl";
-import { eq } from "drizzle-orm";
 
 type AdminUser = { id: string; role?: string } | null;
 type AdminSessionVariables = {
@@ -36,8 +33,8 @@ const adminRoutes = new Hono<{
 
 // Middleware: requiere sesión Better Auth con role "admin"
 adminRoutes.use("/*", async (c, next) => {
-	// Excluir /setup/make-admin que usa SERVICE_ADMIN_API_KEY
-	if (c.req.path.endsWith("/setup/make-admin")) {
+	// Excluir /setup/make-admin que usa SERVICE_ADMIN_API_KEY (match exacto, no endsWith)
+	if (c.req.path === "/v1/admin/setup/make-admin") {
 		await next();
 		return;
 	}
@@ -52,7 +49,7 @@ adminRoutes.use("/*", async (c, next) => {
 // Helper: crea AdminRepository desde el env
 function getAdminRepo(c: { env: Bindings }) {
 	const db = createDb(c.env.DB);
-	return new AdminRepository(db);
+	return AdminRepository.getInstance(db);
 }
 
 // ── Stats ────────────────────────────────────────────────────────────────────
@@ -169,13 +166,8 @@ adminRoutes.delete(
 );
 
 adminRoutes.delete("/urls", async (c) => {
-	const db = createDb(c.env.DB);
-	const urlRepo = {
-		deleteAll: async () => {
-			await db.delete(urlsTable);
-		},
-	};
-	const useCase = new DeleteAllUrlsUseCase(urlRepo as any);
+	const urlRepo = c.get("urlRepo");
+	const useCase = new DeleteAllUrlsUseCase(urlRepo);
 	await useCase.execute();
 	return c.json({ message: "Todas las URLs han sido eliminadas" });
 });
@@ -197,28 +189,8 @@ adminRoutes.post(
 	zValidator("json", z.object({ email: z.string().email() }), validationHook),
 	async (c) => {
 		const { email } = c.req.valid("json");
-		const adminProvider = {
-			async setRole(email: string) {
-				const db = createDb(c.env.DB);
-				const [user] = await db
-					.select()
-					.from(users)
-					.where(eq(users.email, email))
-					.limit(1);
-				if (!user) {
-					throw new NotFoundError(`Usuario con email "${email}" no encontrado`);
-				}
-				await db
-					.update(users)
-					.set({ role: "admin" })
-					.where(eq(users.id, user.id));
-				return {
-					userId: user.id,
-					message: `Usuario "${user.name}" (${user.email}) ahora es admin`,
-				};
-			},
-		};
-		const useCase = new SetAdminRoleUseCase(adminProvider);
+		const userRepo = c.get("userRepo");
+		const useCase = new SetAdminRoleUseCase(userRepo);
 		const result = await useCase.execute(email);
 		return c.json(result);
 	},

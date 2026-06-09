@@ -13,4 +13,5 @@ export interface CreateUrlInput {
 	originalUrl: string;
 	// Si no se provee, se genera automáticamente
 	shortCode?: string;
+	userId?: string | null;
 }

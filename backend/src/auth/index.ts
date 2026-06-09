@@ -1,9 +1,7 @@
 import { betterAuth } from "better-auth";
 import { admin } from "better-auth/plugins";
 import { withCloudflare } from "better-auth-cloudflare";
-import { drizzle } from "drizzle-orm/d1";
-import * as authSchema from "@/db/auth-schema";
-import * as appSchema from "@/db/schema";
+import { createDb } from "@/db";
 
 type CloudflareBindings = {
 	DB: D1Database;
@@ -22,7 +20,7 @@ export function createAuth(env?: CloudflareBindings) {
 		);
 	}
 
-	const db = drizzle(env.DB, { schema: { ...appSchema, ...authSchema } });
+	const db = createDb(env.DB);
 
 	return betterAuth({
 		...withCloudflare(

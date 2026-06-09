@@ -59,12 +59,15 @@ export const useAuthStore = defineStore("authStore", () => {
 			// Silenciar errores de sesión no válida
 		} finally {
 			isInitialized.value = true;
+			const urlStore = useUrlStore();
+			urlStore.setUrlLimitFromRole(user.value?.role as string | undefined);
 		}
 	}
 
 	function resetAuth() {
 		const urlStore = useUrlStore();
 		urlStore.clearUserUrls(userId.value ?? undefined);
+		urlStore.setUrlLimitFromRole(undefined);
 		user.value = null;
 		session.value = null;
 		isInitialized.value = false;

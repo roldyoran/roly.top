@@ -39,95 +39,140 @@
 				<p class="text-sm font-medium text-muted-foreground">No se encontraron URLs</p>
 				<p class="text-xs text-muted-foreground/60 mt-1">Las URLs acortadas aparecerán aquí</p>
 			</div>
-			<Table v-else class="admin-table">
-				<TableHeader>
-					<TableRow class="hover:bg-transparent border-b bg-muted/20">
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
-							Short Code
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11">
-							URL Original
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
-							Visitas
-						</TableHead>
-						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-28">
-							Creada
-						</TableHead>
-						<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-24">
-							Acciones
-						</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					<TableRow
-						v-for="(url, index) in adminStore.urls.data"
-						:key="url.shortCode"
-						class="group transition-all duration-150 hover:bg-muted/40 border-b border-border/50 last:border-b-0"
-					>
-						<TableCell class="pl-5 py-3.5">
-							<div class="flex items-center gap-2.5">
-								<span class="text-[10px] text-muted-foreground/40 font-mono tabular-nums w-4 text-right">
-									{{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + index + 1 }}
-								</span>
-								<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
-									/{{ url.shortCode }}
-								</code>
-							</div>
-						</TableCell>
-						<TableCell class="py-3.5">
-							<span class="text-sm truncate max-w-[300px] block text-muted-foreground/80">{{ url.originalUrl }}</span>
-						</TableCell>
-						<TableCell class="py-3.5 w-20">
-							<div class="flex items-center gap-1.5">
-								<div class="w-1 h-1 rounded-full bg-primary/40" />
-								<span class="text-sm font-semibold tabular-nums">{{ url.visits }}</span>
-							</div>
-						</TableCell>
-						<TableCell class="py-3.5 w-28">
-							<span class="text-xs text-muted-foreground/60 font-medium">{{ formatDate(url.createdAt) }}</span>
-						</TableCell>
-						<TableCell class="text-right py-3.5 pr-5 w-24">
-							<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
-								<Tooltip>
-									<TooltipTrigger as-child>
-										<Button
-											variant="ghost"
-											size="sm"
-											class="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
-											@click="copyUrl(url.shortCode)"
-										>
-											<Copy class="h-3.5 w-3.5" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>Copiar URL</TooltipContent>
-								</Tooltip>
-								<Tooltip>
-									<TooltipTrigger as-child>
-										<Button
-											variant="ghost"
-											size="sm"
-											class="h-7 w-7 p-0 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-											@click="confirmDelete(url)"
-										>
-											<Trash2 class="h-3.5 w-3.5" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>Eliminar</TooltipContent>
-								</Tooltip>
-							</div>
-						</TableCell>
-					</TableRow>
-				</TableBody>
-			</Table>
+
+			<div v-else class="hidden md:block">
+				<Table class="admin-table">
+					<TableHeader>
+						<TableRow class="hover:bg-transparent border-b bg-muted/20">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
+								Short Code
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11">
+								URL Original
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
+								Visitas
+							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-28">
+								Creada
+							</TableHead>
+							<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-24">
+								Acciones
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						<TableRow
+							v-for="(url, index) in adminStore.urls.data"
+							:key="url.shortCode"
+							class="group transition-all duration-150 hover:bg-muted/40 border-b border-border/50 last:border-b-0"
+						>
+							<TableCell class="pl-5 py-3.5">
+								<div class="flex items-center gap-2.5">
+									<span class="text-[10px] text-muted-foreground/40 font-mono tabular-nums w-4 text-right">
+										{{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + index + 1 }}
+									</span>
+									<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
+										/{{ url.shortCode }}
+									</code>
+								</div>
+							</TableCell>
+							<TableCell class="py-3.5">
+								<span class="text-sm truncate max-w-[300px] block text-muted-foreground/80">{{ url.originalUrl }}</span>
+							</TableCell>
+							<TableCell class="py-3.5 w-20">
+								<div class="flex items-center gap-1.5">
+									<div class="w-1 h-1 rounded-full bg-primary/40" />
+									<span class="text-sm font-semibold tabular-nums">{{ url.visits }}</span>
+								</div>
+							</TableCell>
+							<TableCell class="py-3.5 w-28">
+								<span class="text-xs text-muted-foreground/60 font-medium">{{ formatDate(url.createdAt) }}</span>
+							</TableCell>
+							<TableCell class="text-right py-3.5 pr-5 w-24">
+								<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
+									<Tooltip>
+										<TooltipTrigger as-child>
+											<Button
+												variant="ghost"
+												size="sm"
+												class="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+												@click="copyUrl(url.shortCode)"
+											>
+												<Copy class="h-3.5 w-3.5" />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>Copiar URL</TooltipContent>
+									</Tooltip>
+									<Tooltip>
+										<TooltipTrigger as-child>
+											<Button
+												variant="ghost"
+												size="sm"
+												class="h-7 w-7 p-0 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+												@click="confirmDelete(url)"
+											>
+												<Trash2 class="h-3.5 w-3.5" />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>Eliminar</TooltipContent>
+									</Tooltip>
+								</div>
+							</TableCell>
+						</TableRow>
+					</TableBody>
+				</Table>
+			</div>
+
+			<div v-if="adminStore.urls?.data.length" class="md:hidden divide-y divide-border/50">
+				<div
+					v-for="(url, index) in adminStore.urls.data"
+					:key="url.shortCode"
+					class="p-4 space-y-3"
+				>
+					<div class="flex items-center justify-between">
+						<div class="flex items-center gap-2.5">
+							<span class="text-[10px] text-muted-foreground/40 font-mono tabular-nums">
+								{{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + index + 1 }}
+							</span>
+							<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
+								/{{ url.shortCode }}
+							</code>
+						</div>
+						<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }} visitas</span>
+					</div>
+					<p class="text-xs text-muted-foreground/70 truncate leading-relaxed">{{ url.originalUrl }}</p>
+					<div class="flex items-center justify-between">
+						<span class="text-[11px] text-muted-foreground/50 font-medium">{{ formatDate(url.createdAt) }}</span>
+						<div class="flex items-center gap-1">
+							<Button
+								variant="ghost"
+								size="sm"
+								class="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+								@click="copyUrl(url.shortCode)"
+							>
+								<Copy class="h-4 w-4" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								class="h-8 w-8 p-0 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+								@click="confirmDelete(url)"
+							>
+								<Trash2 class="h-4 w-4" />
+							</Button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div
 			v-if="adminStore.urls && adminStore.urls.totalPages > 1"
-			class="flex items-center justify-between animate-fade-in-up"
+			class="flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in-up"
 			style="animation-delay: 300ms;"
 		>
-			<p class="text-xs text-muted-foreground">
+			<p class="text-xs text-muted-foreground text-center sm:text-left">
 				Mostrando {{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + 1 }}
 				- {{ Math.min(adminStore.urls.page * adminStore.urls.pageSize, adminStore.urls.total) }}
 				de {{ adminStore.urls.total }} URLs
@@ -136,7 +181,7 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-8 rounded-lg text-xs"
+					class="h-9 sm:h-8 rounded-lg text-xs px-3"
 					:disabled="adminStore.urls.page <= 1"
 					@click="goToPage(adminStore.urls.page - 1)"
 				>
@@ -148,7 +193,7 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-8 rounded-lg text-xs"
+					class="h-9 sm:h-8 rounded-lg text-xs px-3"
 					:disabled="adminStore.urls.page >= adminStore.urls.totalPages"
 					@click="goToPage(adminStore.urls.page + 1)"
 				>

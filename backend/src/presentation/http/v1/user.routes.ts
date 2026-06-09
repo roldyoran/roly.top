@@ -1,6 +1,9 @@
 import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
 import type { Bindings, Variables } from "@/utils/context";
-import { UnauthorizedError } from "@/domain/app-error";
+import { UnauthorizedError, NotFoundError } from "@/domain/app-error";
+import { shortCodeSchema } from "@/utils/schemas";
+import { validationHook } from "@/infrastructure/http/error-handler";
 
 type UserVariables = Variables & {
 	user: {
@@ -53,30 +56,26 @@ userRoutes.get("/urls", async (c) => {
 });
 
 // DELETE /v1/user/urls/:shortCode — Eliminar URL propia
-userRoutes.delete("/urls/:shortCode", async (c) => {
-	const user = c.get("user");
-	const shortCode = c.req.param("shortCode");
+userRoutes.delete(
+	"/urls/:shortCode",
+	zValidator("param", shortCodeSchema, validationHook),
+	async (c) => {
+		const user = c.get("user");
+		const { shortCode } = c.req.valid("param");
 
-	if (!user) {
-		throw new UnauthorizedError("Debes iniciar sesión para eliminar URLs");
-	}
+		if (!user) {
+			throw new UnauthorizedError("Debes iniciar sesión para eliminar URLs");
+		}
 
-	const urlRepo = c.get("urlRepo");
-	const deleted = await urlRepo.deleteByUserShortCode(user.id, shortCode);
+		const urlRepo = c.get("urlRepo");
+		const deleted = await urlRepo.deleteByUserShortCode(user.id, shortCode);
 
-	if (!deleted) {
-		return c.json(
-			{
-				success: false,
-				error: {
-					code: "NOT_FOUND",
-					message: `URL con shortCode "${shortCode}" no encontrada o no pertenece al usuario`,
-					statusCode: 404,
-				},
-			},
-			404,
-		);
-	}
+		if (!deleted) {
+			throw new NotFoundError(
+				`URL con shortCode "${shortCode}" no encontrada o no pertenece al usuario`,
+			);
+		}
 
-	return c.json({ success: true, url: deleted });
-});
+		return c.json({ success: true, url: deleted });
+	},
+);

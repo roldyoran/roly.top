@@ -54,7 +54,7 @@ describe("checkEnvMiddleware", () => {
 		const spy = spyOn(console, "warn").mockImplementation(() => {});
 
 		const { ctx } = createMockContext({
-			CLOUFLARE_D1_DATABASES_BINDING: "binding",
+			CLOUDFLARE_D1_DATABASES_BINDING: "binding",
 			CLOUDFLARE_DATABASE_ID: "db-id",
 			SERVICE_ADMIN_API_KEY: "key",
 			BETTER_AUTH_SECRET: "secret",
@@ -106,7 +106,7 @@ describe("checkEnvMiddleware", () => {
 		await checkEnvMiddleware(ctx, async () => {});
 
 		const missingKeys = [
-			"CLOUFLARE_D1_DATABASES_BINDING",
+			"CLOUDFLARE_D1_DATABASES_BINDING",
 			"CLOUDFLARE_DATABASE_ID",
 			"SERVICE_ADMIN_API_KEY",
 			"BETTER_AUTH_SECRET",

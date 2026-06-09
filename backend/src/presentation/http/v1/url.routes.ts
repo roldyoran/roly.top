@@ -1,8 +1,6 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import type { Bindings, Variables } from "@/utils/context";
-import { createDb } from "@/db";
-import { users } from "@/db/auth-schema";
 import { GetPublicUrlsUseCase } from "@/application/url/get-public-urls.usecase";
 import { shortCodeSchema, createUrlSchema } from "@/utils/schemas";
 import {
@@ -11,7 +9,6 @@ import {
 	UrlLimitReachedError,
 } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
-import { eq } from "drizzle-orm";
 
 type UrlVariables = Variables & {
 	user: { id: string } | null;
@@ -23,19 +20,9 @@ const urlRoutes = new Hono<{ Bindings: Bindings; Variables: UrlVariables }>();
 // GET /v1/urls/public — lista pública de URLs (solo de usuarios admin)
 urlRoutes.get("/public", async (c) => {
 	const urlRepo = c.get("urlRepo");
+	const userRepo = c.get("userRepo");
 
-	const adminProvider = {
-		async getAdminUserIds(): Promise<string[]> {
-			const db = createDb(c.env.DB);
-			const adminUsers = await db
-				.select({ id: users.id })
-				.from(users)
-				.where(eq(users.role, "admin"));
-			return adminUsers.map((u) => u.id);
-		},
-	};
-
-	const useCase = new GetPublicUrlsUseCase(urlRepo, adminProvider);
+	const useCase = new GetPublicUrlsUseCase(urlRepo, userRepo);
 	const urls = await useCase.execute();
 	return c.json(urls);
 });
@@ -53,16 +40,13 @@ urlRoutes.get("/", async (c) => {
 
 	// Obtener el límite del usuario para incluirlo en la respuesta
 	const ADMIN_URL_LIMIT = 999;
-	const db = createDb(c.env.DB);
-	const [dbUser] = await db
-		.select({ role: users.role, urlLimit: users.urlLimit })
-		.from(users)
-		.where(eq(users.id, user.id))
-		.limit(1);
+	const userRepo = c.get("userRepo");
+	const dbUser = await userRepo.findLimitAndRoleById(user.id);
 
 	return c.json({
 		urls,
-		urlLimit: dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2),
+		urlLimit:
+			dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2),
 	});
 });
 
@@ -80,24 +64,21 @@ urlRoutes.post(
 
 		const { originalUrl, shortCode } = c.req.valid("json");
 		const urlRepo = c.get("urlRepo");
+		const userRepo = c.get("userRepo");
 
 		// Verificar límite de URLs
 		const ADMIN_URL_LIMIT = 999;
-		const db = createDb(c.env.DB);
-		const [dbUser] = await db
-			.select({ role: users.role, urlLimit: users.urlLimit })
-			.from(users)
-			.where(eq(users.id, user.id))
-			.limit(1);
+		const dbUser = await userRepo.findLimitAndRoleById(user.id);
 
-		const limit = dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2);
+		const limit =
+			dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2);
 		const count = await urlRepo.countByUserId(user.id);
 		if (count >= limit) {
 			throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
 		}
 
 		// Verificar si la URL ya existe para este usuario
-		const existing = await urlRepo.findByOriginalUrl(originalUrl);
+		const existing = await urlRepo.findByOriginalUrl(originalUrl, user.id);
 		if (existing) {
 			return c.json(existing, 200);
 		}
@@ -123,7 +104,7 @@ urlRoutes.get(
 		}
 
 		const urlRepo = c.get("urlRepo");
-		const url = await urlRepo.findByShortCode(shortCode);
+		const url = await urlRepo.findByUserShortCode(user.id, shortCode);
 
 		if (!url) {
 			throw new NotFoundError("URL no encontrada");

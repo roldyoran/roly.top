@@ -1,15 +1,15 @@
 <template>
-	<div class="space-y-8">
+	<div class="space-y-6 sm:space-y-8">
 		<div class="animate-fade-in-up">
-			<h1 class="font-display text-2xl font-bold tracking-tight">Dashboard</h1>
-			<p class="text-muted-foreground text-sm mt-1">Vista general del sistema</p>
+			<h1 class="font-display text-xl sm:text-2xl font-bold tracking-tight">Dashboard</h1>
+			<p class="text-muted-foreground text-xs sm:text-sm mt-1">Vista general del sistema</p>
 		</div>
 
-		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<div class="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
 			<div
 				v-for="(stat, index) in statCards"
 				:key="stat.label"
-				class="group relative overflow-hidden rounded-2xl border bg-card p-5 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
+				class="group relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-5 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
 				:style="{ animationDelay: `${index * 80}ms` }"
 			>
 				<div
@@ -18,25 +18,25 @@
 				/>
 				<div class="relative flex items-start justify-between">
 					<div>
-						<p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ stat.label }}</p>
-						<p class="text-3xl font-bold mt-2 tracking-tight font-display">{{ stat.value }}</p>
+						<p class="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ stat.label }}</p>
+						<p class="text-2xl sm:text-3xl font-bold mt-1.5 sm:mt-2 tracking-tight font-display">{{ stat.value }}</p>
 					</div>
-				<div
-					class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-					:class="stat.iconBg"
-				>
-						<component :is="stat.icon" class="w-5 h-5" :class="stat.iconColor" />
+					<div
+						class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+						:class="stat.iconBg"
+					>
+						<component :is="stat.icon" class="w-4 h-4 sm:w-5 sm:h-5" :class="stat.iconColor" />
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="grid gap-6 md:grid-cols-2">
+		<div class="grid gap-4 sm:gap-6 md:grid-cols-2">
 			<div class="rounded-2xl border bg-card overflow-hidden animate-fade-in-up" style="animation-delay: 300ms;">
-				<div class="px-6 py-4 border-b bg-muted/30">
+				<div class="px-4 sm:px-6 py-3 sm:py-4 border-b bg-muted/30">
 					<div class="flex items-center gap-2">
 						<Link class="w-4 h-4 text-primary" />
-						<h2 class="font-display text-sm font-semibold">URLs Recientes</h2>
+						<h2 class="font-display text-xs sm:text-sm font-semibold">URLs Recientes</h2>
 					</div>
 				</div>
 				<div class="p-2">
@@ -51,25 +51,25 @@
 						<div
 							v-for="url in adminStore.urls.data.slice(0, 5)"
 							:key="url.shortCode"
-							class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/50"
+							class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/50"
 						>
-							<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2 py-0.5 rounded-md">/{{ url.shortCode }}</code>
-							<span class="text-muted-foreground truncate flex-1 text-xs">{{ url.originalUrl }}</span>
-							<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }}</span>
+							<code class="font-mono text-primary font-semibold text-[10px] sm:text-xs bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded-md">{{ url.shortCode }}</code>
+							<span class="text-muted-foreground truncate flex-1 text-[10px] sm:text-xs">{{ url.originalUrl }}</span>
+							<span class="text-[10px] sm:text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }}</span>
 						</div>
 					</div>
-					<div v-else class="p-8 text-center">
-						<Link class="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
-						<p class="text-xs text-muted-foreground">No hay URLs</p>
+					<div v-else class="p-6 sm:p-8 text-center">
+						<Link class="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-muted-foreground/40" />
+						<p class="text-[10px] sm:text-xs text-muted-foreground">No hay URLs</p>
 					</div>
 				</div>
 			</div>
 
 			<div class="rounded-2xl border bg-card overflow-hidden animate-fade-in-up" style="animation-delay: 400ms;">
-				<div class="px-6 py-4 border-b bg-muted/30">
+				<div class="px-4 sm:px-6 py-3 sm:py-4 border-b bg-muted/30">
 					<div class="flex items-center gap-2">
 						<Users class="w-4 h-4 text-primary" />
-						<h2 class="font-display text-sm font-semibold">Usuarios Recientes</h2>
+						<h2 class="font-display text-xs sm:text-sm font-semibold">Usuarios Recientes</h2>
 					</div>
 				</div>
 				<div class="p-2">
@@ -84,24 +84,24 @@
 						<div
 							v-for="user in adminStore.users.data.slice(0, 5)"
 							:key="user.id"
-							class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/50"
+							class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/50"
 						>
-							<img v-if="user.image" :src="user.image" :alt="user.name" class="w-7 h-7 rounded-full ring-2 ring-background" />
-							<div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-[10px] font-bold text-primary">
+							<img v-if="user.image" :src="user.image" :alt="user.name" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full ring-2 ring-background" />
+							<div v-else class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-primary">
 								{{ user.name.charAt(0).toUpperCase() }}
 							</div>
-							<span class="truncate flex-1 font-medium text-xs">{{ user.name }}</span>
+							<span class="truncate flex-1 font-medium text-[10px] sm:text-xs">{{ user.name }}</span>
 							<Badge
 								:variant="user.role === 'admin' ? 'default' : 'secondary'"
-								class="text-[10px] px-1.5 py-0 h-5 font-medium"
+								class="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0 h-4 sm:h-5 font-medium"
 							>
 								{{ user.role }}
 							</Badge>
 						</div>
 					</div>
-					<div v-else class="p-8 text-center">
-						<Users class="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
-						<p class="text-xs text-muted-foreground">No hay usuarios</p>
+					<div v-else class="p-6 sm:p-8 text-center">
+						<Users class="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-muted-foreground/40" />
+						<p class="text-[10px] sm:text-xs text-muted-foreground">No hay usuarios</p>
 					</div>
 				</div>
 			</div>

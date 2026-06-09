@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { SavedUrlItem } from "@/api/types";
-import { getUrlsRequest } from "@/api/http";
 
 export type { SavedUrlItem };
 
@@ -151,19 +150,10 @@ export const useUrlStore = defineStore("urlStore", () => {
 	// Función de inicialización
 	function initialize(userId?: string) {
 		loadSavedUrls(userId);
-		fetchUrlLimit();
 	}
 
-	// Obtener el límite de URLs del backend
-	async function fetchUrlLimit() {
-		try {
-			const response = await getUrlsRequest();
-			if (response && typeof response === "object" && "urlLimit" in response) {
-				urlLimit.value = response.urlLimit;
-			}
-		} catch {
-			// Silenciar errores - mantener el valor por defecto
-		}
+	function setUrlLimitFromRole(role?: string) {
+		urlLimit.value = role === "admin" ? 999 : 2;
 	}
 
 	// Funciones para debugging
@@ -195,6 +185,7 @@ export const useUrlStore = defineStore("urlStore", () => {
 		clearAllUrls,
 		clearUserUrls,
 		setUrlLimit,
+		setUrlLimitFromRole,
 
 		// Acciones - Navegación
 		setCurrentTab,
@@ -205,7 +196,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 		// Inicialización
 		initialize,
-		fetchUrlLimit,
 
 		// Debug
 		getDebugInfo,

@@ -15,9 +15,10 @@ export class CreateUrlUseCase {
 	constructor(private readonly urlRepository: UrlRepositoryPort) {}
 
 	async execute(input: CreateUrlInput): Promise<UrlEntity> {
-		// Si la URL original ya existe, devolver la entrada existente
+		// Si la URL original ya existe para este usuario, devolver la entrada existente
 		const existingByUrl = await this.urlRepository.findByOriginalUrl(
 			input.originalUrl,
+			input.userId,
 		);
 		if (existingByUrl) {
 			return existingByUrl;
@@ -33,6 +34,9 @@ export class CreateUrlUseCase {
 			}
 		}
 
+		if (input.userId) {
+			return this.urlRepository.createForUser(input.userId, input);
+		}
 		return this.urlRepository.create(input);
 	}
 }
