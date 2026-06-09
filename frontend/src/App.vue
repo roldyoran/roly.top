@@ -4,7 +4,12 @@
     <div class="bg-glow-center" aria-hidden="true" />
     <Toaster class="pointer-events-auto" />
 
-    <NavbarHeader :attempts="attempts" />
+    <!-- Banned user: show ban screen -->
+    <BannedView v-if="authStore.isBanned" />
+
+    <!-- Normal app -->
+    <template v-else>
+      <NavbarHeader :attempts="attempts" />
 
     <!-- Admin routes: render via RouterView -->
     <div v-if="isAdminRoute" class="relative z-10 flex-grow">
@@ -108,6 +113,7 @@
 
       <FooterComponent :attempts="attempts" />
     </template>
+    </template>
   </div>
 </template>
 
@@ -128,6 +134,7 @@ import UrlInfoForm from "@/components/features/url-info/UrlInfoForm.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
 import FooterComponent from "@/components/layout/FooterComponent.vue";
 import NavbarHeader from "@/components/layout/NavbarHeader.vue";
+import BannedView from "@/views/BannedView.vue";
 import HomeView from "@/views/HomeView.vue";
 
 type Tab = "info" | "myurls" | "list" | "qr";
