@@ -294,7 +294,11 @@ import {
 	TooltipProvider,
 } from "@/components/ui/tooltip";
 import QRCode from "qrcode-generator";
-import { getUrlsRequest, getPublicUrlsRequest, getApiBaseUrl } from "@/api/http";
+import {
+	getUrlsRequest,
+	getPublicUrlsRequest,
+	getAppBaseUrl,
+} from "@/api/http";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlStore } from "@/stores/urlStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -329,8 +333,6 @@ const isMyList = computed(() => props.mode === "my");
 const urlStore = useUrlStore();
 const authStore = useAuthStore();
 const { copyToClipboard } = useCopyToClipboard();
-
-const baseUrl = getApiBaseUrl();
 
 // Public list state
 const shortUrls = ref<UrlInfoResponse[]>([]);
@@ -432,7 +434,7 @@ const shouldUseScroll = computed(() => {
 });
 
 const getFullShortUrl = (shortCode: string): string => {
-	return `${baseUrl.replace(/\/$/, "")}/${shortCode}`;
+	return `${getAppBaseUrl()}/${shortCode}`;
 };
 
 const copyFullUrl = (shortCode: string) => {
@@ -575,7 +577,12 @@ const loadUrls = async () => {
 			? await getUrlsRequest()
 			: await getPublicUrlsRequest();
 
-		if (isMyList.value && response && typeof response === "object" && "urls" in response) {
+		if (
+			isMyList.value &&
+			response &&
+			typeof response === "object" &&
+			"urls" in response
+		) {
 			// Respuesta del nuevo formato: { urls: UrlInfoResponse[], urlLimit: number }
 			const { urls, urlLimit } = response;
 			urlStore.setUrlLimit(urlLimit);
@@ -635,7 +642,12 @@ watch(isMyList, (value) => {
 	if (!value && shortUrls.value.length === 0) {
 		loadUrls();
 	}
-	if (value && authStore.isAuthenticated && urlStore.savedUrls.length > 0 && shortUrls.value.length === 0) {
+	if (
+		value &&
+		authStore.isAuthenticated &&
+		urlStore.savedUrls.length > 0 &&
+		shortUrls.value.length === 0
+	) {
 		loadUrls();
 	}
 });

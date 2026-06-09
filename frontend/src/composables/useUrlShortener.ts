@@ -1,6 +1,6 @@
 import { useUrlStore } from "@/stores/urlStore";
 import { toast } from "vue-sonner";
-import { shortenUrlRequest, getApiBaseUrl } from "@/api/http";
+import { shortenUrlRequest, getAppBaseUrl } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
 
 /**
@@ -53,7 +53,7 @@ export const useUrlShortener = () => {
 				urlStore.addUrl(data.originalUrl, data.shortCode);
 
 				// Construir URL completa y mostrar notificación de éxito
-				const builtShortUrl = `${getApiBaseUrl().replace(/\/$/, "")}/${data.shortCode}`;
+				const builtShortUrl = `${getAppBaseUrl()}/${data.shortCode}`;
 				toast.success("¡URL acortada exitosamente!", {
 					description: `URL corta: ${builtShortUrl}`,
 				});
@@ -71,8 +71,13 @@ export const useUrlShortener = () => {
 				return { success: false };
 			}
 		} catch (error: any) {
-			if (error?.response?.status === 409 && error?.response?.data?.error?.code === "URL_LIMIT_REACHED") {
-				const message = error?.response?.data?.error?.message || `Límite de ${urlStore.urlLimit} URLs alcanzado`;
+			if (
+				error?.response?.status === 409 &&
+				error?.response?.data?.error?.code === "URL_LIMIT_REACHED"
+			) {
+				const message =
+					error?.response?.data?.error?.message ||
+					`Límite de ${urlStore.urlLimit} URLs alcanzado`;
 				toast.error("Límite alcanzado", {
 					description: message,
 				});

@@ -6,7 +6,7 @@
           <Link class="w-4 h-4 text-primary" />
         </div>
         <div>
-          <span class="font-display font-800 text-[17px] text-foreground tracking-tight">ShortURL</span>
+          <span class="font-display font-800 text-[17px] text-foreground tracking-tight">roly.top</span>
           <span class="block font-mono text-[11px] tracking-wider text-muted-foreground leading-none -mt-0.5">by roldyoran</span>
         </div>
         <div class="w-2 h-2 rounded-full bg-primary animate-pulse ml-1"></div>
@@ -174,7 +174,15 @@
 </template>
 
 <script setup lang="ts">
-import { Link, Info, Github, User, Menu, LogOut, Shield } from "lucide-vue-next";
+import {
+	Link,
+	Info,
+	Github,
+	User,
+	Menu,
+	LogOut,
+	Shield,
+} from "lucide-vue-next";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
 	Drawer,

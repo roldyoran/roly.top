@@ -6,9 +6,7 @@ import { getApiBaseUrl } from "@/api/http";
 // Apunta al backend donde están montadas las rutas /api/auth/*
 export const authClient = createAuthClient({
 	baseURL: getApiBaseUrl(),
-	plugins: [
-		adminClient(),
-	],
+	plugins: [adminClient()],
 });
 
 export const { signIn, signOut, useSession } = authClient;

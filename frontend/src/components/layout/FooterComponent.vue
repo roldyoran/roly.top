@@ -9,7 +9,7 @@
             <div class="w-6 h-6 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
               <Link class="w-3 h-3 text-primary-foreground" />
             </div>
-            <h3 class="font-bold text-sm">ShortURL</h3>
+            <h3 class="font-bold text-sm">roly.top</h3>
           </div>
           <div class="flex items-center gap-2 text-xs text-muted-foreground">
             <div class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
@@ -37,7 +37,7 @@
         <!-- Copyright -->
         <div class="text-center">
           <p class="text-xs text-muted-foreground">
-              &copy; {{ new Intl.DateTimeFormat('es-ES', { year: 'numeric' }).format(new Date()) }} ShortURL • Open Source
+              &copy; {{ new Intl.DateTimeFormat('es-ES', { year: 'numeric' }).format(new Date()) }} roly.top • Open Source
             </p>
         </div>
       </div>
@@ -51,7 +51,7 @@
               <div class="w-7 h-7 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
                 <Link class="w-4 h-4 text-primary-foreground" />
               </div>
-              <h3 class="font-bold text-base">ShortURL</h3>
+              <h3 class="font-bold text-base">roly.top</h3>
             </div>
             <p class="text-xs text-muted-foreground leading-relaxed">
               Acortador de URLs rápido y seguro. 
@@ -122,7 +122,7 @@
         <div class="border-t mt-6 pt-4">
           <div class="flex flex-col md:flex-row justify-between items-center gap-3">
             <p class="text-xs text-muted-foreground">
-              &copy; {{ new Intl.DateTimeFormat('es-ES', { year: 'numeric' }).format(new Date()) }} ShortURL • API & Frontend
+              &copy; {{ new Intl.DateTimeFormat('es-ES', { year: 'numeric' }).format(new Date()) }} roly.top • API & Frontend
             </p>
             
             <div class="flex items-center gap-4">

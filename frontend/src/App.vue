@@ -19,18 +19,19 @@
               <div class="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  aria-label="Ver información de URL"
-                  :aria-pressed="activeTab === 'info'"
-                  @click="activeTab = 'info'"
+                  aria-label="Lista pública de URLs"
+                  :aria-pressed="activeTab === 'list'"
+                  @click="activeTab = 'list'"
+                  class="col-span-2"
                   :class="[
                     'flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors duration-200',
-                    activeTab === 'info'
+                    activeTab === 'list'
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'bg-background hover:bg-muted'
                   ]"
                 >
-                  <Info class="w-5 h-5" />
-                  <span class="text-xs font-medium">Ver Info</span>
+                  <List class="w-5 h-5" />
+                  <span class="text-xs font-medium">Lista Pública</span>
                 </button>
 
                 <button
@@ -51,19 +52,18 @@
 
                 <button
                   type="button"
-                  aria-label="Lista pública de URLs"
-                  :aria-pressed="activeTab === 'list'"
-                  @click="activeTab = 'list'"
-                  class="col-span-2"
+                  aria-label="Ver información de URL"
+                  :aria-pressed="activeTab === 'info'"
+                  @click="activeTab = 'info'"
                   :class="[
                     'flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors duration-200',
-                    activeTab === 'list'
+                    activeTab === 'info'
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'bg-background hover:bg-muted'
                   ]"
                 >
-                  <List class="w-5 h-5" />
-                  <span class="text-xs font-medium">Lista Pública</span>
+                  <Info class="w-5 h-5" />
+                  <span class="text-xs font-medium">Ver Info</span>
                 </button>
 
                 <button
@@ -87,11 +87,11 @@
 
             <TabsList class="hidden sm:grid w-full max-w-md mx-auto grid-cols-4 bg-muted/50 p-1 rounded-lg">
               <TabsTrigger
-                value="info"
+                value="list"
                 class="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md transition-colors"
               >
-                <Info class="w-4 h-4" />
-                <span>Información</span>
+                <List class="w-4 h-4" />
+                <span>URLs públicas</span>
               </TabsTrigger>
               <TabsTrigger
                 value="myurls"
@@ -101,11 +101,11 @@
                 <span>Mis URLs</span>
               </TabsTrigger>
               <TabsTrigger
-                value="list"
+                value="info"
                 class="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-md transition-colors"
               >
-                <List class="w-4 h-4" />
-                <span>Lista URLs</span>
+                <Info class="w-4 h-4" />
+                <span>Información</span>
               </TabsTrigger>
               <TabsTrigger
                 value="qr"
@@ -119,14 +119,14 @@
             <div class="mt-6">
               <Transition name="tab-fade" mode="out-in">
                 <div :key="activeTab">
-                  <TabsContent value="info">
-                    <UrlInfoForm />
+                  <TabsContent value="list">
+                    <UrlsList mode="public" />
                   </TabsContent>
                   <TabsContent value="myurls">
                     <UrlsList mode="my" />
                   </TabsContent>
-                  <TabsContent value="list">
-                    <UrlsList mode="public" />
+                  <TabsContent value="info">
+                    <UrlInfoForm />
                   </TabsContent>
                   <TabsContent value="qr">
                     <QrGenerator />
@@ -177,7 +177,7 @@ watchEffect(() => {
 useColorMode();
 
 const activeTab = ref<Tab>(
-	urlStore.currentTab === "shorten" ? "info" : (urlStore.currentTab as Tab),
+	urlStore.currentTab === "shorten" ? "list" : (urlStore.currentTab as Tab),
 );
 const attempts = ref(urlStore.urlCount);
 
@@ -185,7 +185,7 @@ onMounted(() => {
 	urlStore.initialize();
 	authStore.initialize();
 	activeTab.value =
-		urlStore.currentTab === "shorten" ? "info" : (urlStore.currentTab as Tab);
+		urlStore.currentTab === "shorten" ? "list" : (urlStore.currentTab as Tab);
 	attempts.value = urlStore.urlCount;
 });
 

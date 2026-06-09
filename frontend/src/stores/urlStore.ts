@@ -260,11 +260,11 @@ export const useUrlStore = defineStore("urlStore", () => {
 		isLoading,
 		currentTab,
 
-	// Getters
-	hasRemainingAttempts,
-	urlCount,
-	urlLimit,
-	canUseService,
+		// Getters
+		hasRemainingAttempts,
+		urlCount,
+		urlLimit,
+		canUseService,
 
 		// Acciones - Sesión de usuario
 		loadUserSession,
@@ -273,12 +273,12 @@ export const useUrlStore = defineStore("urlStore", () => {
 		resetAttempts,
 		decrementAttempts,
 
-	// Acciones - URLs
-	loadSavedUrls,
-	addUrl,
-	removeUrl,
-	clearAllUrls,
-	setUrlLimit,
+		// Acciones - URLs
+		loadSavedUrls,
+		addUrl,
+		removeUrl,
+		clearAllUrls,
+		setUrlLimit,
 
 		// Acciones - Navegación
 		setCurrentTab,

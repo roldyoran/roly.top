@@ -11,6 +11,15 @@ export function getApiBaseUrl(): string {
 	return "";
 }
 
+// Devuelve la URL base del frontend para construir URLs cortas
+// Preferencia: env VITE_APP_BASE_URL -> window.location.origin
+export function getAppBaseUrl(): string {
+	const envUrl = import.meta.env.VITE_APP_BASE_URL as string | undefined;
+	if (envUrl && envUrl.length > 0) return envUrl;
+	if (typeof window !== "undefined") return window.location.origin;
+	return "";
+}
+
 // Obtiene la instancia de axios configurada
 export function getAxiosInstance() {
 	const baseURL = getApiBaseUrl();

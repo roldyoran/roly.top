@@ -12,8 +12,15 @@
     </CardHeader>
     
     <CardContent class="space-y-6">
-      <!-- Search Form -->
-      <form @submit="handleSubmit" class="space-y-4">
+      <!-- Auth Required Message -->
+      <AuthRequired
+        v-if="!authStore.isAuthenticated"
+        title="Sesión requerida"
+        description="Debes iniciar sesión para ver la información de URLs."
+      />
+
+      <!-- Search Form (only when authenticated) -->
+      <form v-else @submit="handleSubmit" class="space-y-4">
         <div class="space-y-2">
           <Label for="short-url-code">Código de URL Corta</Label>
           <div class="flex gap-2">
@@ -105,6 +112,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getUrlInfoRequest } from "@/api/http";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
+import { useAuthStore } from "@/stores/authStore";
+import AuthRequired from "@/components/shared/AuthRequired.vue";
 import { formatDate } from "@/lib/utils";
 import type { UrlInfoResponse } from "@/api/types";
 import { toast } from "vue-sonner";
@@ -117,6 +126,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Composables
 const { copyToClipboard } = useCopyToClipboard();
+const authStore = useAuthStore();
 
 // Reactive state
 const shortCode = ref<string>("");
