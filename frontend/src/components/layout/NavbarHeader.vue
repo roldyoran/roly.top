@@ -13,11 +13,11 @@
       </div>
 
       <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/60">
-        <span class="font-mono text-[10px] tracking-wider text-muted-foreground">URLS ACORTADAS</span>
-        <span class="font-mono text-[10px] tracking-wider text-primary font-bold">{{ attempts }}</span>
+        <span class="font-mono text-[10px] tracking-wider text-muted-foreground">URLS</span>
+        <span class="font-mono text-[10px] tracking-wider text-primary font-bold">{{ urlStore.urlCount }}</span>
         <div class="w-px h-3 bg-border"></div>
-        <span class="font-mono text-[10px] tracking-wider text-muted-foreground">INTENTOS</span>
-        <span class="font-mono text-[10px] tracking-wider text-foreground">{{ remainingAttempts }}</span>
+        <span class="font-mono text-[10px] tracking-wider text-muted-foreground">LÍMITE</span>
+        <span class="font-mono text-[10px] tracking-wider text-foreground">{{ urlStore.urlLimit }}</span>
       </div>
 
       <div class="flex-1"></div>
@@ -119,18 +119,6 @@
                 </Button>
               </div>
 
-              <Dialog>
-                <DialogTrigger as-child>
-                  <Button variant="outline" class="w-full justify-start gap-2">
-                    <Info class="w-4 h-4" />
-                    Información
-                  </Button>
-                </DialogTrigger>
-                <DialogContent class="max-w-2xl">
-                  <ApiConfigDialog />
-                </DialogContent>
-              </Dialog>
-
               <div v-if="authStore.isAdmin" class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/50 bg-primary/10">
                 <Shield class="w-3.5 h-3.5 text-primary" />
                 <span class="font-mono text-[10px] tracking-wider text-primary font-bold">ADMIN</span>
@@ -145,17 +133,6 @@
             </div>
           </DrawerContent>
         </Drawer>
-
-        <Dialog>
-          <DialogTrigger as-child>
-            <Button variant="ghost" size="sm" class="hidden sm:flex w-9 h-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted">
-              <Info class="w-4 h-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent class="max-w-2xl">
-            <ApiConfigDialog />
-          </DialogContent>
-        </Dialog>
 
         <div v-if="authStore.isAdmin" class="hidden sm:flex items-center gap-1.5 px-3 h-8 rounded-full border border-primary/50 bg-primary/10">
           <Shield class="w-3.5 h-3.5 text-primary" />
@@ -174,16 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-	Link,
-	Info,
-	Github,
-	User,
-	Menu,
-	LogOut,
-	Shield,
-} from "lucide-vue-next";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Link, Github, User, Menu, LogOut, Shield } from "lucide-vue-next";
 import {
 	Drawer,
 	DrawerContent,
@@ -194,8 +162,6 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle.vue";
-import ApiConfigDialog from "@/components/config/ApiConfigDialog.vue";
-import { computed } from "vue";
 import { useUrlStore } from "@/stores/urlStore";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "vue-sonner";
@@ -206,9 +172,6 @@ defineProps<{
 
 const urlStore = useUrlStore();
 const authStore = useAuthStore();
-const remainingAttempts = computed(
-	() => urlStore.userSession?.remainingAttempts ?? 0,
-);
 
 async function handleSignOut() {
 	try {
