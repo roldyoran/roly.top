@@ -135,7 +135,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
-											class="h-7 w-7 p-0 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+											class="h-7 w-7 p-0 rounded-lg"
 										>
 											<MoreHorizontal class="h-4 w-4" />
 										</Button>

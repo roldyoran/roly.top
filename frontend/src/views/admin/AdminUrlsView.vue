@@ -90,7 +90,7 @@
 								<span class="text-xs text-muted-foreground/60 font-medium">{{ formatDate(url.createdAt) }}</span>
 							</TableCell>
 							<TableCell class="text-right py-3.5 pr-5 w-24">
-								<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
+								<div class="flex items-center justify-end gap-1">
 									<Tooltip>
 										<TooltipTrigger as-child>
 											<Button
