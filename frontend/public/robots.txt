@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Block private/admin areas
+Disallow: /admin/
+Disallow: /auth/
+
+Sitemap: https://roly.top/sitemap.xml

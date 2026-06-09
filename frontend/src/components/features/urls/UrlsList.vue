@@ -596,7 +596,11 @@ const downloadQR = () => {
 };
 
 const loadUrls = async () => {
-	if (!isMyList.value && !urlStore.shouldFetchPublicList() && shortUrls.value.length > 0) {
+	if (
+		!isMyList.value &&
+		!urlStore.shouldFetchPublicList() &&
+		shortUrls.value.length > 0
+	) {
 		return;
 	}
 

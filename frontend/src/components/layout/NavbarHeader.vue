@@ -1,7 +1,7 @@
 <template>
   <header class="sticky top-0 z-50 h-14 border-b border-border/50 bg-background/80 backdrop-blur-md">
     <div class="flex items-center justify-between h-full px-6 gap-4">
-      <div class="flex items-center gap-2.5">
+      <router-link :to="{ name: 'home' }" class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-md border border-border bg-card flex items-center justify-center">
           <Link class="w-4 h-4 text-primary" />
         </div>
@@ -10,7 +10,7 @@
           <span class="block font-mono text-[11px] tracking-wider text-muted-foreground leading-none -mt-0.5">by roldyoran</span>
         </div>
         <div class="w-2 h-2 rounded-full bg-primary animate-pulse ml-1"></div>
-      </div>
+      </router-link>
 
       <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/60">
         <span class="font-mono text-[10px] tracking-wider text-muted-foreground">URLS</span>

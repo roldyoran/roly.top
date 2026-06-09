@@ -129,6 +129,7 @@ import { useRoute } from "vue-router";
 import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useSeo } from "@/composables/useSeo";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
 import "vue-sonner/style.css";
@@ -198,6 +199,19 @@ const authStore = useAuthStore();
 
 const isAdminRoute = computed(() => route.path.startsWith("/admin"));
 const isAuthErrorRoute = computed(() => route.name === "auth-error");
+
+useSeo({
+	title: computed(() => {
+		if (isAdminRoute.value) return "Admin";
+		if (isAuthErrorRoute.value) return "Error de autenticación";
+		return "Acortador de URLs";
+	}),
+	robots: computed(() =>
+		isAdminRoute.value || isAuthErrorRoute.value
+			? "noindex, nofollow"
+			: "index, follow",
+	),
+});
 
 watchEffect(() => {
 	if (mode.value === "dark") {

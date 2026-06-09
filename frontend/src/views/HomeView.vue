@@ -188,35 +188,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
-import { Copy, ChevronDown } from "lucide-vue-next";
+import confetti from "canvas-confetti";
+import { ChevronDown, Copy } from "lucide-vue-next";
 import { motion } from "motion-v";
+import { computed, nextTick, ref } from "vue";
+import { toast } from "vue-sonner";
+import { z } from "zod";
+import { getAppBaseUrl } from "@/api/http";
+import AuthRequired from "@/components/shared/AuthRequired.vue";
+import UrlResultCard from "@/components/shared/UrlResultCard.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import UrlResultCard from "@/components/shared/UrlResultCard.vue";
-import AuthRequired from "@/components/shared/AuthRequired.vue";
-import { useUrlStore } from "@/stores/urlStore";
-import { useAuthStore } from "@/stores/authStore";
-import { useUrlShortener } from "@/composables/useUrlShortener";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-import { getAppBaseUrl } from "@/api/http";
-import { toast } from "vue-sonner";
-import { z } from "zod";
-import confetti from "canvas-confetti";
+import { useSeo } from "@/composables/useSeo";
+import { useUrlShortener } from "@/composables/useUrlShortener";
+import { useAuthStore } from "@/stores/authStore";
+import { useUrlStore } from "@/stores/urlStore";
 
 const urlStore = useUrlStore();
 const authStore = useAuthStore();
 const { shortenUrl, isLoading } = useUrlShortener();
 const { copyToClipboard } = useCopyToClipboard();
+
+useSeo({
+	title: "Acortador de URLs",
+	description:
+		"Acorta tus URLs de forma rápida y gratuita. Genera códigos QR, obtén estadísticas y gestiona tus enlaces cortos con roly.top.",
+	jsonLd: {
+		"@context": "https://schema.org",
+		"@type": "WebApplication",
+		name: "roly.top",
+		url: "https://roly.top",
+		description:
+			"Acorta tus URLs de forma rápida y gratuita. Genera códigos QR, obtén estadísticas y gestiona tus enlaces cortos.",
+		applicationCategory: "UtilitiesApplication",
+		operatingSystem: "Web",
+		offers: {
+			"@type": "Offer",
+			price: "0",
+			priceCurrency: "USD",
+		},
+	},
+});
 
 const SERVICE_URL = getAppBaseUrl();
 
