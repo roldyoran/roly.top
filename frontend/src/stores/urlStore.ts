@@ -108,19 +108,7 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 	// Funciones para URLs guardadas
 	function loadSavedUrls() {
-		try {
-			const stored = localStorage.getItem("savedUrls");
-			if (stored) {
-				const parsedUrls: SavedUrlItem[] = JSON.parse(stored);
-				// Remover duplicados y ordenar por fecha
-				savedUrls.value = removeDuplicateUrls(parsedUrls).sort(
-					(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-				);
-			}
-		} catch (error) {
-			console.error("Error loading saved URLs:", error);
-			savedUrls.value = [];
-		}
+		savedUrls.value = [];
 	}
 
 	function addUrl(original: string, short: string) {
@@ -130,42 +118,25 @@ export const useUrlStore = defineStore("urlStore", () => {
 			date: new Date().toISOString(),
 		};
 
-		// Agregar al inicio del array
 		savedUrls.value.unshift(newUrl);
 
-		// Mantener solo las últimas 50 URLs
 		if (savedUrls.value.length > 50) {
 			savedUrls.value = savedUrls.value.slice(0, 50);
 		}
 
-		// Remover duplicados
 		savedUrls.value = removeDuplicateUrls(savedUrls.value);
 
-		// Actualizar fecha de última URL creada por el usuario
 		lastUserUrlCreated.value = new Date().toISOString();
-		loadPublicListCache();
-
-		saveSavedUrls();
 	}
 
 	function removeUrl(original: string, short: string) {
 		savedUrls.value = savedUrls.value.filter(
 			(url) => !(url.original === original && url.short === short),
 		);
-		saveSavedUrls();
 	}
 
 	function clearAllUrls() {
 		savedUrls.value = [];
-		saveSavedUrls();
-	}
-
-	function saveSavedUrls() {
-		try {
-			localStorage.setItem("savedUrls", JSON.stringify(savedUrls.value));
-		} catch (error) {
-			console.error("Error saving URLs:", error);
-		}
 	}
 
 	function removeDuplicateUrls(urlList: SavedUrlItem[]): SavedUrlItem[] {
@@ -178,35 +149,8 @@ export const useUrlStore = defineStore("urlStore", () => {
 	}
 
 	// Funciones para el cache de la lista pública
-	function loadPublicListCache() {
-		try {
-			const stored = localStorage.getItem("publicListCache");
-			if (stored) {
-				const cache = JSON.parse(stored);
-				lastPublicListFetch.value = cache.lastFetch;
-				lastUserUrlCreated.value = cache.lastUserUrlCreated;
-			}
-		} catch (error) {
-			console.error("Error loading public list cache:", error);
-		}
-	}
-
-	function savePublicListCache() {
-		try {
-			localStorage.setItem(
-				"publicListCache",
-				JSON.stringify({
-					lastFetch: lastPublicListFetch.value,
-					lastUserUrlCreated: lastUserUrlCreated.value,
-				}),
-			);
-		} catch (error) {
-			console.error("Error saving public list cache:", error);
-		}
-	}
-
 	function shouldFetchPublicList(): boolean {
-		const now = new Date().getTime();
+		const now = Date.now();
 
 		if (!lastPublicListFetch.value) {
 			return true;
@@ -218,8 +162,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 			? now - new Date(lastUserUrlCreated.value).getTime()
 			: 0;
 
-		// Fetch si han pasado más de 5 min desde la última llamada
-		// O si el usuario creó una URL hace menos de 5 min (para mostrar la nueva URL)
 		return (
 			timeSinceLastFetch >= CACHE_DURATION_MS ||
 			timeSinceLastUserUrl < CACHE_DURATION_MS
@@ -228,7 +170,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 	function updatePublicListFetchTime() {
 		lastPublicListFetch.value = new Date().toISOString();
-		savePublicListCache();
 	}
 
 	// Funciones de navegación
@@ -240,7 +181,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 	function initialize() {
 		loadUserSession();
 		loadSavedUrls();
-		loadPublicListCache();
 	}
 
 	// Funciones para debugging (solo desarrollo)
