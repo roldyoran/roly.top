@@ -17,12 +17,8 @@ export const useUrlStore = defineStore("urlStore", () => {
 	// Estado de la aplicación
 	const isLoading = ref(false);
 	const currentTab = ref<"shorten" | "info" | "myurls" | "list">("shorten");
-	const urlLimit = ref(2); // Límite de URLs por usuario (default 2)
-
-	// Cache para evitar llamadas excesivas a la API
-	const lastPublicListFetch = ref<string | null>(null);
-	const lastUserUrlCreated = ref<string | null>(null);
-	const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutos
+	const urlLimit = ref(2);
+	const currentUserId = ref<string | null>(null);
 
 	// Getters computados
 	const hasRemainingAttempts = computed(
@@ -36,6 +32,10 @@ export const useUrlStore = defineStore("urlStore", () => {
 		return Date.now().toString(36) + Math.random().toString(36).substr(2);
 	}
 
+	function getUrlStorageKey(userId: string): string {
+		return `savedUrls_${userId}`;
+	}
+
 	function setUrlLimit(limit: number) {
 		urlLimit.value = limit;
 	}
@@ -45,7 +45,7 @@ export const useUrlStore = defineStore("urlStore", () => {
 		const now = new Date();
 		const hoursSinceReset =
 			(now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
-		return hoursSinceReset >= 24; // Reset cada 24 horas
+		return hoursSinceReset >= 24;
 	}
 
 	// Acciones del store
@@ -55,7 +55,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 			if (stored) {
 				const parsedSession = JSON.parse(stored) as UserSession;
 
-				// Verificar si necesita reset por tiempo
 				if (shouldResetAttempts()) {
 					resetAttempts();
 				} else {
@@ -65,7 +64,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 					};
 				}
 			} else {
-				// Nueva sesión
 				saveUserSession();
 			}
 		} catch (error) {
@@ -106,9 +104,41 @@ export const useUrlStore = defineStore("urlStore", () => {
 		return false;
 	}
 
-	// Funciones para URLs guardadas
-	function loadSavedUrls() {
-		savedUrls.value = [];
+	// Funciones para URLs guardadas (por usuario en localStorage)
+	function loadSavedUrls(userId?: string) {
+		const uid = userId || currentUserId.value;
+		if (!uid) {
+			savedUrls.value = [];
+			return;
+		}
+
+		currentUserId.value = uid;
+
+		try {
+			const key = getUrlStorageKey(uid);
+			const stored = localStorage.getItem(key);
+			if (stored) {
+				const parsed: SavedUrlItem[] = JSON.parse(stored);
+				savedUrls.value = parsed.sort(
+					(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+				);
+			} else {
+				savedUrls.value = [];
+			}
+		} catch (error) {
+			console.error("Error loading saved URLs:", error);
+			savedUrls.value = [];
+		}
+	}
+
+	function saveSavedUrls() {
+		if (!currentUserId.value) return;
+		try {
+			const key = getUrlStorageKey(currentUserId.value);
+			localStorage.setItem(key, JSON.stringify(savedUrls.value));
+		} catch (error) {
+			console.error("Error saving URLs:", error);
+		}
 	}
 
 	function addUrl(original: string, short: string) {
@@ -126,17 +156,28 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 		savedUrls.value = removeDuplicateUrls(savedUrls.value);
 
-		lastUserUrlCreated.value = new Date().toISOString();
+		saveSavedUrls();
 	}
 
 	function removeUrl(original: string, short: string) {
 		savedUrls.value = savedUrls.value.filter(
 			(url) => !(url.original === original && url.short === short),
 		);
+		saveSavedUrls();
 	}
 
 	function clearAllUrls() {
 		savedUrls.value = [];
+		saveSavedUrls();
+	}
+
+	function clearUserUrls(userId?: string) {
+		const uid = userId || currentUserId.value;
+		if (uid) {
+			localStorage.removeItem(getUrlStorageKey(uid));
+		}
+		savedUrls.value = [];
+		currentUserId.value = null;
 	}
 
 	function removeDuplicateUrls(urlList: SavedUrlItem[]): SavedUrlItem[] {
@@ -148,48 +189,25 @@ export const useUrlStore = defineStore("urlStore", () => {
 		});
 	}
 
-	// Funciones para el cache de la lista pública
-	function shouldFetchPublicList(): boolean {
-		const now = Date.now();
-
-		if (!lastPublicListFetch.value) {
-			return true;
-		}
-
-		const timeSinceLastFetch =
-			now - new Date(lastPublicListFetch.value).getTime();
-		const timeSinceLastUserUrl = lastUserUrlCreated.value
-			? now - new Date(lastUserUrlCreated.value).getTime()
-			: 0;
-
-		return (
-			timeSinceLastFetch >= CACHE_DURATION_MS ||
-			timeSinceLastUserUrl < CACHE_DURATION_MS
-		);
-	}
-
-	function updatePublicListFetchTime() {
-		lastPublicListFetch.value = new Date().toISOString();
-	}
-
 	// Funciones de navegación
 	function setCurrentTab(tab: typeof currentTab.value) {
 		currentTab.value = tab;
 	}
 
 	// Función de inicialización
-	function initialize() {
+	function initialize(userId?: string) {
 		loadUserSession();
-		loadSavedUrls();
+		loadSavedUrls(userId);
 	}
 
-	// Funciones para debugging (solo desarrollo)
+	// Funciones para debugging
 	function getDebugInfo() {
 		return {
 			session: userSession.value,
 			urlCount: savedUrls.value.length,
 			canUse: canUseService.value,
 			shouldReset: shouldResetAttempts(),
+			userId: currentUserId.value,
 		};
 	}
 
@@ -199,6 +217,7 @@ export const useUrlStore = defineStore("urlStore", () => {
 		userSession,
 		isLoading,
 		currentTab,
+		currentUserId,
 
 		// Getters
 		hasRemainingAttempts,
@@ -218,19 +237,16 @@ export const useUrlStore = defineStore("urlStore", () => {
 		addUrl,
 		removeUrl,
 		clearAllUrls,
+		clearUserUrls,
 		setUrlLimit,
 
 		// Acciones - Navegación
 		setCurrentTab,
 
-		// Acciones - Cache de lista pública
-		shouldFetchPublicList,
-		updatePublicListFetchTime,
-
 		// Inicialización
 		initialize,
 
-		// Debug (solo desarrollo)
+		// Debug
 		getDebugInfo,
 	};
 });

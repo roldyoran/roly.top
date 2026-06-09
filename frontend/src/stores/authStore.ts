@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useAuth } from "@/composables/useAuth";
+import { useUrlStore } from "@/stores/urlStore";
 
 interface AuthUser {
 	id: string;
@@ -40,6 +41,8 @@ export const useAuthStore = defineStore("authStore", () => {
 		};
 	});
 
+	const userId = computed(() => currentUser.value?.id ?? null);
+
 	const userName = computed(() => currentUser.value?.name ?? "");
 	const userEmail = computed(() => currentUser.value?.email ?? "");
 	const userImage = computed(() => currentUser.value?.image ?? null);
@@ -60,10 +63,19 @@ export const useAuthStore = defineStore("authStore", () => {
 	}
 
 	function resetAuth() {
+		const urlStore = useUrlStore();
+		urlStore.clearUserUrls(userId.value);
 		user.value = null;
 		session.value = null;
 		isInitialized.value = false;
 	}
+
+	watch(userId, (newId, oldId) => {
+		if (newId && newId !== oldId) {
+			const urlStore = useUrlStore();
+			urlStore.initialize(newId);
+		}
+	});
 
 	return {
 		user,
@@ -75,6 +87,7 @@ export const useAuthStore = defineStore("authStore", () => {
 		isLoading,
 		isInitialized,
 		currentUser,
+		userId,
 		userName,
 		userEmail,
 		userImage,
