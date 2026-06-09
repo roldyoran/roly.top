@@ -47,6 +47,9 @@
 							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
 								Short Code
 							</TableHead>
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-40">
+								Propietario
+							</TableHead>
 							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11">
 								URL Original
 							</TableHead>
@@ -76,6 +79,9 @@
 										/{{ url.shortCode }}
 									</code>
 								</div>
+							</TableCell>
+							<TableCell class="py-3.5 w-36">
+								<span class="text-sm truncate max-w-[180px] block text-muted-foreground/80">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
 							</TableCell>
 							<TableCell class="py-3.5">
 								<span class="text-sm truncate max-w-[300px] block text-muted-foreground/80">{{ url.originalUrl }}</span>
@@ -138,6 +144,7 @@
 							<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
 								/{{ url.shortCode }}
 							</code>
+							<span class="text-xs text-muted-foreground/60 ml-3 truncate">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
 						</div>
 						<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }} visitas</span>
 					</div>
@@ -224,7 +231,7 @@ import { Copy, Link, Search, Trash2 } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { toast } from "vue-sonner";
 import type { AdminUrl } from "@/api/admin";
-import { deleteAdminUrl } from "@/api/admin";
+import { deleteAdminUrl, getAdminUser } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
 import { Button } from "@/components/ui/button";
 import {
@@ -260,6 +267,9 @@ const searchQuery = ref("");
 const deleteOpen = ref(false);
 const selectedUrl = ref<AdminUrl | null>(null);
 
+// map of userId -> name for owners of the displayed URLs
+const ownerNames = ref<Record<string, string>>({});
+
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 function formatDate(dateStr: string): string {
@@ -272,13 +282,45 @@ function formatDate(dateStr: string): string {
 
 function onSearch() {
 	clearTimeout(searchTimeout);
-	searchTimeout = setTimeout(() => {
-		adminStore.fetchUrls(1, 20, searchQuery.value || undefined);
+	searchTimeout = setTimeout(async () => {
+		await adminStore.fetchUrls(1, 20, searchQuery.value || undefined);
+		// load owner names for the fetched urls
+		const urls = adminStore.urls?.data ?? [];
+		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+		await Promise.all(
+			ids
+				.filter((id) => id && !ownerNames.value[id])
+				.map(async (id) => {
+					try {
+						const user = await getAdminUser(id);
+						ownerNames.value[id] = user.name;
+					} catch (err) {
+						ownerNames.value[id] = "Unknown";
+						console.error("[AdminUrls] loadOwners error", err);
+					}
+				}),
+		);
 	}, 300);
 }
 
 function goToPage(page: number) {
-	adminStore.fetchUrls(page, 20, searchQuery.value || undefined);
+	adminStore.fetchUrls(page, 20, searchQuery.value || undefined).then(async () => {
+		const urls = adminStore.urls?.data ?? [];
+		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+		await Promise.all(
+			ids
+				.filter((id) => id && !ownerNames.value[id])
+				.map(async (id) => {
+					try {
+						const user = await getAdminUser(id);
+						ownerNames.value[id] = user.name;
+					} catch (err) {
+						ownerNames.value[id] = "Unknown";
+						console.error("[AdminUrls] loadOwners error", err);
+					}
+				}),
+		);
+	});
 }
 
 function copyUrl(shortCode: string) {
@@ -296,17 +338,48 @@ async function handleDeleteConfirm() {
 		await deleteAdminUrl(selectedUrl.value.shortCode);
 		toast.success("URL eliminada");
 		deleteOpen.value = false;
-		adminStore.fetchUrls(
+		await adminStore.fetchUrls(
 			adminStore.urls?.page ?? 1,
 			20,
 			searchQuery.value || undefined,
+		);
+		// refresh owners
+		const urls = adminStore.urls?.data ?? [];
+		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+		await Promise.all(
+			ids
+				.filter((id) => id && !ownerNames.value[id])
+				.map(async (id) => {
+					try {
+						const user = await getAdminUser(id);
+						ownerNames.value[id] = user.name;
+					} catch (err) {
+						ownerNames.value[id] = "Unknown";
+						console.error("[AdminUrls] loadOwners error", err);
+					}
+				}),
 		);
 	} catch {
 		toast.error("Error al eliminar la URL");
 	}
 }
 
-onMounted(() => {
-	adminStore.fetchUrls(1, 20);
+onMounted(async () => {
+	await adminStore.fetchUrls(1, 20);
+	const urls = adminStore.urls?.data ?? [];
+	const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+	await Promise.all(
+		ids
+			.filter((id) => id)
+			.map(async (id) => {
+				try {
+					const user = await getAdminUser(id);
+					ownerNames.value[id] = user.name;
+				} catch (err) {
+					ownerNames.value[id] = "Unknown";
+					console.error("[AdminUrls] loadOwners error", err);
+				}
+			}),
+	);
 });
 </script>
