@@ -5,7 +5,11 @@ import { createDb } from "@/db";
 import { users } from "@/db/auth-schema";
 import { GetPublicUrlsUseCase } from "@/application/url/get-public-urls.usecase";
 import { shortCodeSchema, createUrlSchema } from "@/utils/schemas";
-import { NotFoundError, UnauthorizedError, UrlLimitReachedError } from "@/domain/app-error";
+import {
+	NotFoundError,
+	UnauthorizedError,
+	UrlLimitReachedError,
+} from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
 import { eq } from "drizzle-orm";
 
@@ -48,16 +52,17 @@ urlRoutes.get("/", async (c) => {
 	const urls = await urlRepo.findByUserId(user.id);
 
 	// Obtener el límite del usuario para incluirlo en la respuesta
+	const ADMIN_URL_LIMIT = 999;
 	const db = createDb(c.env.DB);
 	const [dbUser] = await db
-		.select({ urlLimit: users.urlLimit })
+		.select({ role: users.role, urlLimit: users.urlLimit })
 		.from(users)
 		.where(eq(users.id, user.id))
 		.limit(1);
 
 	return c.json({
 		urls,
-		urlLimit: dbUser?.urlLimit ?? 2,
+		urlLimit: dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2),
 	});
 });
 
@@ -70,15 +75,14 @@ urlRoutes.post(
 		const user = c.get("user");
 
 		if (!user) {
-			throw new UnauthorizedError(
-				"Debes iniciar sesión para crear URLs",
-			);
+			throw new UnauthorizedError("Debes iniciar sesión para crear URLs");
 		}
 
 		const { originalUrl, shortCode } = c.req.valid("json");
 		const urlRepo = c.get("urlRepo");
 
-		// Verificar límite de URLs para usuarios no-admin
+		// Verificar límite de URLs
+		const ADMIN_URL_LIMIT = 999;
 		const db = createDb(c.env.DB);
 		const [dbUser] = await db
 			.select({ role: users.role, urlLimit: users.urlLimit })
@@ -86,12 +90,10 @@ urlRoutes.post(
 			.where(eq(users.id, user.id))
 			.limit(1);
 
-		if (dbUser?.role !== "admin") {
-			const limit = dbUser?.urlLimit ?? 2;
-			const count = await urlRepo.countByUserId(user.id);
-			if (count >= limit) {
-				throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
-			}
+		const limit = dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2);
+		const count = await urlRepo.countByUserId(user.id);
+		if (count >= limit) {
+			throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
 		}
 
 		// Verificar si la URL ya existe para este usuario
@@ -100,7 +102,10 @@ urlRoutes.post(
 			return c.json(existing, 200);
 		}
 
-		const created = await urlRepo.createForUser(user.id, { originalUrl, shortCode });
+		const created = await urlRepo.createForUser(user.id, {
+			originalUrl,
+			shortCode,
+		});
 		return c.json(created, 201);
 	},
 );
@@ -114,18 +119,40 @@ urlRoutes.get(
 		const { shortCode } = c.req.valid("param");
 
 		if (!user) {
-			throw new UnauthorizedError(
-				"Debes iniciar sesión para ver URLs",
-			);
+			throw new UnauthorizedError("Debes iniciar sesión para ver URLs");
 		}
 
 		const urlRepo = c.get("urlRepo");
-		const url = await urlRepo.findByUserShortCode(user.id, shortCode);
+		const url = await urlRepo.findByShortCode(shortCode);
 
 		if (!url) {
 			throw new NotFoundError("URL no encontrada");
 		}
 		return c.json(url);
+	},
+);
+
+// DELETE /v1/urls/:shortCode — elimina una URL del usuario autenticado
+urlRoutes.delete(
+	"/:shortCode",
+	zValidator("param", shortCodeSchema, validationHook),
+	async (c) => {
+		const user = c.get("user");
+
+		if (!user) {
+			throw new UnauthorizedError("Debes iniciar sesión para eliminar URLs");
+		}
+
+		const { shortCode } = c.req.valid("param");
+		const urlRepo = c.get("urlRepo");
+		const deleted = await urlRepo.deleteByUserShortCode(user.id, shortCode);
+
+		if (!deleted) {
+			throw new NotFoundError(
+				"No se encontró una URL con ese código o no pertenece a tu cuenta",
+			);
+		}
+		return c.json(deleted);
 	},
 );
 

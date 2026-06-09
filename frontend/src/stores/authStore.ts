@@ -64,7 +64,7 @@ export const useAuthStore = defineStore("authStore", () => {
 
 	function resetAuth() {
 		const urlStore = useUrlStore();
-		urlStore.clearUserUrls(userId.value);
+		urlStore.clearUserUrls(userId.value ?? undefined);
 		user.value = null;
 		session.value = null;
 		isInitialized.value = false;

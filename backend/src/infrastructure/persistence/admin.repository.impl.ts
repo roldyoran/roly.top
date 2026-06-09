@@ -4,14 +4,20 @@ import { urlsTable } from "@/db/schema";
 import { users } from "@/db/auth-schema";
 import type { UrlEntity } from "@/domain/url/url.entity";
 import type { AdminRepositoryPort } from "@/domain/admin/admin.repository.port";
-import type { AdminUser, AdminStats, PaginatedResult } from "@/domain/admin/admin.entity";
+import type {
+	AdminUser,
+	AdminStats,
+	PaginatedResult,
+} from "@/domain/admin/admin.entity";
 
 export class AdminRepository implements AdminRepositoryPort {
 	constructor(private readonly db: DrizzleDB) {}
 
-	async findAllUsers(
-		params: { page: number; pageSize: number; search?: string },
-	): Promise<PaginatedResult<AdminUser>> {
+	async findAllUsers(params: {
+		page: number;
+		pageSize: number;
+		search?: string;
+	}): Promise<PaginatedResult<AdminUser>> {
 		const { page, pageSize, search } = params;
 		const offset = (page - 1) * pageSize;
 
@@ -46,16 +52,22 @@ export class AdminRepository implements AdminRepositoryPort {
 			.offset(offset);
 
 		const userIds = rows.map((r) => r.id);
-		const urlCounts = userIds.length > 0
-			? await this.db
-					.select({
-						userId: urlsTable.userId,
-						count: count(),
-					})
-					.from(urlsTable)
-					.where(sql`${urlsTable.userId} IN (${sql.join(userIds.map((id) => sql`${id}`), sql`, `)})`)
-					.groupBy(urlsTable.userId)
-			: [];
+		const urlCounts =
+			userIds.length > 0
+				? await this.db
+						.select({
+							userId: urlsTable.userId,
+							count: count(),
+						})
+						.from(urlsTable)
+						.where(
+							sql`${urlsTable.userId} IN (${sql.join(
+								userIds.map((id) => sql`${id}`),
+								sql`, `,
+							)})`,
+						)
+						.groupBy(urlsTable.userId)
+				: [];
 
 		const urlCountMap = new Map(urlCounts.map((uc) => [uc.userId, uc.count]));
 
@@ -192,9 +204,11 @@ export class AdminRepository implements AdminRepositoryPort {
 		};
 	}
 
-	async findAllUrls(
-		params: { page: number; pageSize: number; search?: string },
-	): Promise<PaginatedResult<UrlEntity>> {
+	async findAllUrls(params: {
+		page: number;
+		pageSize: number;
+		search?: string;
+	}): Promise<PaginatedResult<UrlEntity>> {
 		const { page, pageSize, search } = params;
 		const offset = (page - 1) * pageSize;
 

@@ -2,25 +2,44 @@
 	<TooltipProvider>
 		<div class="min-h-screen flex flex-col">
 			<main class="flex-grow container mx-auto px-4 py-6">
-				<div class="flex flex-col lg:flex-row gap-6">
-					<aside class="w-full lg:w-56 flex-shrink-0">
-						<nav class="space-y-1">
-							<router-link
-								v-for="item in navItems"
-								:key="item.to"
-								:to="item.to"
-								class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-								:class="$route.path === item.to
-									? 'bg-primary text-primary-foreground'
-									: 'text-muted-foreground hover:text-foreground hover:bg-muted'"
-							>
-								<component :is="item.icon" class="w-4 h-4" />
-								{{ item.label }}
-							</router-link>
-						</nav>
+				<div class="flex flex-col lg:flex-row gap-8">
+					<aside class="w-full lg:w-60 flex-shrink-0">
+						<div class="lg:sticky lg:top-6">
+							<div class="mb-6 px-1">
+								<div class="flex items-center gap-2.5 mb-1">
+									<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+										<Shield class="w-4 h-4 text-primary" />
+									</div>
+									<span class="font-display text-sm font-semibold tracking-tight">Panel Admin</span>
+								</div>
+								<p class="text-[11px] text-muted-foreground ml-[42px] leading-tight">Gestión del sistema</p>
+							</div>
+
+							<nav class="space-y-0.5">
+								<router-link
+									v-for="item in navItems"
+									:key="item.to"
+									:to="item.to"
+									class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+									:class="$route.path === item.to
+										? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+										: 'text-muted-foreground hover:text-foreground hover:bg-muted/60'"
+								>
+									<div
+										class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-200"
+										:class="$route.path === item.to
+											? 'bg-primary-foreground/20'
+											: 'bg-muted group-hover:bg-muted'"
+									>
+										<component :is="item.icon" class="w-3.5 h-3.5" />
+									</div>
+									{{ item.label }}
+								</router-link>
+							</nav>
+						</div>
 					</aside>
 
-					<div class="flex-1 min-w-0">
+					<div class="flex-1 min-w-0 animate-fade-in-up">
 						<router-view />
 					</div>
 				</div>
@@ -30,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { LayoutDashboard, Link, Users } from "lucide-vue-next";
+import { LayoutDashboard, Link, Shield, Users } from "lucide-vue-next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const navItems = [

@@ -75,3 +75,10 @@ export async function getPublicUrlsRequest() {
 	const response = await axiosInstance.get("/v1/urls/public");
 	return response.data;
 }
+
+// Función para eliminar una URL del usuario autenticado
+export async function deleteUrlRequest(shortCode: string) {
+	const axiosInstance = getAxiosInstance();
+	const response = await axiosInstance.delete(`/v1/urls/${shortCode}`);
+	return response.data;
+}

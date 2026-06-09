@@ -1,18 +1,13 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import type { SavedUrlItem, UserSession } from "@/api/types";
+import type { SavedUrlItem } from "@/api/types";
 
-export type { SavedUrlItem, UserSession };
+export type { SavedUrlItem };
 
 // Store de URLs
 export const useUrlStore = defineStore("urlStore", () => {
 	// Estado reactivo
 	const savedUrls = ref<SavedUrlItem[]>([]);
-	const userSession = ref<UserSession>({
-		remainingAttempts: 3,
-		sessionId: generateSessionId(),
-		lastReset: new Date().toISOString(),
-	});
 
 	// Estado de la aplicación
 	const isLoading = ref(false);
@@ -26,87 +21,16 @@ export const useUrlStore = defineStore("urlStore", () => {
 	const CACHE_DURATION_MS = 5 * 60 * 1000;
 
 	// Getters computados
-	const hasRemainingAttempts = computed(
-		() => userSession.value.remainingAttempts > 0,
-	);
 	const urlCount = computed(() => savedUrls.value.length);
-	const canUseService = computed(() => hasRemainingAttempts.value);
+	const canUseService = computed(() => urlCount.value < urlLimit.value);
 
 	// Funciones de utilidad
-	function generateSessionId(): string {
-		return Date.now().toString(36) + Math.random().toString(36).substr(2);
-	}
-
 	function getUrlStorageKey(userId: string): string {
 		return `savedUrls_${userId}`;
 	}
 
 	function setUrlLimit(limit: number) {
 		urlLimit.value = limit;
-	}
-
-	function shouldResetAttempts(): boolean {
-		const lastReset = new Date(userSession.value.lastReset);
-		const now = new Date();
-		const hoursSinceReset =
-			(now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
-		return hoursSinceReset >= 24;
-	}
-
-	// Acciones del store
-	function loadUserSession() {
-		try {
-			const stored = localStorage.getItem("userSession");
-			if (stored) {
-				const parsedSession = JSON.parse(stored) as UserSession;
-
-				if (shouldResetAttempts()) {
-					resetAttempts();
-				} else {
-					userSession.value = {
-						...parsedSession,
-						sessionId: parsedSession.sessionId || generateSessionId(),
-					};
-				}
-			} else {
-				saveUserSession();
-			}
-		} catch (error) {
-			console.error("Error loading user session:", error);
-			resetUserSession();
-		}
-	}
-
-	function saveUserSession() {
-		try {
-			localStorage.setItem("userSession", JSON.stringify(userSession.value));
-		} catch (error) {
-			console.error("Error saving user session:", error);
-		}
-	}
-
-	function resetUserSession() {
-		userSession.value = {
-			remainingAttempts: 3,
-			sessionId: generateSessionId(),
-			lastReset: new Date().toISOString(),
-		};
-		saveUserSession();
-	}
-
-	function resetAttempts() {
-		userSession.value.remainingAttempts = 3;
-		userSession.value.lastReset = new Date().toISOString();
-		saveUserSession();
-	}
-
-	function decrementAttempts() {
-		if (userSession.value.remainingAttempts > 0) {
-			userSession.value.remainingAttempts--;
-			saveUserSession();
-			return true;
-		}
-		return false;
 	}
 
 	// Funciones para URLs guardadas (por usuario en localStorage)
@@ -225,17 +149,15 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 	// Función de inicialización
 	function initialize(userId?: string) {
-		loadUserSession();
 		loadSavedUrls(userId);
 	}
 
 	// Funciones para debugging
 	function getDebugInfo() {
 		return {
-			session: userSession.value,
 			urlCount: savedUrls.value.length,
+			urlLimit: urlLimit.value,
 			canUse: canUseService.value,
-			shouldReset: shouldResetAttempts(),
 			userId: currentUserId.value,
 		};
 	}
@@ -243,23 +165,14 @@ export const useUrlStore = defineStore("urlStore", () => {
 	return {
 		// Estado
 		savedUrls,
-		userSession,
 		isLoading,
 		currentTab,
 		currentUserId,
 
 		// Getters
-		hasRemainingAttempts,
 		urlCount,
 		urlLimit,
 		canUseService,
-
-		// Acciones - Sesión de usuario
-		loadUserSession,
-		saveUserSession,
-		resetUserSession,
-		resetAttempts,
-		decrementAttempts,
 
 		// Acciones - URLs
 		loadSavedUrls,

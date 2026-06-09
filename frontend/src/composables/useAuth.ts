@@ -34,7 +34,6 @@ export function useAuth() {
 			user.value = null;
 			session.value = null;
 			localStorage.removeItem("savedUrls");
-			localStorage.removeItem("userSession");
 			localStorage.removeItem("publicListCache");
 		} catch (error) {
 			console.error("Error signing out:", error);

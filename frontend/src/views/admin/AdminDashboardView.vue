@@ -1,74 +1,110 @@
 <template>
-	<div class="space-y-6">
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
-			<p class="text-muted-foreground">Vista general del sistema</p>
+	<div class="space-y-8">
+		<div class="animate-fade-in-up">
+			<h1 class="font-display text-2xl font-bold tracking-tight">Dashboard</h1>
+			<p class="text-muted-foreground text-sm mt-1">Vista general del sistema</p>
 		</div>
 
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			<Card v-for="stat in statCards" :key="stat.label">
-				<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-					<CardTitle class="text-sm font-medium">{{ stat.label }}</CardTitle>
-					<component :is="stat.icon" class="h-4 w-4 text-muted-foreground" />
-				</CardHeader>
-				<CardContent>
-					<div class="text-2xl font-bold">{{ stat.value }}</div>
-				</CardContent>
-			</Card>
+			<div
+				v-for="(stat, index) in statCards"
+				:key="stat.label"
+				class="group relative overflow-hidden rounded-2xl border bg-card p-5 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
+				:style="{ animationDelay: `${index * 80}ms` }"
+			>
+				<div
+					class="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+					:class="stat.bgGradient"
+				/>
+				<div class="relative flex items-start justify-between">
+					<div>
+						<p class="text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ stat.label }}</p>
+						<p class="text-3xl font-bold mt-2 tracking-tight font-display">{{ stat.value }}</p>
+					</div>
+				<div
+					class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+					:class="stat.iconBg"
+				>
+						<component :is="stat.icon" class="w-5 h-5" :class="stat.iconColor" />
+					</div>
+				</div>
+			</div>
 		</div>
 
-		<div class="grid gap-4 md:grid-cols-2">
-			<Card>
-				<CardHeader>
-					<CardTitle>URLs Recientes</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div v-if="adminStore.isLoadingUrls" class="space-y-2">
-						<Skeleton v-for="i in 5" :key="i" class="h-10 w-full" />
+		<div class="grid gap-6 md:grid-cols-2">
+			<div class="rounded-2xl border bg-card overflow-hidden animate-fade-in-up" style="animation-delay: 300ms;">
+				<div class="px-6 py-4 border-b bg-muted/30">
+					<div class="flex items-center gap-2">
+						<Link class="w-4 h-4 text-primary" />
+						<h2 class="font-display text-sm font-semibold">URLs Recientes</h2>
 					</div>
-					<div v-else-if="adminStore.urls?.data.length" class="space-y-2">
+				</div>
+				<div class="p-2">
+					<div v-if="adminStore.isLoadingUrls" class="p-4 space-y-3">
+						<div v-for="i in 5" :key="i" class="flex items-center gap-3">
+							<Skeleton class="h-6 w-16 rounded-md" />
+							<Skeleton class="h-4 flex-1 rounded-md" />
+							<Skeleton class="h-4 w-12 rounded-md" />
+						</div>
+					</div>
+					<div v-else-if="adminStore.urls?.data.length" class="space-y-0.5">
 						<div
 							v-for="url in adminStore.urls.data.slice(0, 5)"
 							:key="url.shortCode"
-							class="flex items-center justify-between text-sm py-1.5 border-b last:border-0"
+							class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/50"
 						>
-							<code class="font-mono text-primary">/{{ url.shortCode }}</code>
-							<span class="text-muted-foreground truncate max-w-[200px] ml-2">{{ url.originalUrl }}</span>
-							<span class="text-muted-foreground ml-auto whitespace-nowrap">{{ url.visits }} visits</span>
+							<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2 py-0.5 rounded-md">/{{ url.shortCode }}</code>
+							<span class="text-muted-foreground truncate flex-1 text-xs">{{ url.originalUrl }}</span>
+							<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }}</span>
 						</div>
 					</div>
-					<p v-else class="text-sm text-muted-foreground">No hay URLs</p>
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Usuarios Recientes</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div v-if="adminStore.isLoadingUsers" class="space-y-2">
-						<Skeleton v-for="i in 5" :key="i" class="h-10 w-full" />
+					<div v-else class="p-8 text-center">
+						<Link class="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
+						<p class="text-xs text-muted-foreground">No hay URLs</p>
 					</div>
-					<div v-else-if="adminStore.users?.data.length" class="space-y-2">
+				</div>
+			</div>
+
+			<div class="rounded-2xl border bg-card overflow-hidden animate-fade-in-up" style="animation-delay: 400ms;">
+				<div class="px-6 py-4 border-b bg-muted/30">
+					<div class="flex items-center gap-2">
+						<Users class="w-4 h-4 text-primary" />
+						<h2 class="font-display text-sm font-semibold">Usuarios Recientes</h2>
+					</div>
+				</div>
+				<div class="p-2">
+					<div v-if="adminStore.isLoadingUsers" class="p-4 space-y-3">
+						<div v-for="i in 5" :key="i" class="flex items-center gap-3">
+							<Skeleton class="h-8 w-8 rounded-full" />
+							<Skeleton class="h-4 w-24 rounded-md" />
+							<Skeleton class="h-5 w-12 rounded-full ml-auto" />
+						</div>
+					</div>
+					<div v-else-if="adminStore.users?.data.length" class="space-y-0.5">
 						<div
 							v-for="user in adminStore.users.data.slice(0, 5)"
 							:key="user.id"
-							class="flex items-center justify-between text-sm py-1.5 border-b last:border-0"
+							class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/50"
 						>
-							<div class="flex items-center gap-2">
-								<div class="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs">
-									{{ user.name.charAt(0).toUpperCase() }}
-								</div>
-								<span class="truncate max-w-[120px]">{{ user.name }}</span>
+							<img v-if="user.image" :src="user.image" :alt="user.name" class="w-7 h-7 rounded-full ring-2 ring-background" />
+							<div v-else class="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-[10px] font-bold text-primary">
+								{{ user.name.charAt(0).toUpperCase() }}
 							</div>
-							<Badge :variant="user.role === 'admin' ? 'default' : 'secondary'" class="text-xs">
+							<span class="truncate flex-1 font-medium text-xs">{{ user.name }}</span>
+							<Badge
+								:variant="user.role === 'admin' ? 'default' : 'secondary'"
+								class="text-[10px] px-1.5 py-0 h-5 font-medium"
+							>
 								{{ user.role }}
 							</Badge>
 						</div>
 					</div>
-					<p v-else class="text-sm text-muted-foreground">No hay usuarios</p>
-				</CardContent>
-			</Card>
+					<div v-else class="p-8 text-center">
+						<Users class="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
+						<p class="text-xs text-muted-foreground">No hay usuarios</p>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -77,7 +113,6 @@
 import { Eye, Link, Shield, Users } from "lucide-vue-next";
 import { computed, onMounted } from "vue";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/stores/adminStore";
 
@@ -88,14 +123,37 @@ const statCards = computed(() => [
 		label: "Total Usuarios",
 		value: adminStore.stats?.totalUsers ?? 0,
 		icon: Users,
+		iconBg: "bg-blue-500/10 dark:bg-blue-400/10",
+		iconColor: "text-blue-600 dark:text-blue-400",
+		bgGradient:
+			"bg-gradient-to-br from-blue-500/5 to-transparent dark:from-blue-400/5",
 	},
-	{ label: "Total URLs", value: adminStore.stats?.totalUrls ?? 0, icon: Link },
+	{
+		label: "Total URLs",
+		value: adminStore.stats?.totalUrls ?? 0,
+		icon: Link,
+		iconBg: "bg-primary/10",
+		iconColor: "text-primary",
+		bgGradient: "bg-gradient-to-br from-primary/5 to-transparent",
+	},
 	{
 		label: "Total Visitas",
 		value: adminStore.stats?.totalVisits ?? 0,
 		icon: Eye,
+		iconBg: "bg-amber-500/10 dark:bg-amber-400/10",
+		iconColor: "text-amber-600 dark:text-amber-400",
+		bgGradient:
+			"bg-gradient-to-br from-amber-500/5 to-transparent dark:from-amber-400/5",
 	},
-	{ label: "Admins", value: adminStore.stats?.adminUsers ?? 0, icon: Shield },
+	{
+		label: "Admins",
+		value: adminStore.stats?.adminUsers ?? 0,
+		icon: Shield,
+		iconBg: "bg-violet-500/10 dark:bg-violet-400/10",
+		iconColor: "text-violet-600 dark:text-violet-400",
+		bgGradient:
+			"bg-gradient-to-br from-violet-500/5 to-transparent dark:from-violet-400/5",
+	},
 ]);
 
 onMounted(() => {

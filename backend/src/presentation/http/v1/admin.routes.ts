@@ -121,7 +121,11 @@ adminRoutes.post("/users/:userId/unban", async (c) => {
 
 adminRoutes.patch(
 	"/users/:userId/url-limit",
-	zValidator("json", z.object({ limit: z.number().int().min(1).max(1000) }), validationHook),
+	zValidator(
+		"json",
+		z.object({ limit: z.number().int().min(1).max(1000) }),
+		validationHook,
+	),
 	async (c) => {
 		const userId = c.req.param("userId");
 		const { limit } = c.req.valid("json");
@@ -166,7 +170,11 @@ adminRoutes.delete(
 
 adminRoutes.delete("/urls", async (c) => {
 	const db = createDb(c.env.DB);
-	const urlRepo = { deleteAll: async () => { await db.delete(urlsTable); } };
+	const urlRepo = {
+		deleteAll: async () => {
+			await db.delete(urlsTable);
+		},
+	};
 	const useCase = new DeleteAllUrlsUseCase(urlRepo as any);
 	await useCase.execute();
 	return c.json({ message: "Todas las URLs han sido eliminadas" });
@@ -192,11 +200,18 @@ adminRoutes.post(
 		const adminProvider = {
 			async setRole(email: string) {
 				const db = createDb(c.env.DB);
-				const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+				const [user] = await db
+					.select()
+					.from(users)
+					.where(eq(users.email, email))
+					.limit(1);
 				if (!user) {
 					throw new NotFoundError(`Usuario con email "${email}" no encontrado`);
 				}
-				await db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+				await db
+					.update(users)
+					.set({ role: "admin" })
+					.where(eq(users.id, user.id));
 				return {
 					userId: user.id,
 					message: `Usuario "${user.name}" (${user.email}) ahora es admin`,

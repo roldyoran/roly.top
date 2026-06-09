@@ -1,107 +1,173 @@
 <template>
 	<div class="space-y-6">
-		<div class="flex items-center justify-between">
+		<div class="flex items-center justify-between animate-fade-in-up">
 			<div>
-				<h1 class="text-2xl font-bold tracking-tight">URLs</h1>
-				<p class="text-muted-foreground">Gestiona todas las URLs acortadas</p>
+				<h1 class="font-display text-2xl font-bold tracking-tight">URLs</h1>
+				<p class="text-muted-foreground text-sm mt-1">Gestiona todas las URLs acortadas</p>
 			</div>
 		</div>
 
-		<div class="flex items-center gap-3">
+		<div class="flex items-center gap-3 animate-fade-in-up" style="animation-delay: 100ms;">
 			<div class="relative flex-1 max-w-sm">
 				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-				<Input v-model="searchQuery" placeholder="Buscar por shortCode o URL..." class="pl-9" @input="onSearch" />
+				<Input
+					v-model="searchQuery"
+					placeholder="Buscar por shortCode o URL..."
+					class="pl-9 h-10 rounded-xl bg-muted/30 border-muted focus:bg-card transition-colors"
+					@input="onSearch"
+				/>
 			</div>
 		</div>
 
-		<Card>
-			<CardContent class="p-0">
-				<div v-if="adminStore.isLoadingUrls" class="p-6 space-y-2">
-					<Skeleton v-for="i in 10" :key="i" class="h-12 w-full" />
+		<div class="rounded-2xl border bg-card overflow-hidden animate-fade-in-up" style="animation-delay: 200ms;">
+			<div v-if="adminStore.isLoadingUrls" class="p-6 space-y-3">
+				<div v-for="i in 10" :key="i" class="flex items-center gap-4 py-3 px-4">
+					<Skeleton class="h-6 w-24 rounded-lg" />
+					<Skeleton class="h-4 flex-1 rounded-md" />
+					<Skeleton class="h-4 w-10 rounded-md" />
+					<Skeleton class="h-4 w-20 rounded-md" />
+					<div class="flex gap-1">
+						<Skeleton class="h-8 w-8 rounded-lg" />
+						<Skeleton class="h-8 w-8 rounded-lg" />
+					</div>
 				</div>
-				<div v-else-if="!adminStore.urls?.data.length" class="p-12 text-center">
-					<Link class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-					<p class="text-muted-foreground">No se encontraron URLs</p>
+			</div>
+			<div v-else-if="!adminStore.urls?.data.length" class="p-16 text-center">
+				<div class="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
+					<Link class="w-7 h-7 text-muted-foreground/50" />
 				</div>
-				<Table v-else>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Short Code</TableHead>
-							<TableHead>URL Original</TableHead>
-							<TableHead>Visitas</TableHead>
-							<TableHead>Creada</TableHead>
-							<TableHead class="text-right">Acciones</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						<TableRow v-for="url in adminStore.urls.data" :key="url.shortCode">
-							<TableCell>
-								<code class="font-mono text-primary font-semibold">/{{ url.shortCode }}</code>
-							</TableCell>
-							<TableCell>
-								<span class="text-sm truncate max-w-[300px] block">{{ url.originalUrl }}</span>
-							</TableCell>
-							<TableCell>
-								<span class="text-sm">{{ url.visits }}</span>
-							</TableCell>
-							<TableCell>
-								<span class="text-sm text-muted-foreground">{{ formatDate(url.createdAt) }}</span>
-							</TableCell>
-							<TableCell class="text-right">
-								<div class="flex items-center justify-end gap-1">
-									<Tooltip>
-										<TooltipTrigger as-child>
-											<Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="copyUrl(url.shortCode)">
-												<Copy class="h-4 w-4" />
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent>Copiar URL</TooltipContent>
-									</Tooltip>
-									<Tooltip>
-										<TooltipTrigger as-child>
-											<Button variant="ghost" size="sm" class="h-8 w-8 p-0 text-destructive hover:text-destructive" @click="confirmDelete(url)">
-												<Trash2 class="h-4 w-4" />
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent>Eliminar</TooltipContent>
-									</Tooltip>
-								</div>
-							</TableCell>
-						</TableRow>
-					</TableBody>
-				</Table>
-			</CardContent>
-		</Card>
+				<p class="text-sm font-medium text-muted-foreground">No se encontraron URLs</p>
+				<p class="text-xs text-muted-foreground/60 mt-1">Las URLs acortadas aparecerán aquí</p>
+			</div>
+			<Table v-else class="admin-table">
+				<TableHeader>
+					<TableRow class="hover:bg-transparent border-b bg-muted/20">
+						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
+							Short Code
+						</TableHead>
+						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11">
+							URL Original
+						</TableHead>
+						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
+							Visitas
+						</TableHead>
+						<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-28">
+							Creada
+						</TableHead>
+						<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-24">
+							Acciones
+						</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					<TableRow
+						v-for="(url, index) in adminStore.urls.data"
+						:key="url.shortCode"
+						class="group transition-all duration-150 hover:bg-muted/40 border-b border-border/50 last:border-b-0"
+					>
+						<TableCell class="pl-5 py-3.5">
+							<div class="flex items-center gap-2.5">
+								<span class="text-[10px] text-muted-foreground/40 font-mono tabular-nums w-4 text-right">
+									{{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + index + 1 }}
+								</span>
+								<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
+									/{{ url.shortCode }}
+								</code>
+							</div>
+						</TableCell>
+						<TableCell class="py-3.5">
+							<span class="text-sm truncate max-w-[300px] block text-muted-foreground/80">{{ url.originalUrl }}</span>
+						</TableCell>
+						<TableCell class="py-3.5 w-20">
+							<div class="flex items-center gap-1.5">
+								<div class="w-1 h-1 rounded-full bg-primary/40" />
+								<span class="text-sm font-semibold tabular-nums">{{ url.visits }}</span>
+							</div>
+						</TableCell>
+						<TableCell class="py-3.5 w-28">
+							<span class="text-xs text-muted-foreground/60 font-medium">{{ formatDate(url.createdAt) }}</span>
+						</TableCell>
+						<TableCell class="text-right py-3.5 pr-5 w-24">
+							<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
+								<Tooltip>
+									<TooltipTrigger as-child>
+										<Button
+											variant="ghost"
+											size="sm"
+											class="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+											@click="copyUrl(url.shortCode)"
+										>
+											<Copy class="h-3.5 w-3.5" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Copiar URL</TooltipContent>
+								</Tooltip>
+								<Tooltip>
+									<TooltipTrigger as-child>
+										<Button
+											variant="ghost"
+											size="sm"
+											class="h-7 w-7 p-0 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+											@click="confirmDelete(url)"
+										>
+											<Trash2 class="h-3.5 w-3.5" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Eliminar</TooltipContent>
+								</Tooltip>
+							</div>
+						</TableCell>
+					</TableRow>
+				</TableBody>
+			</Table>
+		</div>
 
-		<!-- Pagination -->
-		<div v-if="adminStore.urls && adminStore.urls.totalPages > 1" class="flex items-center justify-between">
-			<p class="text-sm text-muted-foreground">
+		<div
+			v-if="adminStore.urls && adminStore.urls.totalPages > 1"
+			class="flex items-center justify-between animate-fade-in-up"
+			style="animation-delay: 300ms;"
+		>
+			<p class="text-xs text-muted-foreground">
 				Mostrando {{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + 1 }}
 				- {{ Math.min(adminStore.urls.page * adminStore.urls.pageSize, adminStore.urls.total) }}
 				de {{ adminStore.urls.total }} URLs
 			</p>
 			<div class="flex items-center gap-2">
-				<Button variant="outline" size="sm" :disabled="adminStore.urls.page <= 1" @click="goToPage(adminStore.urls.page - 1)">
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-8 rounded-lg text-xs"
+					:disabled="adminStore.urls.page <= 1"
+					@click="goToPage(adminStore.urls.page - 1)"
+				>
 					Anterior
 				</Button>
-				<Button variant="outline" size="sm" :disabled="adminStore.urls.page >= adminStore.urls.totalPages" @click="goToPage(adminStore.urls.page + 1)">
+				<span class="text-xs font-medium tabular-nums px-2">
+					{{ adminStore.urls.page }} / {{ adminStore.urls.totalPages }}
+				</span>
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-8 rounded-lg text-xs"
+					:disabled="adminStore.urls.page >= adminStore.urls.totalPages"
+					@click="goToPage(adminStore.urls.page + 1)"
+				>
 					Siguiente
 				</Button>
 			</div>
 		</div>
 
-		<!-- Delete Dialog -->
 		<Dialog v-model:open="deleteOpen">
-			<DialogContent>
+			<DialogContent class="rounded-2xl">
 				<DialogHeader>
-					<DialogTitle>Eliminar URL</DialogTitle>
+					<DialogTitle class="font-display">Eliminar URL</DialogTitle>
 					<DialogDescription>
-						¿Estás seguro de eliminar la URL <code class="font-mono">/{{ selectedUrl?.shortCode }}</code>? Esta acción no se puede deshacer.
+						¿Estás seguro de eliminar la URL <code class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded-md">/{{ selectedUrl?.shortCode }}</code>? Esta acción no se puede deshacer.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
-					<Button variant="outline" @click="deleteOpen = false">Cancelar</Button>
-					<Button variant="destructive" @click="handleDeleteConfirm">Eliminar</Button>
+					<Button variant="outline" class="rounded-xl" @click="deleteOpen = false">Cancelar</Button>
+					<Button variant="destructive" class="rounded-xl" @click="handleDeleteConfirm">Eliminar</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
@@ -116,7 +182,6 @@ import type { AdminUrl } from "@/api/admin";
 import { deleteAdminUrl } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,

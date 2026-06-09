@@ -51,7 +51,9 @@ app.get("*", async (c) => {
 	const accept = c.req.header("Accept");
 	if (accept?.includes("text/html")) {
 		const url = new URL(c.req.url);
-		const asset = await c.env.ASSETS.fetch(new Request(url.origin + "/index.html"));
+		const asset = await c.env.ASSETS.fetch(
+			new Request(url.origin + "/index.html"),
+		);
 		return new Response(asset.body, {
 			status: 200,
 			headers: { "Content-Type": "text/html" },

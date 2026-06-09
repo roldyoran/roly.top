@@ -86,9 +86,7 @@ export class UrlRepository implements UrlRepositoryPort {
 	): Promise<UrlEntity | null> {
 		const [deleted] = await this.db
 			.delete(urlsTable)
-			.where(
-				eq(urlsTable.shortCode, shortCode) && eq(urlsTable.userId, userId),
-			)
+			.where(eq(urlsTable.shortCode, shortCode) && eq(urlsTable.userId, userId))
 			.returning();
 		return deleted ?? null;
 	}
@@ -109,7 +107,10 @@ export class UrlRepository implements UrlRepositoryPort {
 		return created;
 	}
 
-	async createForUser(userId: string, input: CreateUrlInput): Promise<UrlEntity> {
+	async createForUser(
+		userId: string,
+		input: CreateUrlInput,
+	): Promise<UrlEntity> {
 		const shortCode = input.shortCode ?? generateShortCode();
 		const createdAt = new Date().toISOString();
 

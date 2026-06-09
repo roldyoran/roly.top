@@ -7,12 +7,18 @@ export interface UrlRepositoryPort {
 	findByShortCode(shortCode: string): Promise<UrlEntity | null>;
 	findByOriginalUrl(originalUrl: string): Promise<UrlEntity | null>;
 	findByUserId(userId: string): Promise<UrlEntity[]>;
-	findByUserShortCode(userId: string, shortCode: string): Promise<UrlEntity | null>;
+	findByUserShortCode(
+		userId: string,
+		shortCode: string,
+	): Promise<UrlEntity | null>;
 	countByUserId(userId: string): Promise<number>;
 	create(input: CreateUrlInput): Promise<UrlEntity>;
 	createForUser(userId: string, input: CreateUrlInput): Promise<UrlEntity>;
 	deleteByShortCode(shortCode: string): Promise<UrlEntity | null>;
-	deleteByUserShortCode(userId: string, shortCode: string): Promise<UrlEntity | null>;
+	deleteByUserShortCode(
+		userId: string,
+		shortCode: string,
+	): Promise<UrlEntity | null>;
 	deleteAll(): Promise<void>;
 	incrementVisits(shortCode: string): Promise<UrlEntity | null>;
 	assignAllToUser(userId: string): Promise<void>;

@@ -142,7 +142,7 @@
                   <Tooltip v-else>
                     <TooltipTrigger :asChild="true">
                       <Button
-                        @click="removeUrl((url.raw as SavedUrl).original, (url.raw as SavedUrl).short)"
+                        @click="removeUrl(url.shortCode)"
                         variant="ghost"
                         size="sm"
                         class="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -302,6 +302,7 @@ import QRCode from "qrcode-generator";
 import {
 	getUrlsRequest,
 	getPublicUrlsRequest,
+	deleteUrlRequest,
 	getAppBaseUrl,
 } from "@/api/http";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
@@ -357,7 +358,7 @@ const currentQRUrl = ref<string>("");
 // Confirmation dialogs (my list)
 const showDeleteUrlDialog = ref(false);
 const showClearAllDialog = ref(false);
-const urlToDelete = ref<{ original: string; short: string } | null>(null);
+const urlToDelete = ref<string | null>(null);
 
 // Computed: normalize lists
 const publicClicksByShort = computed(() => {
@@ -479,23 +480,32 @@ const openExternal = (url: string) => {
 	window.open(url, "_blank");
 };
 
-const removeUrl = (original: string, short: string) => {
-	urlToDelete.value = { original, short };
+const removeUrl = (shortCode: string) => {
+	urlToDelete.value = shortCode;
 	showDeleteUrlDialog.value = true;
 };
 
-const confirmDeleteUrl = () => {
-	if (urlToDelete.value) {
-		urlStore.removeUrl(urlToDelete.value.original, urlToDelete.value.short);
+const confirmDeleteUrl = async () => {
+	if (!urlToDelete.value) return;
+	const shortCode = urlToDelete.value;
+	try {
+		await deleteUrlRequest(shortCode);
+		// Remove from local state
+		myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
 		if (paginatedUrls.value.length === 0 && currentPage.value > 1) {
 			currentPage.value--;
 		}
 		toast.success("URL eliminada", {
 			description: "La URL ha sido eliminada correctamente",
 		});
+	} catch (error: any) {
+		const message =
+			error?.response?.data?.message || "Error al eliminar la URL";
+		toast.error("Error al eliminar", { description: message });
+	} finally {
+		showDeleteUrlDialog.value = false;
+		urlToDelete.value = null;
 	}
-	showDeleteUrlDialog.value = false;
-	urlToDelete.value = null;
 };
 
 const confirmClearUrls = () => {

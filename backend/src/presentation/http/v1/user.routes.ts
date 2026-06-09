@@ -3,12 +3,20 @@ import type { Bindings, Variables } from "@/utils/context";
 import { UnauthorizedError } from "@/domain/app-error";
 
 type UserVariables = Variables & {
-	user: { id: string; name: string; email: string; image: string | null } | null;
+	user: {
+		id: string;
+		name: string;
+		email: string;
+		image: string | null;
+	} | null;
 	session: unknown | null;
 };
 
 // Router de usuario: rutas que requieren sesión autenticada
-export const userRoutes = new Hono<{ Bindings: Bindings; Variables: UserVariables }>();
+export const userRoutes = new Hono<{
+	Bindings: Bindings;
+	Variables: UserVariables;
+}>();
 
 // GET /v1/user/session — Obtener sesión actual
 userRoutes.get("/session", (c) => {
@@ -50,9 +58,7 @@ userRoutes.delete("/urls/:shortCode", async (c) => {
 	const shortCode = c.req.param("shortCode");
 
 	if (!user) {
-		throw new UnauthorizedError(
-			"Debes iniciar sesión para eliminar URLs",
-		);
+		throw new UnauthorizedError("Debes iniciar sesión para eliminar URLs");
 	}
 
 	const urlRepo = c.get("urlRepo");
