@@ -187,13 +187,14 @@ const authStore = useAuthStore();
 async function handleSignOut() {
 	try {
 		await authStore.signOut();
+	} catch {
+		// Silenciar error del backend
+	} finally {
 		authStore.resetAuth();
 		router.push({ name: "home" });
 		toast.success("Sesión cerrada", {
 			description: "Has cerrado sesión correctamente.",
 		});
-	} catch {
-		toast.error("Error al cerrar sesión");
 	}
 }
 </script>

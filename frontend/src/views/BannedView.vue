@@ -83,11 +83,12 @@ const formattedExpiry = computed(() => {
 async function handleSignOut() {
 	try {
 		await authStore.signOut();
+	} catch {
+		// Silenciar error del backend
+	} finally {
 		authStore.resetAuth();
 		router.push({ name: "home" });
 		toast.success("Sesión cerrada");
-	} catch {
-		toast.error("Error al cerrar sesión");
 	}
 }
 </script>
