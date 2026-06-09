@@ -4,6 +4,7 @@ import {
 	UnauthorizedError,
 	NotFoundError,
 	ValidationError,
+	UrlLimitReachedError,
 } from "@/domain/app-error";
 
 describe("AppError", () => {
@@ -91,5 +92,39 @@ describe("ValidationError", () => {
 
 	it("debe ser instancia de AppError", () => {
 		expect(new ValidationError("msg")).toBeInstanceOf(AppError);
+	});
+});
+
+describe("UrlLimitReachedError", () => {
+	it("debe tener code URL_LIMIT_REACHED", () => {
+		const error = new UrlLimitReachedError();
+
+		expect(error.code).toBe("URL_LIMIT_REACHED");
+	});
+
+	it("debe usar el mensaje por defecto si no se especifica", () => {
+		const error = new UrlLimitReachedError();
+
+		expect(error.message).toBe("Límite de 2 URLs alcanzado");
+	});
+
+	it("debe aceptar un mensaje personalizado", () => {
+		const error = new UrlLimitReachedError("Máximo 5 URLs permitidas");
+
+		expect(error.message).toBe("Máximo 5 URLs permitidas");
+	});
+
+	it("debe ser instancia de AppError", () => {
+		expect(new UrlLimitReachedError()).toBeInstanceOf(AppError);
+	});
+
+	it("debe ser instancia de Error", () => {
+		expect(new UrlLimitReachedError()).toBeInstanceOf(Error);
+	});
+
+	it("debe asignar el name al nombre de la clase", () => {
+		const error = new UrlLimitReachedError();
+
+		expect(error.name).toBe("UrlLimitReachedError");
 	});
 });

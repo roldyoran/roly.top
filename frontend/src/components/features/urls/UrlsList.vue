@@ -77,14 +77,18 @@
           <p class="text-muted-foreground">Intenta con otros términos de búsqueda</p>
         </div>
 
-        <div
+        <motion.div
           v-else
           class="space-y-2"
           :class="shouldUseScroll ? 'max-h-[70vh] overflow-y-auto pr-1 scroll-container' : ''"
+          initial="hidden"
+          animate="visible"
+          :variants="listContainerVariants"
         >
-          <div
+          <motion.div
             v-for="url in displayUrls"
             :key="`${url.shortCode}-${url.originalUrl}`"
+            :variants="listItemVariants"
             class="url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40"
           >
             <div class="flex items-center justify-between gap-3">
@@ -161,8 +165,8 @@
                 {{ formatDate(url.createdAt) }}
               </span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         <div v-if="isMyList && totalPages > 1" class="flex items-center justify-between mt-4">
           <p class="text-sm text-muted-foreground">
@@ -270,6 +274,7 @@ import {
 	ChevronLeft,
 	ChevronRight,
 } from "lucide-vue-next";
+import { motion } from "motion-v";
 import {
 	Card,
 	CardContent,
@@ -432,6 +437,25 @@ const shouldUseScroll = computed(() => {
 	}
 	return filteredUrls.value.length > 8;
 });
+
+const listContainerVariants = {
+	hidden: {},
+	visible: {
+		transition: {
+			staggerChildren: 0.04,
+		},
+	},
+};
+
+const listItemVariants = {
+	hidden: { opacity: 0, y: 8, filter: "blur(4px)" },
+	visible: {
+		opacity: 1,
+		y: 0,
+		filter: "blur(0px)",
+		transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+	},
+};
 
 const getFullShortUrl = (shortCode: string): string => {
 	return `${getAppBaseUrl()}/${shortCode}`;
@@ -654,15 +678,6 @@ watch(isMyList, (value) => {
 </script>
 
 <style scoped>
-.url-item {
-  animation: fadeIn 0.2s ease both;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 .scroll-container {
   scrollbar-gutter: stable;
 }

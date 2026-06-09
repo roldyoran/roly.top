@@ -18,6 +18,7 @@
     "lint:front": "bun --cwd frontend lint"
   },
   "devDependencies": {
+    "playwright": "^1.60.0",
     "shadcn-vue": "^2.4.3"
   },
   "dependencies": {}

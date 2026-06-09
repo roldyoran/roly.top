@@ -153,7 +153,7 @@ const handleSubmit = async (event: Event) => {
 	isLoading.value = true;
 
 	try {
-		const data = await getUrlInfoRequest(shortCode.value.trim());
+		const data = await getUrlInfoRequest(shortCode.value.trim().toLowerCase());
 		urlInfo.value = data;
 
 		if (data) {
@@ -163,7 +163,7 @@ const handleSubmit = async (event: Event) => {
 		}
 	} catch (err: any) {
 		const status = err?.response?.status;
-		if (status === 404) {
+		if (status === 404 || status === 400) {
 			const searchedCode = shortCode.value.trim();
 			error.value = `No existe una URL con el código "${searchedCode}"`;
 			toast.error("URL no encontrada", {

@@ -42,15 +42,22 @@
         </div>
       </form>
 
-      <div v-if="qrDataUrl" class="space-y-4">
+      <motion.div
+        v-if="qrDataUrl"
+        ref="qrResult"
+        :initial="{ opacity: 0, scale: 0.95, y: 12 }"
+        :animate="{ opacity: 1, scale: 1, y: 0 }"
+        :transition="{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }"
+        class="space-y-4"
+      >
         <div class="flex justify-center p-4 rounded-lg border bg-muted/30">
-          <img 
-            :src="qrDataUrl" 
-            alt="Código QR generado" 
+          <img
+            :src="qrDataUrl"
+            alt="Código QR generado"
             class="w-48 h-48 border-4 border-white"
           />
         </div>
-        
+
         <div class="flex justify-center gap-2">
           <Button @click="downloadQr" variant="outline" size="sm">
             <Download class="w-4 h-4 mr-2" aria-hidden="true" />
@@ -61,14 +68,15 @@
             Copiar Imagen
           </Button>
         </div>
-      </div>
+      </motion.div>
     </CardContent>
   </Card>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, nextTick } from "vue";
 import { Copy, Download, QrCode } from "lucide-vue-next";
+import { motion } from "motion-v";
 import qrcode from "qrcode-generator";
 import { toast } from "vue-sonner";
 import { Button } from "@/components/ui/button";
@@ -86,8 +94,9 @@ const urlInput = ref<string>("");
 const qrDataUrl = ref<string>("");
 const error = ref<string>("");
 const isGenerating = ref<boolean>(false);
+const qrResult = ref<HTMLElement | null>(null);
 
-const handleGenerate = (event: Event) => {
+const handleGenerate = async (event: Event) => {
 	event.preventDefault();
 	error.value = "";
 	qrDataUrl.value = "";
@@ -103,6 +112,14 @@ const handleGenerate = (event: Event) => {
 		qr.make();
 
 		qrDataUrl.value = qr.createDataURL(4, 0);
+
+		await nextTick();
+		const el =
+			(qrResult.value as unknown as { $el?: HTMLElement })?.$el ??
+			qrResult.value;
+		if (el && typeof el.scrollIntoView === "function") {
+			el.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
 	} catch (err: unknown) {
 		error.value = (err as Error).message || "Error al generar el código QR";
 	}

@@ -5,8 +5,6 @@ import { createAuth, type Auth } from "@/auth";
 import { v1Router } from "@/presentation/http/v1";
 import { redirectRoutes } from "@/presentation/http/redirect";
 import { onError } from "@/infrastructure/http/error-handler";
-import { swaggerRoutes } from "@/presentation/http/swagger";
-import { openapiRoutes } from "@/presentation/http/openapi";
 
 // Cache de instancias auth por Worker env
 const authCache = new WeakMap<object, Auth>();
@@ -44,12 +42,23 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 // Rutas versionadas — añade app.route("/v2", v2Router) cuando sea necesario
 app.route("/v1", v1Router);
 
-// Rutas de Swagger UI
-// app.route("/", swaggerRoutes);
-// app.route("/", openapiRoutes);
-
 // Redirección directa: GET /:shortCode → 302 a originalUrl, 302 a / si no existe o formato inválido
 app.route("/", redirectRoutes);
+
+// SPA fallback: servir index.html para rutas no-API (Vue Router)
+// DEBE ir DESPUÉS de redirect routes para no interceptar /:shortCode
+app.get("*", async (c) => {
+	const accept = c.req.header("Accept");
+	if (accept?.includes("text/html")) {
+		const url = new URL(c.req.url);
+		const asset = await c.env.ASSETS.fetch(new Request(url.origin + "/index.html"));
+		return new Response(asset.body, {
+			status: 200,
+			headers: { "Content-Type": "text/html" },
+		});
+	}
+	return c.notFound();
+});
 
 // Manejador global de errores — punto único para modificar el formato de todos los errores
 app.onError(onError);

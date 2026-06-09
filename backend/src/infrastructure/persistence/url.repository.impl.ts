@@ -1,4 +1,4 @@
-import { eq, sql, count } from "drizzle-orm";
+import { eq, sql, count, and } from "drizzle-orm";
 import type { DrizzleDB } from "@/db";
 import { urlsTable } from "@/db/schema";
 import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
@@ -66,7 +66,7 @@ export class UrlRepository implements UrlRepositoryPort {
 			.select()
 			.from(urlsTable)
 			.where(
-				eq(urlsTable.shortCode, shortCode) && eq(urlsTable.userId, userId),
+				and(eq(urlsTable.shortCode, shortCode), eq(urlsTable.userId, userId)),
 			)
 			.limit(1);
 		return url ?? null;

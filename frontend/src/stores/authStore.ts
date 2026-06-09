@@ -7,6 +7,7 @@ interface AuthUser {
 	name: string;
 	email: string;
 	image?: string | null;
+	role?: string;
 }
 
 export const useAuthStore = defineStore("authStore", () => {
@@ -28,6 +29,7 @@ export const useAuthStore = defineStore("authStore", () => {
 			name: user.value.name as string,
 			email: user.value.email as string,
 			image: user.value.image as string | null,
+			role: user.value.role as string | undefined,
 		};
 	});
 

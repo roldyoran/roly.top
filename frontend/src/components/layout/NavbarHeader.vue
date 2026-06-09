@@ -119,10 +119,14 @@
                 </Button>
               </div>
 
-              <div v-if="authStore.isAdmin" class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/50 bg-primary/10">
+              <router-link
+                v-if="authStore.isAdmin"
+                to="/admin"
+                class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/50 bg-primary/10 hover:bg-primary/20 transition-colors"
+              >
                 <Shield class="w-3.5 h-3.5 text-primary" />
-                <span class="font-mono text-[10px] tracking-wider text-primary font-bold">ADMIN</span>
-              </div>
+                <span class="font-mono text-[10px] tracking-wider text-primary font-bold">DASHBOARD ADMIN</span>
+              </router-link>
 
               <Button variant="outline" as-child class="w-full justify-start gap-2">
                 <a href="https://github.com/roldyoran/shorturl" target="_blank">
@@ -134,9 +138,14 @@
           </DrawerContent>
         </Drawer>
 
-        <div v-if="authStore.isAdmin" class="hidden sm:flex items-center gap-1.5 px-3 h-8 rounded-full border border-primary/50 bg-primary/10">
-          <Shield class="w-3.5 h-3.5 text-primary" />
-          <span class="font-mono text-[10px] tracking-wider text-primary font-bold">ADMIN</span>
+        <div v-if="authStore.isAdmin" class="hidden sm:flex items-center gap-1.5">
+          <router-link
+            to="/admin"
+            class="flex items-center gap-1.5 px-3 h-8 rounded-full border border-primary/50 bg-primary/10 hover:bg-primary/20 transition-colors"
+          >
+            <Shield class="w-3.5 h-3.5 text-primary" />
+            <span class="font-mono text-[10px] tracking-wider text-primary font-bold">ADMIN</span>
+          </router-link>
         </div>
 
         <Button variant="ghost" size="sm" as-child class="hidden sm:flex items-center gap-1.5 px-3 h-8 text-muted-foreground hover:text-foreground hover:bg-muted">
@@ -151,7 +160,9 @@
 </template>
 
 <script setup lang="ts">
-import { Link, Github, User, Menu, LogOut, Shield } from "lucide-vue-next";
+import { Github, Link, LogOut, Menu, Shield, User } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import { Button } from "@/components/ui/button";
 import {
 	Drawer,
 	DrawerContent,
@@ -160,11 +171,9 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import ThemeToggle from "./ThemeToggle.vue";
-import { useUrlStore } from "@/stores/urlStore";
 import { useAuthStore } from "@/stores/authStore";
-import { toast } from "vue-sonner";
+import { useUrlStore } from "@/stores/urlStore";
+import ThemeToggle from "./ThemeToggle.vue";
 
 defineProps<{
 	attempts: number;

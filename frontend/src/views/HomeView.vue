@@ -1,6 +1,11 @@
 <template>
   <section class="relative min-h-[calc(100vh-180px)] flex flex-col items-center justify-center px-4 pt-6 pb-10 sm:pt-0 sm:pb-8 overflow-hidden">
-    <div class="hero-tag flex items-center gap-2 mb-6">
+    <motion.div
+      class="hero-tag flex items-center gap-2 mb-6"
+      :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
+      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+      :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }"
+    >
       <Badge variant="secondary" class="text-xs font-medium">
         <svg class="w-4 h-4 mr-1 inline" viewBox="0 0 256 231" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path fill="currentColor" d="m65.82 3.324 30.161 54.411-27.698 49.857a16.003 16.003 0 0 0 0 15.573l27.698 49.98-30.16 54.411a32.007 32.007 0 0 1-13.542-12.74L4.27 131.412a32.13 32.13 0 0 1 0-32.007l48.01-83.403a32.007 32.007 0 0 1 13.542-12.68Z"/>
@@ -9,18 +14,33 @@
         </svg>
         Powered by Cloudflare Workers
       </Badge>
-    </div>
+    </motion.div>
 
-    <h1 class="hero-h1 font-display font-extrabold text-center leading-[1.0] mb-3 tracking-tight w-full max-w-3xl text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground">
+    <motion.h1
+      class="hero-h1 font-display font-extrabold text-center leading-[1.0] mb-3 tracking-tight w-full max-w-3xl text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground"
+      :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
+      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+      :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }"
+    >
       Acorta tu URL<br/>
       <span class="text-primary">al instante.</span>
-    </h1>
+    </motion.h1>
 
-    <p class="hero-sub font-body text-center mb-4 max-w-md text-sm sm:text-base text-muted-foreground">
+    <motion.p
+      class="hero-sub font-body text-center mb-4 max-w-md text-sm sm:text-base text-muted-foreground"
+      :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
+      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+      :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }"
+    >
       Simple · Rápido · Gratis · Construido sobre infraestructura Edge
-    </p>
+    </motion.p>
 
-    <div class="hero-svc flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-6 mt-1">
+    <motion.div
+      class="hero-svc flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-6 mt-1"
+      :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
+      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+      :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.3 }"
+    >
       <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-card/80 border-border">
         <svg class="w-3 h-3 flex-shrink-0 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
@@ -29,32 +49,46 @@
       </div>
       <Tooltip>
         <TooltipTrigger :asChild="true">
-          <Button
-            variant="outline"
-            size="sm"
-            class="h-8 w-8 p-0"
-            @click="copyServiceUrl"
-            aria-label="Copiar URL del servicio"
+          <motion.div
+            whileHover="{ scale: 1.05 }"
+            whileTap="{ scale: 0.95 }"
           >
-            <Copy class="w-3.5 h-3.5" />
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              class="h-8 w-8 p-0"
+              @click="copyServiceUrl"
+              aria-label="Copiar URL del servicio"
+            >
+              <Copy class="w-3.5 h-3.5" />
+            </Button>
+          </motion.div>
         </TooltipTrigger>
         <TooltipContent>Copiar URL del servicio</TooltipContent>
       </Tooltip>
-    </div>
+    </motion.div>
 
-    <!-- Mensaje para usuarios no autenticados -->
-    <div v-if="!authStore.isAuthenticated" class="hero-card w-full" style="max-width:680px">
+    <motion.div
+      v-if="!authStore.isAuthenticated"
+      class="hero-card w-full max-w-[680px]"
+      :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
+      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+      :transition="{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.38 }"
+    >
       <AuthRequired
         title="Inicia sesión para acortar URLs"
         description="Autentícate con Google para crear y gestionar tus propias URLs acortadas."
       />
-    </div>
+    </motion.div>
 
-    <!-- Formulario de acortamiento (solo autenticados) -->
-    <div v-else class="hero-card w-full" style="max-width:680px">
+    <motion.div
+      v-else
+      class="hero-card w-full max-w-[680px]"
+      :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
+      :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+      :transition="{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.38 }"
+    >
       <Card class="rounded-2xl p-4 sm:p-5">
-        <!-- Mensaje de límite alcanzado -->
         <div v-if="hasReachedLimit" class="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <p class="text-sm text-destructive font-medium">
             Has alcanzado el límite de {{ urlStore.urlLimit }} URLs. Elimina una antes de crear otra.
@@ -82,33 +116,31 @@
             @keydown.enter.prevent="handleShorten"
             :disabled="hasReachedLimit"
           />
-          <Button
-            type="submit"
-            :disabled="isLoading || hasReachedLimit"
-            class="px-6 py-3 rounded-xl text-sm whitespace-nowrap w-full sm:w-auto"
-          >
-            <span v-if="!isLoading">Acortar →</span>
-            <div v-else class="flex items-center gap-2">
-              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
-              Procesando
-            </div>
-          </Button>
+          <motion.div whileHover="{ scale: 1.02 }" whileTap="{ scale: 0.98 }">
+            <Button
+              type="submit"
+              :disabled="isLoading || hasReachedLimit"
+              class="px-6 py-3 rounded-xl text-sm whitespace-nowrap w-full sm:w-auto"
+            >
+              <span v-if="!isLoading">Acortar →</span>
+              <div v-else class="flex items-center gap-2">
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Procesando
+              </div>
+            </Button>
+          </motion.div>
         </form>
 
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-x-5">
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              @click="customAlias = !customAlias"
-              class="w-9 h-5 rounded-full toggle-track flex items-center px-0.5"
-              :class="customAlias ? 'active' : ''"
+            <Switch
+              :model-value="customAlias"
+              @update:model-value="customAlias = $event"
               :disabled="hasReachedLimit"
-            >
-              <div class="w-4 h-4 rounded-full toggle-thumb" :class="customAlias ? 'active' : ''"></div>
-            </button>
+            />
             <span class="font-mono text-[10px] tracking-wider text-foreground">ALIAS PERSONALIZADO</span>
           </div>
 
@@ -138,18 +170,33 @@
         @copy="copyShortUrl"
         @close="shortUrl = ''; originalUrl = ''"
       />
-    </div>
+    </motion.div>
+
+    <motion.button
+      type="button"
+      aria-label="Scroll hacia abajo"
+      @click="scrollDown"
+      class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer"
+      :initial="{ opacity: 0 }"
+      :animate="{ opacity: 1 }"
+      :transition="{ delay: 1.2, duration: 0.5 }"
+    >
+      <span class="text-[10px] font-mono tracking-wider">Explorar</span>
+      <ChevronDown class="w-4 h-4 animate-bounce-subtle" />
+    </motion.button>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from "vue";
-import { Copy } from "lucide-vue-next";
+import { Copy, ChevronDown } from "lucide-vue-next";
+import { motion } from "motion-v";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
 	Tooltip,
 	TooltipContent,
@@ -161,7 +208,7 @@ import { useUrlStore } from "@/stores/urlStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlShortener } from "@/composables/useUrlShortener";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-import { getApiBaseUrl, getAppBaseUrl } from "@/api/http";
+import { getAppBaseUrl } from "@/api/http";
 import { toast } from "vue-sonner";
 import { z } from "zod";
 import confetti from "canvas-confetti";
@@ -271,30 +318,14 @@ const copyServiceUrl = () => {
 const copyShortUrl = () => {
 	copyToClipboard(shortUrl.value, "URL copiada al portapapeles");
 };
+
+const scrollDown = () => {
+	const tabs = document.querySelector(".space-y-6.mt-8");
+	tabs?.scrollIntoView({ behavior: "smooth", block: "start" });
+};
 </script>
 
 <style scoped>
-.toggle-track {
-	background: var(--muted);
-	border: 1px solid var(--border);
-	transition: background 0.2s;
-}
-
-.toggle-track.active {
-	background: color-mix(in srgb, var(--primary) 20%, transparent);
-	border-color: color-mix(in srgb, var(--primary) 40%, transparent);
-}
-
-.toggle-thumb {
-	background: var(--muted-foreground);
-	transition: transform 0.2s, background 0.2s;
-}
-
-.toggle-thumb.active {
-	background: var(--primary);
-	transform: translateX(16px);
-}
-
 .alias-field {
 	max-height: 0;
 	overflow: hidden;
@@ -320,46 +351,17 @@ const copyShortUrl = () => {
 	}
 }
 
-.hero-tag {
-	animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+.animate-bounce-subtle {
+	animation: bounce-subtle 2s ease-in-out infinite;
 }
 
-.hero-h1 {
-	animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
-}
-
-.hero-sub {
-	animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
-}
-
-.hero-svc {
-	animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
-}
-
-.hero-card {
-	animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
-}
-
-@keyframes slideUp {
-	0% {
-		opacity: 0;
-		transform: translateY(20px);
-	}
+@keyframes bounce-subtle {
+	0%,
 	100% {
-		opacity: 1;
 		transform: translateY(0);
 	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.hero-tag,
-	.hero-h1,
-	.hero-sub,
-	.hero-svc,
-	.hero-card {
-		animation: none;
-		opacity: 1;
-		transform: none;
+	50% {
+		transform: translateY(4px);
 	}
 }
 </style>
