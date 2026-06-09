@@ -16,6 +16,7 @@ interface AuthUser {
 export const useAuthStore = defineStore("authStore", () => {
 	const {
 		user,
+		session,
 		isAuthenticated,
 		isLoading,
 		signInWithGoogle,
