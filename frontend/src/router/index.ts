@@ -12,7 +12,7 @@ const router = createRouter({
 		{
 			path: "/auth/error",
 			name: "auth-error",
-			component: () => import("@/views/AuthBannedErrorView.vue"),
+			component: () => import("@/views/BannedView.vue"),
 		},
 		{
 			path: "/admin",

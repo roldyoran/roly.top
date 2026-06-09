@@ -1,5 +1,5 @@
 <template>
-	<div class="min-h-screen flex items-center justify-center px-4">
+	<div class="min-h-screen flex items-center justify-center px-4 relative z-10">
 		<div class="w-full max-w-md">
 			<div class="rounded-2xl border border-border bg-card p-8 text-center space-y-6">
 				<div class="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
@@ -15,15 +15,15 @@
 					</p>
 				</div>
 
-				<div v-if="banReason || banExpires" class="rounded-lg border border-border bg-muted/50 p-4 text-left space-y-3">
-					<div v-if="banReason" class="flex items-start gap-3">
+				<div v-if="resolvedReason || resolvedExpiry" class="rounded-lg border border-border bg-muted/50 p-4 text-left space-y-3">
+					<div v-if="resolvedReason" class="flex items-start gap-3">
 						<Info class="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
 						<div>
 							<p class="text-xs font-medium text-muted-foreground">Motivo</p>
-							<p class="text-sm text-foreground">{{ banReason }}</p>
+							<p class="text-sm text-foreground">{{ resolvedReason }}</p>
 						</div>
 					</div>
-					<div v-if="banExpires" class="flex items-start gap-3">
+					<div v-if="resolvedExpiry" class="flex items-start gap-3">
 						<Clock class="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
 						<div>
 							<p class="text-xs font-medium text-muted-foreground">Expira</p>
@@ -54,21 +54,30 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { ShieldOff, Info, Clock } from "lucide-vue-next";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/authStore";
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const banReason = computed(() => authStore.banReason);
-const banExpires = computed(() => authStore.banExpires);
+const queryReason = computed(() => {
+	const desc = route.query.error_description;
+	if (typeof desc === "string") {
+		return decodeURIComponent(desc.replace(/\+/g, " "));
+	}
+	return null;
+});
+
+const resolvedReason = computed(() => authStore.banReason ?? queryReason.value);
+const resolvedExpiry = computed(() => authStore.banExpires);
 
 const formattedExpiry = computed(() => {
-	if (!banExpires.value) return null;
+	if (!resolvedExpiry.value) return null;
 	try {
-		return new Date(banExpires.value).toLocaleDateString("es-ES", {
+		return new Date(resolvedExpiry.value).toLocaleDateString("es-ES", {
 			day: "numeric",
 			month: "long",
 			year: "numeric",
@@ -76,7 +85,7 @@ const formattedExpiry = computed(() => {
 			minute: "2-digit",
 		});
 	} catch {
-		return banExpires.value;
+		return resolvedExpiry.value;
 	}
 });
 
