@@ -4,8 +4,11 @@
     <div class="bg-glow-center" aria-hidden="true" />
     <Toaster class="pointer-events-auto" />
 
+    <!-- Auth error route: render directly, skip banned overlay -->
+    <RouterView v-if="isAuthErrorRoute" />
+
     <!-- Banned user: show ban screen -->
-    <BannedView v-if="authStore.isBanned" />
+    <BannedView v-else-if="authStore.isBanned" />
 
     <!-- Normal app -->
     <template v-else>
@@ -194,6 +197,7 @@ const urlStore = useUrlStore();
 const authStore = useAuthStore();
 
 const isAdminRoute = computed(() => route.path.startsWith("/admin"));
+const isAuthErrorRoute = computed(() => route.name === "auth-error");
 
 watchEffect(() => {
 	if (mode.value === "dark") {

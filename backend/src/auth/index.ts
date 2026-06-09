@@ -58,6 +58,11 @@ export function createAuth(env?: CloudflareBindings) {
 			skipStateCookieCheck: true,
 		},
 		plugins: [admin()],
+		onAPIError: {
+			errorURL: env.DEV_MODE
+				? "http://localhost:5173/auth/error"
+				: "/auth/error",
+		},
 		advanced: {
 			defaultCookieAttributes: {
 				sameSite: "lax",

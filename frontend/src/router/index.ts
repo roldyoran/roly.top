@@ -10,6 +10,11 @@ const router = createRouter({
 			component: () => import("@/views/HomeView.vue"),
 		},
 		{
+			path: "/auth/error",
+			name: "auth-error",
+			component: () => import("@/views/AuthBannedErrorView.vue"),
+		},
+		{
 			path: "/admin",
 			component: () => import("@/components/features/admin/AdminLayout.vue"),
 			meta: { requiresAuth: true, requiresAdmin: true },
