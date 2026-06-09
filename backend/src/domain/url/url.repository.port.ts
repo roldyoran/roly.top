@@ -8,6 +8,7 @@ export interface UrlRepositoryPort {
 	findByOriginalUrl(originalUrl: string): Promise<UrlEntity | null>;
 	findByUserId(userId: string): Promise<UrlEntity[]>;
 	findByUserShortCode(userId: string, shortCode: string): Promise<UrlEntity | null>;
+	countByUserId(userId: string): Promise<number>;
 	create(input: CreateUrlInput): Promise<UrlEntity>;
 	createForUser(userId: string, input: CreateUrlInput): Promise<UrlEntity>;
 	deleteByShortCode(shortCode: string): Promise<UrlEntity | null>;

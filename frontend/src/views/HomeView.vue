@@ -78,6 +78,13 @@
     <!-- Formulario de acortamiento (solo autenticados) -->
     <div v-else class="hero-card w-full" style="max-width:680px">
       <Card class="rounded-2xl p-4 sm:p-5">
+        <!-- Mensaje de límite alcanzado -->
+        <div v-if="hasReachedLimit" class="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+          <p class="text-sm text-destructive font-medium">
+            Has alcanzado el límite de {{ urlStore.urlLimit }} URLs. Elimina una antes de crear otra.
+          </p>
+        </div>
+
         <div class="flex items-center justify-between mb-2">
           <Label class="font-mono text-[10px] tracking-wider flex items-center gap-1.5 text-foreground">
             <svg class="w-3 h-3 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -97,10 +104,11 @@
             placeholder="https://ejemplo.com/pagina-muy-larga/con-parametros-largos..."
             class="flex-1 rounded-xl px-4 py-3 text-sm font-mono"
             @keydown.enter.prevent="handleShorten"
+            :disabled="hasReachedLimit"
           />
           <Button
             type="submit"
-            :disabled="isLoading"
+            :disabled="isLoading || hasReachedLimit"
             class="px-6 py-3 rounded-xl text-sm whitespace-nowrap w-full sm:w-auto"
           >
             <span v-if="!isLoading">Acortar →</span>
@@ -121,6 +129,7 @@
               @click="customAlias = !customAlias"
               class="w-9 h-5 rounded-full toggle-track flex items-center px-0.5"
               :class="customAlias ? 'active' : ''"
+              :disabled="hasReachedLimit"
             >
               <div class="w-4 h-4 rounded-full toggle-thumb" :class="customAlias ? 'active' : ''"></div>
             </button>
@@ -138,6 +147,7 @@
               inputmode="text"
               placeholder="alias - máximo 9 caracteres (a-z0-9)"
               class="w-full rounded-lg px-3 py-1.5 text-sm font-mono"
+              :disabled="hasReachedLimit"
             />
           </div>
         </div>
@@ -191,6 +201,8 @@ const alias = ref("");
 const originalUrl = ref("");
 const resultCard = ref<HTMLElement | null>(null);
 const cardAnimating = ref(false);
+
+const hasReachedLimit = computed(() => !authStore.isAdmin && urlStore.urlCount >= urlStore.urlLimit);
 
 const onAliasInput = (e: Event) => {
 	const val = (e.target as HTMLInputElement).value || "";

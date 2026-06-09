@@ -297,6 +297,7 @@ import QRCode from "qrcode-generator";
 import { getUrlsRequest, getPublicUrlsRequest, getApiBaseUrl } from "@/api/http";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlStore } from "@/stores/urlStore";
+import { useAuthStore } from "@/stores/authStore";
 import { formatDate, truncateText } from "@/lib/utils";
 import type { UrlInfoResponse } from "@/api/types";
 import { toast } from "vue-sonner";
@@ -326,6 +327,7 @@ const props = withDefaults(defineProps<{ mode?: Mode }>(), {
 const isMyList = computed(() => props.mode === "my");
 
 const urlStore = useUrlStore();
+const authStore = useAuthStore();
 const { copyToClipboard } = useCopyToClipboard();
 
 const baseUrl = getApiBaseUrl();
@@ -561,12 +563,39 @@ const loadUrls = async () => {
 	if (!urlStore.shouldFetchPublicList() && shortUrls.value.length > 0) {
 		return;
 	}
+
+	if (isMyList.value && !authStore.isAuthenticated) {
+		shortUrls.value = [];
+		return;
+	}
+
 	isLoading.value = true;
 	try {
 		const response = isMyList.value
 			? await getUrlsRequest()
 			: await getPublicUrlsRequest();
-		if (response && Array.isArray(response)) {
+
+		if (isMyList.value && response && typeof response === "object" && "urls" in response) {
+			// Respuesta del nuevo formato: { urls: UrlInfoResponse[], urlLimit: number }
+			const { urls, urlLimit } = response;
+			urlStore.setUrlLimit(urlLimit);
+			if (Array.isArray(urls)) {
+				shortUrls.value = urls.sort(
+					(a, b) =>
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				);
+				urlStore.updatePublicListFetchTime();
+				toast.success("URLs cargadas", {
+					description: "Lista de URLs actualizada correctamente",
+				});
+			} else {
+				shortUrls.value = [];
+				toast.warning("Sin URLs", {
+					description: "No se encontraron URLs disponibles",
+				});
+			}
+		} else if (Array.isArray(response)) {
+			// Respuesta del formato antiguo (para URLs públicas)
 			shortUrls.value = response.sort(
 				(a, b) =>
 					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -597,7 +626,7 @@ const loadUrls = async () => {
 onMounted(() => {
 	if (!isMyList.value) {
 		loadUrls();
-	} else if (urlStore.savedUrls.length > 0) {
+	} else if (authStore.isAuthenticated && urlStore.savedUrls.length > 0) {
 		loadUrls();
 	}
 });
@@ -606,7 +635,7 @@ watch(isMyList, (value) => {
 	if (!value && shortUrls.value.length === 0) {
 		loadUrls();
 	}
-	if (value && urlStore.savedUrls.length > 0 && shortUrls.value.length === 0) {
+	if (value && authStore.isAuthenticated && urlStore.savedUrls.length > 0 && shortUrls.value.length === 0) {
 		loadUrls();
 	}
 });

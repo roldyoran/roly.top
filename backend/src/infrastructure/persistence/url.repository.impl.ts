@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, count } from "drizzle-orm";
 import type { DrizzleDB } from "@/db";
 import { urlsTable } from "@/db/schema";
 import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
@@ -48,6 +48,14 @@ export class UrlRepository implements UrlRepositoryPort {
 			.from(urlsTable)
 			.where(eq(urlsTable.userId, userId))
 			.all();
+	}
+
+	async countByUserId(userId: string): Promise<number> {
+		const result = await this.db
+			.select({ value: count() })
+			.from(urlsTable)
+			.where(eq(urlsTable.userId, userId));
+		return result[0]?.value ?? 0;
 	}
 
 	async findByUserShortCode(

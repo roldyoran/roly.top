@@ -18,6 +18,8 @@ export const users = sqliteTable("users", {
   banned: integer("banned", { mode: "boolean" }).default(false),
   banReason: text("ban_reason"),
   banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
+  // URL limit per user (default 2 for non-admin users)
+  urlLimit: integer("url_limit").default(2),
 });
 
 export const sessions = sqliteTable(

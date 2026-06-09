@@ -32,3 +32,8 @@ export interface ShortenResult {
 	shortUrl?: string;
 	originalUrl?: string;
 }
+
+export interface UserUrlsResponse {
+	urls: UrlInfoResponse[];
+	urlLimit: number;
+}

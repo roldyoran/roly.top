@@ -71,6 +71,13 @@ export const useUrlShortener = () => {
 				return { success: false };
 			}
 		} catch (error: any) {
+			if (error?.response?.status === 409 && error?.response?.data?.error?.code === "URL_LIMIT_REACHED") {
+				const message = error?.response?.data?.error?.message || `Límite de ${urlStore.urlLimit} URLs alcanzado`;
+				toast.error("Límite alcanzado", {
+					description: message,
+				});
+				return { success: false };
+			}
 			const errorMessage =
 				error?.response?.data?.message || "Error al acortar la URL";
 			toast.error("Error en el servidor", {

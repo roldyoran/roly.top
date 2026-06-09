@@ -17,6 +17,7 @@ export const useUrlStore = defineStore("urlStore", () => {
 	// Estado de la aplicación
 	const isLoading = ref(false);
 	const currentTab = ref<"shorten" | "info" | "myurls" | "list">("shorten");
+	const urlLimit = ref(2); // Límite de URLs por usuario (default 2)
 
 	// Cache para evitar llamadas excesivas a la API
 	const lastPublicListFetch = ref<string | null>(null);
@@ -33,6 +34,10 @@ export const useUrlStore = defineStore("urlStore", () => {
 	// Funciones de utilidad
 	function generateSessionId(): string {
 		return Date.now().toString(36) + Math.random().toString(36).substr(2);
+	}
+
+	function setUrlLimit(limit: number) {
+		urlLimit.value = limit;
 	}
 
 	function shouldResetAttempts(): boolean {
@@ -255,10 +260,11 @@ export const useUrlStore = defineStore("urlStore", () => {
 		isLoading,
 		currentTab,
 
-		// Getters
-		hasRemainingAttempts,
-		urlCount,
-		canUseService,
+	// Getters
+	hasRemainingAttempts,
+	urlCount,
+	urlLimit,
+	canUseService,
 
 		// Acciones - Sesión de usuario
 		loadUserSession,
@@ -267,11 +273,12 @@ export const useUrlStore = defineStore("urlStore", () => {
 		resetAttempts,
 		decrementAttempts,
 
-		// Acciones - URLs
-		loadSavedUrls,
-		addUrl,
-		removeUrl,
-		clearAllUrls,
+	// Acciones - URLs
+	loadSavedUrls,
+	addUrl,
+	removeUrl,
+	clearAllUrls,
+	setUrlLimit,
 
 		// Acciones - Navegación
 		setCurrentTab,
