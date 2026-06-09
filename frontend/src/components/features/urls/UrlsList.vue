@@ -13,7 +13,7 @@
             @click="confirmClearUrls"
             variant="destructive"
             size="sm"
-            :disabled="urlStore.savedUrls.length === 0"
+            :disabled="normalizedMyUrls.length === 0"
           >
             <Trash class="w-4 h-4 mr-2" />
             Borrar Todo
@@ -41,7 +41,7 @@
         </div>
 
         <CardDescription v-if="isMyList">
-          Tus URLs acortadas guardadas localmente ({{ urlStore.savedUrls.length }})
+          Tus URLs acortadas ({{ normalizedMyUrls.length }})
         </CardDescription>
       </CardHeader>
 
@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div v-else-if="isMyList && urlStore.savedUrls.length === 0" class="text-center py-12">
+        <div v-else-if="isMyList && normalizedMyUrls.length === 0" class="text-center py-12">
           <Database class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 class="text-lg font-semibold mb-2">No hay URLs guardadas</h3>
           <p class="text-muted-foreground">Las URLs acortadas aparecerán aquí automáticamente</p>
@@ -341,6 +341,7 @@ const { copyToClipboard } = useCopyToClipboard();
 
 // Public list state
 const shortUrls = ref<UrlInfoResponse[]>([]);
+const myUrls = ref<UrlInfoResponse[]>([]);
 const searchQuery = ref<string>("");
 const isLoading = ref<boolean>(false);
 
@@ -367,8 +368,17 @@ const publicClicksByShort = computed(() => {
 	return map;
 });
 
-const normalizedMyUrls = computed<NormalizedUrl[]>(() =>
-	urlStore.savedUrls.map((url: SavedUrl) => {
+const normalizedMyUrls = computed<NormalizedUrl[]>(() => {
+	if (myUrls.value.length > 0) {
+		return myUrls.value.map((url) => ({
+			shortCode: url.shortCode,
+			originalUrl: url.originalUrl,
+			createdAt: url.createdAt,
+			clicks: url.visits || 0,
+			raw: url,
+		}));
+	}
+	return urlStore.savedUrls.map((url: SavedUrl) => {
 		const savedClicks = url.clicks ?? url.visits;
 		const clicks = savedClicks ?? publicClicksByShort.value.get(url.short) ?? 0;
 		return {
@@ -378,8 +388,8 @@ const normalizedMyUrls = computed<NormalizedUrl[]>(() =>
 			clicks,
 			raw: url,
 		};
-	}),
-);
+	});
+});
 
 const normalizedPublicUrls = computed<NormalizedUrl[]>(() =>
 	shortUrls.value.map((url) => ({
@@ -586,12 +596,12 @@ const downloadQR = () => {
 };
 
 const loadUrls = async () => {
-	if (!urlStore.shouldFetchPublicList() && shortUrls.value.length > 0) {
+	if (!isMyList.value && !urlStore.shouldFetchPublicList() && shortUrls.value.length > 0) {
 		return;
 	}
 
 	if (isMyList.value && !authStore.isAuthenticated) {
-		shortUrls.value = [];
+		myUrls.value = [];
 		return;
 	}
 
@@ -611,16 +621,15 @@ const loadUrls = async () => {
 			const { urls, urlLimit } = response;
 			urlStore.setUrlLimit(urlLimit);
 			if (Array.isArray(urls)) {
-				shortUrls.value = urls.sort(
+				myUrls.value = urls.sort(
 					(a, b) =>
 						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 				);
-				urlStore.updatePublicListFetchTime();
 				toast.success("URLs cargadas", {
 					description: "Lista de URLs actualizada correctamente",
 				});
 			} else {
-				shortUrls.value = [];
+				myUrls.value = [];
 				toast.warning("Sin URLs", {
 					description: "No se encontraron URLs disponibles",
 				});
@@ -657,7 +666,7 @@ const loadUrls = async () => {
 onMounted(() => {
 	if (!isMyList.value) {
 		loadUrls();
-	} else if (authStore.isAuthenticated && urlStore.savedUrls.length > 0) {
+	} else if (authStore.isAuthenticated) {
 		loadUrls();
 	}
 });
@@ -666,12 +675,7 @@ watch(isMyList, (value) => {
 	if (!value && shortUrls.value.length === 0) {
 		loadUrls();
 	}
-	if (
-		value &&
-		authStore.isAuthenticated &&
-		urlStore.savedUrls.length > 0 &&
-		shortUrls.value.length === 0
-	) {
+	if (value && authStore.isAuthenticated && myUrls.value.length === 0) {
 		loadUrls();
 	}
 });
