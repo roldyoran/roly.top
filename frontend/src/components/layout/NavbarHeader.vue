@@ -162,6 +162,7 @@
 <script setup lang="ts">
 import { Github, Link, LogOut, Menu, Shield, User } from "lucide-vue-next";
 import { toast } from "vue-sonner";
+import { useRouter } from "vue-router";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,
@@ -179,12 +180,15 @@ defineProps<{
 	attempts: number;
 }>();
 
+const router = useRouter();
 const urlStore = useUrlStore();
 const authStore = useAuthStore();
 
 async function handleSignOut() {
 	try {
 		await authStore.signOut();
+		authStore.resetAuth();
+		router.push({ name: "home" });
 		toast.success("Sesión cerrada", {
 			description: "Has cerrado sesión correctamente.",
 		});

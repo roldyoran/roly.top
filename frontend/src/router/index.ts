@@ -12,7 +12,7 @@ const router = createRouter({
 		{
 			path: "/admin",
 			component: () => import("@/components/features/admin/AdminLayout.vue"),
-			meta: { requiresAdmin: true },
+			meta: { requiresAuth: true, requiresAdmin: true },
 			children: [
 				{
 					path: "",
@@ -39,22 +39,30 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, _from, next) => {
-	if (to.meta.requiresAdmin) {
-		const authStore = useAuthStore();
+	const needsAuth = to.meta.requiresAuth || to.meta.requiresAdmin;
+	const needsAdmin = to.meta.requiresAdmin;
 
-		if (!authStore.isInitialized) {
-			await authStore.initialize();
-		}
-
-		if (!authStore.isAuthenticated) {
-			next({ name: "home" });
-			return;
-		}
-		if (!authStore.isAdmin) {
-			next({ name: "home" });
-			return;
-		}
+	if (!needsAuth && !needsAdmin) {
+		next();
+		return;
 	}
+
+	const authStore = useAuthStore();
+
+	if (!authStore.isInitialized) {
+		await authStore.initialize();
+	}
+
+	if (!authStore.isAuthenticated) {
+		next({ name: "home" });
+		return;
+	}
+
+	if (needsAdmin && !authStore.isAdmin) {
+		next({ name: "home" });
+		return;
+	}
+
 	next();
 });
 

@@ -49,6 +49,12 @@ export const useAuthStore = defineStore("authStore", () => {
 		}
 	}
 
+	function resetAuth() {
+		user.value = null;
+		session.value = null;
+		isInitialized.value = false;
+	}
+
 	return {
 		user,
 		isAuthenticated,
@@ -60,6 +66,7 @@ export const useAuthStore = defineStore("authStore", () => {
 		userEmail,
 		userImage,
 		initialize,
+		resetAuth,
 		signIn: signInWithGoogle,
 		signOut: signOutUser,
 	};
