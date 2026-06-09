@@ -20,6 +20,11 @@ export const useUrlStore = defineStore("urlStore", () => {
 	const urlLimit = ref(2);
 	const currentUserId = ref<string | null>(null);
 
+	// Cache para evitar llamadas excesivas a la API de lista pública
+	const lastPublicListFetch = ref<string | null>(null);
+	const lastUserUrlCreated = ref<string | null>(null);
+	const CACHE_DURATION_MS = 5 * 60 * 1000;
+
 	// Getters computados
 	const hasRemainingAttempts = computed(
 		() => userSession.value.remainingAttempts > 0,
@@ -189,6 +194,30 @@ export const useUrlStore = defineStore("urlStore", () => {
 		});
 	}
 
+	// Funciones para el cache de la lista pública
+	function shouldFetchPublicList(): boolean {
+		const now = Date.now();
+
+		if (!lastPublicListFetch.value) {
+			return true;
+		}
+
+		const timeSinceLastFetch =
+			now - new Date(lastPublicListFetch.value).getTime();
+		const timeSinceLastUserUrl = lastUserUrlCreated.value
+			? now - new Date(lastUserUrlCreated.value).getTime()
+			: 0;
+
+		return (
+			timeSinceLastFetch >= CACHE_DURATION_MS ||
+			timeSinceLastUserUrl < CACHE_DURATION_MS
+		);
+	}
+
+	function updatePublicListFetchTime() {
+		lastPublicListFetch.value = new Date().toISOString();
+	}
+
 	// Funciones de navegación
 	function setCurrentTab(tab: typeof currentTab.value) {
 		currentTab.value = tab;
@@ -242,6 +271,10 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 		// Acciones - Navegación
 		setCurrentTab,
+
+		// Acciones - Cache de lista pública
+		shouldFetchPublicList,
+		updatePublicListFetchTime,
 
 		// Inicialización
 		initialize,
