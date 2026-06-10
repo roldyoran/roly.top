@@ -209,7 +209,7 @@
 			</div>
 		</div>
 
-		<Dialog v-model:open="deleteOpen">
+		<Dialog v-model:open="deleteOpen" :modal="false">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>
 					<DialogTitle class="font-display">Eliminar URL</DialogTitle>

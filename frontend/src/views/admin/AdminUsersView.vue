@@ -289,7 +289,7 @@
 			</div>
 		</div>
 
-		<Dialog v-model:open="editLimitOpen">
+		<Dialog v-model:open="editLimitOpen" :modal="false">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>
 					<DialogTitle class="font-display">Cambiar límite de URLs</DialogTitle>
@@ -310,7 +310,7 @@
 			</DialogContent>
 		</Dialog>
 
-		<Dialog v-model:open="banOpen">
+		<Dialog v-model:open="banOpen" :modal="false">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>
 					<DialogTitle class="font-display">Banear usuario</DialogTitle>
@@ -331,7 +331,7 @@
 			</DialogContent>
 		</Dialog>
 
-		<Dialog v-model:open="deleteOpen">
+		<Dialog v-model:open="deleteOpen" :modal="false">
 			<DialogContent class="rounded-2xl">
 				<DialogHeader>
 					<DialogTitle class="font-display">Eliminar usuario</DialogTitle>
