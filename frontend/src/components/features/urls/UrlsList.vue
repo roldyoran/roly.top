@@ -678,7 +678,7 @@ watch(publicQuery.data, (data: any) => {
 			shortUrls.value = [];
 		}
 	}
-});
+}, { immediate: true });
 
 watch(publicQuery.error, (err: any) => {
 	if (err) console.error("Error fetching public urls:", err);
@@ -717,7 +717,7 @@ watch(userQuery.data, (data: any) => {
 			myUrls.value = [];
 		}
 	}
-});
+}, { immediate: true });
 
 watch(userQuery.error, (err: any) => {
 	if (err) console.error("Error fetching user urls:", err);

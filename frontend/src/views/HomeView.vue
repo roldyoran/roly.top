@@ -329,11 +329,6 @@ const copyServiceUrl = () => {
 const copyShortUrl = () => {
 	copyToClipboard(shortUrl.value, "URL copiada al portapapeles");
 };
-
-const scrollDown = () => {
-	const tabs = document.querySelector(".space-y-6.mt-8");
-	tabs?.scrollIntoView({ behavior: "smooth", block: "start" });
-};
 </script>
 
 <style scoped>
