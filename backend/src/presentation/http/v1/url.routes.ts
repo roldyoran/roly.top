@@ -18,12 +18,23 @@ type UrlVariables = Variables & {
 const urlRoutes = new Hono<{ Bindings: Bindings; Variables: UrlVariables }>();
 
 // GET /v1/urls/public — lista pública de URLs (solo de usuarios admin)
+import { computeETag } from "./etag";
+
 urlRoutes.get("/public", async (c) => {
 	const urlRepo = c.get("urlRepo");
 	const userRepo = c.get("userRepo");
 
 	const useCase = new GetPublicUrlsUseCase(urlRepo, userRepo);
 	const urls = await useCase.execute();
+
+	// Compute ETag and respond 304 if If-None-Match matches
+	const etag = await computeETag(urls);
+	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+	if (ifNone && ifNone === etag) {
+		c.header("ETag", etag);
+		return c.text("", 304);
+	}
+	c.header("ETag", etag);
 	return c.json(urls);
 });
 
@@ -43,11 +54,21 @@ urlRoutes.get("/", async (c) => {
 	const userRepo = c.get("userRepo");
 	const dbUser = await userRepo.findLimitAndRoleById(user.id);
 
-	return c.json({
+	const payload = {
 		urls,
 		urlLimit:
 			dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2),
-	});
+	};
+
+	// ETag handling
+	const etag = await computeETag(payload);
+	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+	if (ifNone && ifNone === etag) {
+		c.header("ETag", etag);
+		return c.text("", 304);
+	}
+	c.header("ETag", etag);
+	return c.json(payload);
 });
 
 // POST /v1/urls — crea una nueva URL corta asociada al usuario

@@ -63,6 +63,8 @@ adminRoutes.get("/stats", async (c) => {
 
 // ── Users ────────────────────────────────────────────────────────────────────
 
+import { computeETag } from "./etag";
+
 adminRoutes.get("/users", async (c) => {
 	// Support batch fetch by ids: /v1/admin/users?ids=id1,id2
 	const idsParam = c.req.query("ids") ?? undefined;
@@ -74,6 +76,15 @@ adminRoutes.get("/users", async (c) => {
 		const adminRepo = getAdminRepo(c);
 		const useCase = new (await import("@/application/admin/get-users-by-ids.usecase")).GetUsersByIdsUseCase(adminRepo);
 		const users = await useCase.execute(ids);
+
+		// ETag handling for batch response
+		const etag = await computeETag(users);
+		const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+		if (ifNone && ifNone === etag) {
+			c.header("ETag", etag);
+			return c.text("", 304);
+		}
+		c.header("ETag", etag);
 		return c.json(users);
 	}
 
@@ -83,6 +94,15 @@ adminRoutes.get("/users", async (c) => {
 	const adminRepo = getAdminRepo(c);
 	const useCase = new ListUsersUseCase(adminRepo);
 	const result = await useCase.execute({ page, pageSize, search });
+
+	// ETag handling for paginated result
+	const etag = await computeETag(result);
+	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+	if (ifNone && ifNone === etag) {
+		c.header("ETag", etag);
+		return c.text("", 304);
+	}
+	c.header("ETag", etag);
 	return c.json(result);
 });
 
@@ -163,6 +183,15 @@ adminRoutes.get("/urls", async (c) => {
 	const adminRepo = getAdminRepo(c);
 	const useCase = new AdminListUrlsUseCase(adminRepo);
 	const result = await useCase.execute({ page, pageSize, search });
+
+	// ETag handling
+	const etag = await computeETag(result);
+	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+	if (ifNone && ifNone === etag) {
+		c.header("ETag", etag);
+		return c.text("", 304);
+	}
+	c.header("ETag", etag);
 	return c.json(result);
 });
 
