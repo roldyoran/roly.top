@@ -82,7 +82,7 @@ adminRoutes.get("/users", async (c) => {
 		const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
 		if (ifNone && ifNone === etag) {
 			c.header("ETag", etag);
-			return c.text("", 304);
+			return c.body(null, 304);
 		}
 		c.header("ETag", etag);
 		return c.json(users);
@@ -100,7 +100,7 @@ adminRoutes.get("/users", async (c) => {
 	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
 	if (ifNone && ifNone === etag) {
 		c.header("ETag", etag);
-		return c.text("", 304);
+		return c.body(null, 304);
 	}
 	c.header("ETag", etag);
 	return c.json(result);
@@ -189,7 +189,7 @@ adminRoutes.get("/urls", async (c) => {
 	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
 	if (ifNone && ifNone === etag) {
 		c.header("ETag", etag);
-		return c.text("", 304);
+		return c.body(null, 304);
 	}
 	c.header("ETag", etag);
 	return c.json(result);

@@ -32,7 +32,7 @@ urlRoutes.get("/public", async (c) => {
 	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
 	if (ifNone && ifNone === etag) {
 		c.header("ETag", etag);
-		return c.text("", 304);
+		return c.body(null, 304);
 	}
 	c.header("ETag", etag);
 	return c.json(urls);
@@ -65,7 +65,7 @@ urlRoutes.get("/", async (c) => {
 	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
 	if (ifNone && ifNone === etag) {
 		c.header("ETag", etag);
-		return c.text("", 304);
+		return c.body(null, 304);
 	}
 	c.header("ETag", etag);
 	return c.json(payload);
