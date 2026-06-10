@@ -502,7 +502,7 @@ const deleteUrlMutation = useMutation<void, unknown, string, { previousMyUrls: a
 			try { urlStore.removeUrl("", shortCode); } catch (e) { /* ignore */ }
 			return { previousMyUrls };
 		},
-		onError: (err: unknown, shortCode: string, context: any) => {
+		onError: (err: unknown, _shortCode: string, context: any) => {
 			if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
 			console.error("deleteUrlMutation error:", err);
 		},
@@ -639,67 +639,63 @@ if (cachedPublic && cachedPublic.length > 0) {
 	shortUrls.value = cachedPublic.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-const publicQuery = useQuery(
-	["publicUrls"],
-	async ({ signal }: any) => {
+const publicQuery = useQuery({
+	queryKey: ["publicUrls"],
+	queryFn: async ({ signal }: any) => {
 		const res = await getPublicUrlsRequest(signal);
 		return res;
 	},
-	{
-		enabled: computed(() => !isMyList.value),
-		staleTime: PUBLIC_TTL,
-		cacheTime: PUBLIC_TTL * 2,
-		refetchOnWindowFocus: false,
-		initialData: cachedPublic ?? undefined,
-		onSuccess(data) {
-			if (Array.isArray(data)) {
-				shortUrls.value = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-				urlStore.savePublicCache && urlStore.savePublicCache(shortUrls.value);
-				urlStore.updatePublicListFetchTime();
-			} else {
-				shortUrls.value = [];
-			}
-		},
-		onError(err: any) {
-			console.error("Error fetching public urls:", err);
-		},
+	enabled: computed(() => !isMyList.value),
+	staleTime: PUBLIC_TTL,
+	cacheTime: PUBLIC_TTL * 2,
+	refetchOnWindowFocus: false,
+	initialData: cachedPublic ?? undefined,
+	onSuccess(data: any) {
+		if (Array.isArray(data)) {
+			shortUrls.value = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+			urlStore.savePublicCache && urlStore.savePublicCache(shortUrls.value);
+			urlStore.updatePublicListFetchTime();
+		} else {
+			shortUrls.value = [];
+		}
 	},
-);
+	onError(err: any) {
+		console.error("Error fetching public urls:", err);
+	},
+});
 
 // Query para las URLs del usuario autenticado (my URLs)
 const userKey = computed(() => ["userUrls", authStore.userId]);
 
-const userQuery = useQuery(
-	userKey,
-	async ({ signal }: any) => {
+const userQuery = useQuery({
+	queryKey: userKey,
+	queryFn: async ({ signal }: any) => {
 		// backend devuelve { urls: UrlInfoResponse[], urlLimit }
 		const res = await getUrlsRequest(signal);
 		return res;
 	},
-	{
-		enabled: computed(() => isMyList.value && authStore.isAuthenticated),
-		staleTime: PUBLIC_TTL,
-		cacheTime: PUBLIC_TTL * 2,
-		refetchOnWindowFocus: false,
-		onSuccess(data: any) {
-			if (data && typeof data === "object" && "urls" in data) {
-				const { urls, urlLimit } = data;
-				urlStore.setUrlLimit(urlLimit);
-				if (Array.isArray(urls)) {
-					myUrls.value = urls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-				} else {
-					myUrls.value = [];
-				}
+	enabled: computed(() => isMyList.value && authStore.isAuthenticated),
+	staleTime: PUBLIC_TTL,
+	cacheTime: PUBLIC_TTL * 2,
+	refetchOnWindowFocus: false,
+	onSuccess(data: any) {
+		if (data && typeof data === "object" && "urls" in data) {
+			const { urls, urlLimit } = data;
+			urlStore.setUrlLimit(urlLimit);
+			if (Array.isArray(urls)) {
+				myUrls.value = urls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 			} else {
 				myUrls.value = [];
 			}
-		},
-		onError(err: any) {
-			console.error("Error fetching user urls:", err);
+		} else {
 			myUrls.value = [];
-		},
+		}
 	},
-);
+	onError(err: any) {
+		console.error("Error fetching user urls:", err);
+		myUrls.value = [];
+	},
+});
 
 
 // onMounted: Vue Query maneja las cargas automáticas para public/user URLs a través de `enabled`.

@@ -288,7 +288,7 @@ function onSearch() {
 		adminParams.value.page = 1;
 		adminParams.value.search = searchQuery.value || undefined;
 		// cancelar queries en vuelo para que Vue Query aborte la petición
-		queryClient.cancelQueries(["adminUrls"]);
+		queryClient.cancelQueries({ queryKey: ["adminUrls"] });
 		await adminQuery.refetch();
 		// load owner names for the fetched urls (batch)
 		const urls = adminStore.urls?.data ?? [];
@@ -310,7 +310,7 @@ function onSearch() {
 function goToPage(page: number) {
 	adminParams.value.page = page;
 	// cancelar queries en vuelo antes de refetch
-	queryClient.cancelQueries(["adminUrls"]);
+	queryClient.cancelQueries({ queryKey: ["adminUrls"] });
 	adminQuery.refetch().then(async () => {
 		const urls = adminStore.urls?.data ?? [];
 		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
@@ -394,23 +394,24 @@ watch(adminQuery.isFetching, (v) => {
 });
 
 // Mutation for deleting admin URL (optimistic)
-const deleteAdminUrlMutation = useMutation(
+const deleteAdminUrlMutation = useMutation<void, unknown, string, { previous: any }>(
 	async (shortCode: string) => {
 		return await deleteAdminUrl(shortCode);
 	},
 	{
 		onMutate: async (shortCode: string) => {
-			await queryClient.cancelQueries(["adminUrls"]);
+			await queryClient.cancelQueries({ queryKey: ["adminUrls"] });
 			const previous = adminStore.urls ? JSON.parse(JSON.stringify(adminStore.urls)) : null;
 			if (adminStore.urls && adminStore.urls.data) {
 				adminStore.urls.data = adminStore.urls.data.filter((u: any) => u.shortCode !== shortCode);
 			}
 			return { previous };
 		},
-		onError: (_err, _shortCode, context: any) => {
+		onError: (err: unknown, _shortCode: string, context: any) => {
 			if (context?.previous) adminStore.urls = context.previous;
+			console.error('deleteAdminUrlMutation error:', err);
 		},
-		onSettled: () => queryClient.invalidateQueries(["adminUrls"]),
+		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUrls"] }),
 	},
 );
 

@@ -111,7 +111,7 @@
 
 <script setup lang="ts">
 import { Eye, Link, Shield, Users } from "lucide-vue-next";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/stores/adminStore";
@@ -122,9 +122,13 @@ const adminStore = useAdminStore();
 const queryClient = useQueryClient();
 
 // Stats query
-const statsQuery = useQuery(["adminStats"], async () => {
-	return await getAdminStats();
-}, { refetchOnWindowFocus: false });
+const statsQuery = useQuery({
+	queryKey: ["adminStats"],
+	queryFn: async ({ signal }: any) => {
+		return await getAdminStats(signal);
+	},
+	refetchOnWindowFocus: false,
+});
 
 watch(statsQuery.data, (v) => {
 	if (v) adminStore.stats = v as any;
@@ -132,13 +136,16 @@ watch(statsQuery.data, (v) => {
 
 // Admin urls (first 5)
 const adminUrlsKey = ["adminUrls", 1, 5, undefined];
-const adminUrlsQuery = useQuery(adminUrlsKey, async () => {
-	const res = await queryClient.fetchQuery(adminUrlsKey as any, async () => {
-		const { page, pageSize, search } = { page: 1, pageSize: 5, search: undefined };
-		return await (await import("@/api/admin")).getAdminUrls(page, pageSize, search);
-	});
-	return res;
-}, { keepPreviousData: true, refetchOnWindowFocus: false });
+const adminUrlsQuery = useQuery({
+	queryKey: adminUrlsKey,
+	queryFn: async ({ signal }: any) => {
+		const page = 1, pageSize = 5, search = undefined;
+		const { getAdminUrls } = await import("@/api/admin");
+		return await getAdminUrls(page, pageSize, search, signal);
+	},
+	keepPreviousData: true,
+	refetchOnWindowFocus: false,
+});
 
 watch(adminUrlsQuery.data, (v) => {
 	if (v) adminStore.urls = v as any;
@@ -146,13 +153,16 @@ watch(adminUrlsQuery.data, (v) => {
 
 // Admin users (first 5)
 const adminUsersKey = ["adminUsers", 1, 5, undefined];
-const adminUsersQuery = useQuery(adminUsersKey, async () => {
-	const res = await queryClient.fetchQuery(adminUsersKey as any, async () => {
-		const { page, pageSize, search } = { page: 1, pageSize: 5, search: undefined };
-		return await (await import("@/api/admin")).getAdminUsers(page, pageSize, search);
-	});
-	return res;
-}, { keepPreviousData: true, refetchOnWindowFocus: false });
+const adminUsersQuery = useQuery({
+	queryKey: adminUsersKey,
+	queryFn: async ({ signal }: any) => {
+		const page = 1, pageSize = 5, search = undefined;
+		const { getAdminUsers } = await import("@/api/admin");
+		return await getAdminUsers(page, pageSize, search, signal);
+	},
+	keepPreviousData: true,
+	refetchOnWindowFocus: false,
+});
 
 watch(adminUsersQuery.data, (v) => {
 	if (v) adminStore.users = v as any;

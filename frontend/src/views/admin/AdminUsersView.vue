@@ -457,7 +457,7 @@ const deleteUserMutation = useMutation<void, unknown, string, { previous: any }>
 			}
 			return { previous };
 		},
-		onError: (err: unknown, userId: string, context: any) => {
+		onError: (err: unknown, _userId: string, context: any) => {
 			if (context?.previous) {
 				adminStore.users = context.previous;
 			}
@@ -484,7 +484,7 @@ const banMutation = useMutation<void, unknown, { userId: string; reason?: string
 			}
 			return { previous };
 		},
-		onError: (err: unknown, vars: any, context: any) => {
+		onError: (err: unknown, _vars: any, context: any) => {
 			if (context?.previous) adminStore.users = context.previous;
 			console.error("banMutation error:", err);
 		},
@@ -507,7 +507,7 @@ const unbanMutation = useMutation<void, unknown, string, { previous: any }>(
 			}
 			return { previous };
 		},
-		onError: (err: unknown, userId: string, context: any) => {
+		onError: (err: unknown, _userId: string, context: any) => {
 			if (context?.previous) adminStore.users = context.previous;
 			console.error("unbanMutation error:", err);
 		},
@@ -530,7 +530,7 @@ const updateLimitMutation = useMutation<void, unknown, { userId: string; limit: 
 			}
 			return { previous };
 		},
-		onError: (err: unknown, vars: any, context: any) => {
+		onError: (err: unknown, _vars: any, context: any) => {
 			if (context?.previous) adminStore.users = context.previous;
 			console.error("updateLimitMutation error:", err);
 		},
@@ -545,7 +545,7 @@ function onSearch() {
 		adminParams.value.page = 1;
 		adminParams.value.search = searchQuery.value || undefined;
 		// cancelar consultas en vuelo para abortar la petición anterior
-		queryClient.cancelQueries(["adminUsers"]);
+		queryClient.cancelQueries({ queryKey: ["adminUsers"] });
 		await adminQuery.refetch();
 	}, 300);
 }
@@ -553,7 +553,7 @@ function onSearch() {
 function goToPage(page: number) {
 	adminParams.value.page = page;
 	// cancelar consultas en vuelo para abortar la petición anterior
-	queryClient.cancelQueries(["adminUsers"]);
+	queryClient.cancelQueries({ queryKey: ["adminUsers"] });
 	adminQuery.refetch();
 }
 
