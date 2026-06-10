@@ -145,62 +145,38 @@ Paso 3 — Evitar N requests por owner en Admin (batch owners)
 
 Paso 4 — Integrar TanStack Query (Vue Query) incrementalmente
 
-- Estado: EN PROGRESO — migraciones aplicadas:
-  - Lista pública: migrada a useQuery en frontend/src/components/features/urls/UrlsList.vue (clave ['publicUrls']).
-  - User URLs (my list): migrada a useQuery en frontend/src/components/features/urls/UrlsList.vue (clave ['userUrls', userId]).
-  - Admin URLs: migrada a useQuery en frontend/src/views/admin/AdminUrlsView.vue (clave ['adminUrls', page, pageSize, search]).
+- Estado: COMPLETADO — migraciones aplicadas y funcionamiento:
+  - Vue Query integrado y QueryClient registrado en frontend/src/main.ts.
+  - Lista pública: frontend/src/components/features/urls/UrlsList.vue usa useQuery(['publicUrls']) + cache persistente.
+  - User URLs: frontend/src/components/features/urls/UrlsList.vue usa useQuery(['userUrls', userId]).
+  - Admin URLs: frontend/src/views/admin/AdminUrlsView.vue usa useQuery(['adminUrls', page, pageSize, search]).
+  - Admin Users: frontend/src/views/admin/AdminUsersView.vue usa useQuery(['adminUsers', page, pageSize, search]).
+  - Admin Dashboard: migrado para usar queries de stats, recent urls y recent users.
 
-  Estas migraciones usan staleTime/ cacheTime de 5 minutos y persisten la lista pública en localStorage. También se añadió QueryClient en main.ts.
+- Paso 5 (Cancelación): COMPLETADO — Implementación
+  - Todas las funciones fetchables aceptan AbortSignal (getPublicUrlsRequest, getUrlsRequest, getAdminUsers, getAdminUrls, etc.).
+  - En búsquedas/paginación se cancela la petición anterior antes de lanzar la nueva (queryClient.cancelQueries({ queryKey })) para evitar race conditions.
 
-- Descripción
-  Añadir @tanstack/vue-query para centralizar caching, deduplicación, retries, cancelación y manejo de mutaciones (optimistic updates). Migrar endpoints críticos poco a poco: lista pública, user urls, admin urls.
-
-- Instalación
-  - Usando bun: `bun add --cwd frontend @tanstack/vue-query`
-  - Alternativa npm/yarn: `npm install @tanstack/vue-query --workspace frontend`
-
-- Configuración inicial (main.ts)
-  // frontend/src/main.ts
-  import { VueQueryPlugin, QueryClient } from '@tanstack/vue-query';
-  const queryClient = new QueryClient();
-  app.use(VueQueryPlugin, { queryClient });
-
-- Migración incremental recomendada (completado parcialmente)
-  1. Migrar `getPublicUrlsRequest` -> hecho (UrlsList.vue).
-  2. Migrar `getUrlsRequest` (user urls) -> hecho (UrlsList.vue).
-  3. Migrar `getAdminUrls` (admin urls) -> hecho (AdminUrlsView.vue).
-  4. Próximo: migrar endpoints de admin adicionales (users, stats) y convertir operaciones mutación (ban, delete) a useMutation con optimistic updates.
-
-- Ejemplo de useMutation con optimistic update (crear URL)
-  const mutation = useMutation(createUrlFn, {
-    onMutate: async (newUrl) => {
-      await queryClient.cancelQueries(['userUrls']);
-      const previous = queryClient.getQueryData(['userUrls']);
-      queryClient.setQueryData(['userUrls'], (old) => [newUrl, ...old]);
-      return { previous };
-    },
-    onError: (err, newUrl, context) => {
-      queryClient.setQueryData(['userUrls'], context.previous);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(['userUrls']);
-    },
-  });
+- Paso 6 (Optimistic updates): COMPLETADO — Implementación
+  - Admin users: ban/unban/delete/update-limit implementados con useMutation y optimistic updates, rollback y invalidation.
+  - Admin URLs: deleteAdminUrl implementado con useMutation y optimistic update.
+  - User URLs: deleteUrl implementado con useMutation y optimistic update.
+  - Shorten URL: migration parcial — ahora useUrlShortener usa useMutation para la creación con entrada optimista temporal (temp-<ts>) y reemplazo al confirmar.
 
 - Beneficios
-  - Deduplicación de requests por key.
-  - Control de staleTime y re-fetching.
-  - Cancelación/rollback y retries controlados.
+  - Menor número de requests duplicadas y race conditions.
+  - Mejor UX en operaciones mutativas (optimistic feedback).
+  - Queries centralizadas y coherentes para cache/invalidation.
 
-- Checklist QA (aplicado a las migraciones realizadas)
-  - Public URLs: useQuery retorna datos y respeta staleTime; localStorage contiene publicList_v1.
-  - User URLs: useQuery rellena myUrls y setea urlLimit.
-  - Admin URLs: useQuery rellena adminStore.urls y se hicieron batch owners.
+- Checklist QA (aplicado)
+  - Búsqueda/paginación: respuestas tardías no sobrescriben estado.
+  - Mutaciones optimistas: la UI actualiza inmediatamente y revierte si falla.
+  - Creación de URL: entrada temporal aparece y se reemplaza por la URL real en la respuesta.
 
 - Rollback
-  - Revertir la introducción de vue-query y restaurar fetch manual (commit atomic).
+  - Cada cambio está en commits atómicos; revertir PR por área si se detecta regresión.
 
-- Estimación: 2–4 días (migración incremental)
+- Estimación: completado incrementalmente (varios días totales)
 
 
 ---

@@ -443,13 +443,13 @@ watch(adminQuery.isFetching, (v) => {
 });
 
 // Mutations: optimistic updates
-const deleteUserMutation = useMutation(
+const deleteUserMutation = useMutation<void, unknown, string, { previous: any }>(
 	async (userId: string) => {
 		return await deleteUser(userId);
 	},
 	{
 		onMutate: async (userId: string) => {
-			await queryClient.cancelQueries(["adminUsers"]);
+			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
 			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
 			// Optimistically remove user from list
 			if (adminStore.users && adminStore.users.data) {
@@ -457,24 +457,25 @@ const deleteUserMutation = useMutation(
 			}
 			return { previous };
 		},
-		onError: (_err, _userId, context: any) => {
+		onError: (err: unknown, userId: string, context: any) => {
 			if (context?.previous) {
 				adminStore.users = context.previous;
 			}
+			console.error("deleteUserMutation error:", err);
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries(["adminUsers"]);
+			queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
 		},
 	},
 );
 
-const banMutation = useMutation(
+const banMutation = useMutation<void, unknown, { userId: string; reason?: string }, { previous: any }>(
 	async ({ userId, reason }: { userId: string; reason?: string }) => {
 		return await banUser(userId, reason);
 	},
 	{
-		onMutate: async ({ userId }) => {
-			await queryClient.cancelQueries(["adminUsers"]);
+		onMutate: async ({ userId }: { userId: string }) => {
+			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
 			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
 			if (adminStore.users && adminStore.users.data) {
 				adminStore.users.data = adminStore.users.data.map((u: any) =>
@@ -483,20 +484,21 @@ const banMutation = useMutation(
 			}
 			return { previous };
 		},
-		onError: (_err, _vars, context: any) => {
+		onError: (err: unknown, vars: any, context: any) => {
 			if (context?.previous) adminStore.users = context.previous;
+			console.error("banMutation error:", err);
 		},
-		onSettled: () => queryClient.invalidateQueries(["adminUsers"]),
+		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
 	},
 );
 
-const unbanMutation = useMutation(
+const unbanMutation = useMutation<void, unknown, string, { previous: any }>(
 	async (userId: string) => {
 		return await unbanUser(userId);
 	},
 	{
 		onMutate: async (userId: string) => {
-			await queryClient.cancelQueries(["adminUsers"]);
+			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
 			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
 			if (adminStore.users && adminStore.users.data) {
 				adminStore.users.data = adminStore.users.data.map((u: any) =>
@@ -505,20 +507,21 @@ const unbanMutation = useMutation(
 			}
 			return { previous };
 		},
-		onError: (_err, _userId, context: any) => {
+		onError: (err: unknown, userId: string, context: any) => {
 			if (context?.previous) adminStore.users = context.previous;
+			console.error("unbanMutation error:", err);
 		},
-		onSettled: () => queryClient.invalidateQueries(["adminUsers"]),
+		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
 	},
 );
 
-const updateLimitMutation = useMutation(
+const updateLimitMutation = useMutation<void, unknown, { userId: string; limit: number }, { previous: any }>(
 	async ({ userId, limit }: { userId: string; limit: number }) => {
 		return await updateUserUrlLimit(userId, limit);
 	},
 	{
-		onMutate: async ({ userId, limit }) => {
-			await queryClient.cancelQueries(["adminUsers"]);
+		onMutate: async ({ userId, limit }: { userId: string; limit: number }) => {
+			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
 			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
 			if (adminStore.users && adminStore.users.data) {
 				adminStore.users.data = adminStore.users.data.map((u: any) =>
@@ -527,10 +530,11 @@ const updateLimitMutation = useMutation(
 			}
 			return { previous };
 		},
-		onError: (_err, _vars, context: any) => {
+		onError: (err: unknown, vars: any, context: any) => {
 			if (context?.previous) adminStore.users = context.previous;
+			console.error("updateLimitMutation error:", err);
 		},
-		onSettled: () => queryClient.invalidateQueries(["adminUsers"]),
+		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
 	},
 );
 

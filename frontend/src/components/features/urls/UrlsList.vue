@@ -489,25 +489,26 @@ const removeUrl = (shortCode: string) => {
 
 const queryClient = useQueryClient();
 
-const deleteUrlMutation = useMutation(
+const deleteUrlMutation = useMutation<void, unknown, string, { previousMyUrls: any[] }>(
 	async (shortCode: string) => {
 		return await deleteUrlRequest(shortCode);
 	},
 	{
 		onMutate: async (shortCode: string) => {
-			await queryClient.cancelQueries(["userUrls"]);
+			await queryClient.cancelQueries({ queryKey: ["userUrls"] });
 			const previousMyUrls = myUrls.value ? JSON.parse(JSON.stringify(myUrls.value)) : [];
 			// Optimistically remove from local UI and store
 			myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
-			urlStore.removeUrl("", shortCode); // best-effort: remove by short
+			try { urlStore.removeUrl("", shortCode); } catch (e) { /* ignore */ }
 			return { previousMyUrls };
 		},
-		onError: (_err, _shortCode, context: any) => {
+		onError: (err: unknown, shortCode: string, context: any) => {
 			if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
+			console.error("deleteUrlMutation error:", err);
 		},
 		onSettled: () => {
-			queryClient.invalidateQueries(["userUrls"]);
-			queryClient.invalidateQueries(["publicUrls"]);
+			queryClient.invalidateQueries({ queryKey: ["userUrls"] });
+			queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
 		},
 	},
 );

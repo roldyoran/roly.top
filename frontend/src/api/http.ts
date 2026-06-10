@@ -38,11 +38,53 @@ export function getAxiosInstance(): AxiosInstance {
 		},
 	});
 
-	// Basic response interceptor for centralized error handling
+	// Request interceptor: attach If-None-Match header from local cache for GET requests
+	_axiosInstance.interceptors.request.use((config: any) => {
+		try {
+			if (config && config.method && config.method.toLowerCase() === "get") {
+				const key = `etag:${config.url}`;
+				const etag = localStorage.getItem(key);
+				if (etag) {
+					config.headers = config.headers || {};
+					config.headers["If-None-Match"] = etag;
+				}
+			}
+		} catch (e) {
+			// ignore
+		}
+		return config;
+	});
+
+	// Response interceptor: store ETag + cache GET bodies; handle 304 Not Modified by returning cached payload
 	_axiosInstance.interceptors.response.use(
-		(response) => response,
-		(error) => {
-			// Aquí se puede manejar 401 globalmente, logging, retries, etc.
+		(response: any) => {
+			try {
+				if (response && response.config && response.config.method && response.config.method.toLowerCase() === "get") {
+					const etag = response.headers?.etag || response.headers?.ETag;
+					if (etag) {
+						localStorage.setItem(`etag:${response.config.url}`, String(etag));
+					}
+					// cache response body
+					localStorage.setItem(`cache:${response.config.url}`, JSON.stringify(response.data));
+				}
+			} catch (e) {
+				// ignore cache errors
+			}
+			return response;
+		},
+		(error: any) => {
+			// If server responds 304 Not Modified, return cached payload
+			const status = error?.response?.status;
+			const config = error?.response?.config || error?.config;
+			if (status === 304 && config) {
+				try {
+					const cached = localStorage.getItem(`cache:${config.url}`);
+					const data = cached ? JSON.parse(cached) : null;
+					return Promise.resolve({ data, status: 304, headers: error.response.headers, config });
+				} catch (e) {
+					return Promise.reject(error);
+				}
+			}
 			return Promise.reject(error);
 		},
 	);

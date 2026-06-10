@@ -233,7 +233,7 @@ import { toast } from "vue-sonner";
 import type { AdminUrl, AdminUser } from "@/api/admin";
 import { deleteAdminUrl, getUsersByIds, getAdminUrls } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
-import { useQuery } from "@tanstack/vue-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
