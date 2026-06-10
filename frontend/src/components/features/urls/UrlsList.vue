@@ -653,7 +653,7 @@ const publicQuery = useQuery({
 watch(publicQuery.data, (data: any) => {
 	if (data) {
 		if (Array.isArray(data)) {
-			shortUrls.value = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+			shortUrls.value = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 			urlStore.savePublicCache && urlStore.savePublicCache(shortUrls.value);
 			urlStore.updatePublicListFetchTime();
 		} else {
@@ -688,7 +688,7 @@ watch(userQuery.data, (data: any) => {
 			const { urls, urlLimit } = data;
 			urlStore.setUrlLimit(urlLimit);
 			if (Array.isArray(urls)) {
-				myUrls.value = urls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+				myUrls.value = [...urls].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 			} else {
 				myUrls.value = [];
 			}
