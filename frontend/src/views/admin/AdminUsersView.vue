@@ -368,7 +368,7 @@ import {
 	updateUserUrlLimit,
 	getAdminUsers,
 } from "@/api/admin";
-import { useQuery } from "@tanstack/vue-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/vue-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -398,7 +398,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useAdminStore } from "@/stores/adminStore";
-import { useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const adminStore = useAdminStore();
 
@@ -417,126 +416,118 @@ const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | u
 
 const queryClient = useQueryClient();
 
-const adminQuery = useQuery(
-	computed(() => ["adminUsers", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
-	async ({ signal }: any) => {
+const adminQuery = useQuery({
+	queryKey: computed(() => ["adminUsers", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
+	queryFn: async ({ signal }: any) => {
 		const { page, pageSize, search } = adminParams.value;
 		const res = await getAdminUsers(page, pageSize, search, signal);
 		return res;
 	},
-	{
-		keepPreviousData: true,
-		refetchOnWindowFocus: false,
-		onSuccess(data: any) {
-			if (data) {
-				adminStore.users = data;
-			}
-		},
-		onError(err: any) {
-			console.error("Error fetching admin users:", err);
-		},
-	},
-);
+	placeholderData: keepPreviousData,
+	refetchOnWindowFocus: false,
+});
+
+watch(adminQuery.data, (data: any) => {
+	if (data) {
+		adminStore.users = data;
+	}
+});
+
+watch(adminQuery.error, (err: any) => {
+	if (err) console.error("Error fetching admin users:", err);
+});
 
 watch(adminQuery.isFetching, (v) => {
 	adminStore.isLoadingUsers = v;
 });
 
 // Mutations: optimistic updates
-const deleteUserMutation = useMutation<void, unknown, string, { previous: any }>(
-	async (userId: string) => {
+const deleteUserMutation = useMutation<void, unknown, string, { previous: any }>({
+	mutationFn: async (userId: string) => {
 		return await deleteUser(userId);
 	},
-	{
-		onMutate: async (userId: string) => {
-			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
-			// Optimistically remove user from list
-			if (adminStore.users && adminStore.users.data) {
-				adminStore.users.data = adminStore.users.data.filter((u: any) => u.id !== userId);
-			}
-			return { previous };
-		},
-		onError: (err: unknown, _userId: string, context: any) => {
-			if (context?.previous) {
-				adminStore.users = context.previous;
-			}
-			console.error("deleteUserMutation error:", err);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
-		},
+	onMutate: async (userId: string) => {
+		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
+		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		// Optimistically remove user from list
+		if (adminStore.users && adminStore.users.data) {
+			adminStore.users.data = adminStore.users.data.filter((u: any) => u.id !== userId);
+		}
+		return { previous };
 	},
-);
+	onError: (err: unknown, _userId: string, context: any) => {
+		if (context?.previous) {
+			adminStore.users = context.previous;
+		}
+		console.error("deleteUserMutation error:", err);
+	},
+	onSettled: () => {
+		queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+	},
+});
 
-const banMutation = useMutation<void, unknown, { userId: string; reason?: string }, { previous: any }>(
-	async ({ userId, reason }: { userId: string; reason?: string }) => {
+const banMutation = useMutation<void, unknown, { userId: string; reason?: string }, { previous: any }>({
+	mutationFn: async ({ userId, reason }: { userId: string; reason?: string }) => {
 		return await banUser(userId, reason);
 	},
-	{
-		onMutate: async ({ userId }: { userId: string }) => {
-			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
-			if (adminStore.users && adminStore.users.data) {
-				adminStore.users.data = adminStore.users.data.map((u: any) =>
-					u.id === userId ? { ...u, banned: true } : u,
-				);
-			}
-			return { previous };
-		},
-		onError: (err: unknown, _vars: any, context: any) => {
-			if (context?.previous) adminStore.users = context.previous;
-			console.error("banMutation error:", err);
-		},
-		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+	onMutate: async ({ userId }: { userId: string }) => {
+		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
+		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		if (adminStore.users && adminStore.users.data) {
+			adminStore.users.data = adminStore.users.data.map((u: any) =>
+				u.id === userId ? { ...u, banned: true } : u,
+			);
+		}
+		return { previous };
 	},
-);
+	onError: (err: unknown, _vars: any, context: any) => {
+		if (context?.previous) adminStore.users = context.previous;
+		console.error("banMutation error:", err);
+	},
+	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+});
 
-const unbanMutation = useMutation<void, unknown, string, { previous: any }>(
-	async (userId: string) => {
+const unbanMutation = useMutation<void, unknown, string, { previous: any }>({
+	mutationFn: async (userId: string) => {
 		return await unbanUser(userId);
 	},
-	{
-		onMutate: async (userId: string) => {
-			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
-			if (adminStore.users && adminStore.users.data) {
-				adminStore.users.data = adminStore.users.data.map((u: any) =>
-					u.id === userId ? { ...u, banned: false } : u,
-				);
-			}
-			return { previous };
-		},
-		onError: (err: unknown, _userId: string, context: any) => {
-			if (context?.previous) adminStore.users = context.previous;
-			console.error("unbanMutation error:", err);
-		},
-		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+	onMutate: async (userId: string) => {
+		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
+		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		if (adminStore.users && adminStore.users.data) {
+			adminStore.users.data = adminStore.users.data.map((u: any) =>
+				u.id === userId ? { ...u, banned: false } : u,
+			);
+		}
+		return { previous };
 	},
-);
+	onError: (err: unknown, _userId: string, context: any) => {
+		if (context?.previous) adminStore.users = context.previous;
+		console.error("unbanMutation error:", err);
+	},
+	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+});
 
-const updateLimitMutation = useMutation<void, unknown, { userId: string; limit: number }, { previous: any }>(
-	async ({ userId, limit }: { userId: string; limit: number }) => {
+const updateLimitMutation = useMutation<void, unknown, { userId: string; limit: number }, { previous: any }>({
+	mutationFn: async ({ userId, limit }: { userId: string; limit: number }) => {
 		return await updateUserUrlLimit(userId, limit);
 	},
-	{
-		onMutate: async ({ userId, limit }: { userId: string; limit: number }) => {
-			await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
-			if (adminStore.users && adminStore.users.data) {
-				adminStore.users.data = adminStore.users.data.map((u: any) =>
-					u.id === userId ? { ...u, urlLimit: limit } : u,
-				);
-			}
-			return { previous };
-		},
-		onError: (err: unknown, _vars: any, context: any) => {
-			if (context?.previous) adminStore.users = context.previous;
-			console.error("updateLimitMutation error:", err);
-		},
-		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+	onMutate: async ({ userId, limit }: { userId: string; limit: number }) => {
+		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
+		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		if (adminStore.users && adminStore.users.data) {
+			adminStore.users.data = adminStore.users.data.map((u: any) =>
+				u.id === userId ? { ...u, urlLimit: limit } : u,
+			);
+		}
+		return { previous };
 	},
-);
+	onError: (err: unknown, _vars: any, context: any) => {
+		if (context?.previous) adminStore.users = context.previous;
+		console.error("updateLimitMutation error:", err);
+	},
+	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+});
 
 
 function onSearch() {

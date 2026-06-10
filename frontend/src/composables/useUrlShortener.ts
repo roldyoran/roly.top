@@ -13,45 +13,43 @@ export const useUrlShortener = () => {
 
 	const queryClient = useQueryClient();
 
-	const shortenMutation = useMutation<UrlInfoResponse, unknown, { originalUrl: string; customHash?: string }, { previousSaved: any[]; tempShort?: string }>(
-		async ({ originalUrl, customHash }) => {
+	const shortenMutation = useMutation<UrlInfoResponse, unknown, { originalUrl: string; customHash?: string }, { previousSaved: any[]; tempShort?: string }>({
+		mutationFn: async ({ originalUrl, customHash }) => {
 			return await shortenUrlRequest(originalUrl, customHash);
 		},
-		{
-			onMutate: async ({ originalUrl }) => {
-				await queryClient.cancelQueries({ queryKey: ["userUrls"] });
-				const previousSaved = urlStore.savedUrls ? JSON.parse(JSON.stringify(urlStore.savedUrls)) : [];
-				const tempShort = `temp-${Date.now()}`;
-				urlStore.addUrl(originalUrl, tempShort);
-				return { previousSaved, tempShort };
-			},
-			onError: (err, vars, context) => {
-				if (context?.previousSaved) {
-					// restore previous saved urls
-					urlStore.clearAllUrls();
-					context.previousSaved.forEach((u: any) => urlStore.addUrl(u.original, u.short));
-				}
-				console.error('shortenMutation error:', err);
-			},
-			onSuccess: (data, vars, context) => {
-				// replace temp entry with real shortCode
-				if (context?.tempShort) {
-					// remove temp
-					urlStore.removeUrl(vars.originalUrl, context.tempShort);
-				}
-				urlStore.addUrl(data.originalUrl, data.shortCode);
-				// show toast
-				const builtShortUrl = `${getAppBaseUrl()}/${data.shortCode}`;
-				toast.success("¡URL acortada exitosamente!", {
-					description: `URL corta: ${builtShortUrl}`,
-				});
-			},
-			onSettled: () => {
-				queryClient.invalidateQueries({ queryKey: ["userUrls"] });
-				queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
-			},
+		onMutate: async ({ originalUrl }) => {
+			await queryClient.cancelQueries({ queryKey: ["userUrls"] });
+			const previousSaved = urlStore.savedUrls ? JSON.parse(JSON.stringify(urlStore.savedUrls)) : [];
+			const tempShort = `temp-${Date.now()}`;
+			urlStore.addUrl(originalUrl, tempShort);
+			return { previousSaved, tempShort };
 		},
-	);
+		onError: (err: unknown, _vars: { originalUrl: string; customHash?: string }, context: any) => {
+			if (context?.previousSaved) {
+				// restore previous saved urls
+				urlStore.clearAllUrls();
+				context.previousSaved.forEach((u: any) => urlStore.addUrl(u.original, u.short));
+			}
+			console.error('shortenMutation error:', err);
+		},
+		onSuccess: (data: UrlInfoResponse, vars: { originalUrl: string; customHash?: string }, context: any) => {
+			// replace temp entry with real shortCode
+			if (context?.tempShort) {
+				// remove temp
+				urlStore.removeUrl(vars.originalUrl, context.tempShort);
+			}
+			urlStore.addUrl(data.originalUrl, data.shortCode);
+			// show toast
+			const builtShortUrl = `${getAppBaseUrl()}/${data.shortCode}`;
+			toast.success("¡URL acortada exitosamente!", {
+				description: `URL corta: ${builtShortUrl}`,
+			});
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ["userUrls"] });
+			queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
+		},
+	});
 
 	const shortenUrl = async (
 		originalUrl: string,

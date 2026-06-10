@@ -489,29 +489,27 @@ const removeUrl = (shortCode: string) => {
 
 const queryClient = useQueryClient();
 
-const deleteUrlMutation = useMutation<void, unknown, string, { previousMyUrls: any[] }>(
-	async (shortCode: string) => {
+const deleteUrlMutation = useMutation<void, unknown, string, { previousMyUrls: any[] }>({
+	mutationFn: async (shortCode: string) => {
 		return await deleteUrlRequest(shortCode);
 	},
-	{
-		onMutate: async (shortCode: string) => {
-			await queryClient.cancelQueries({ queryKey: ["userUrls"] });
-			const previousMyUrls = myUrls.value ? JSON.parse(JSON.stringify(myUrls.value)) : [];
-			// Optimistically remove from local UI and store
-			myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
-			try { urlStore.removeUrl("", shortCode); } catch (e) { /* ignore */ }
-			return { previousMyUrls };
-		},
-		onError: (err: unknown, _shortCode: string, context: any) => {
-			if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
-			console.error("deleteUrlMutation error:", err);
-		},
-		onSettled: () => {
-			queryClient.invalidateQueries({ queryKey: ["userUrls"] });
-			queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
-		},
+	onMutate: async (shortCode: string) => {
+		await queryClient.cancelQueries({ queryKey: ["userUrls"] });
+		const previousMyUrls = myUrls.value ? JSON.parse(JSON.stringify(myUrls.value)) : [];
+		// Optimistically remove from local UI and store
+		myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
+		try { urlStore.removeUrl("", shortCode); } catch (e) { /* ignore */ }
+		return { previousMyUrls };
 	},
-);
+	onError: (err: unknown, _shortCode: string, context: any) => {
+		if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
+		console.error("deleteUrlMutation error:", err);
+	},
+	onSettled: () => {
+		queryClient.invalidateQueries({ queryKey: ["userUrls"] });
+		queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
+	},
+});
 
 const confirmDeleteUrl = async () => {
 	if (!urlToDelete.value) return;
@@ -647,10 +645,13 @@ const publicQuery = useQuery({
 	},
 	enabled: computed(() => !isMyList.value),
 	staleTime: PUBLIC_TTL,
-	cacheTime: PUBLIC_TTL * 2,
+	gcTime: PUBLIC_TTL * 2,
 	refetchOnWindowFocus: false,
 	initialData: cachedPublic ?? undefined,
-	onSuccess(data: any) {
+});
+
+watch(publicQuery.data, (data: any) => {
+	if (data) {
 		if (Array.isArray(data)) {
 			shortUrls.value = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 			urlStore.savePublicCache && urlStore.savePublicCache(shortUrls.value);
@@ -658,10 +659,11 @@ const publicQuery = useQuery({
 		} else {
 			shortUrls.value = [];
 		}
-	},
-	onError(err: any) {
-		console.error("Error fetching public urls:", err);
-	},
+	}
+});
+
+watch(publicQuery.error, (err: any) => {
+	if (err) console.error("Error fetching public urls:", err);
 });
 
 // Query para las URLs del usuario autenticado (my URLs)
@@ -676,9 +678,12 @@ const userQuery = useQuery({
 	},
 	enabled: computed(() => isMyList.value && authStore.isAuthenticated),
 	staleTime: PUBLIC_TTL,
-	cacheTime: PUBLIC_TTL * 2,
+	gcTime: PUBLIC_TTL * 2,
 	refetchOnWindowFocus: false,
-	onSuccess(data: any) {
+});
+
+watch(userQuery.data, (data: any) => {
+	if (data) {
 		if (data && typeof data === "object" && "urls" in data) {
 			const { urls, urlLimit } = data;
 			urlStore.setUrlLimit(urlLimit);
@@ -690,11 +695,11 @@ const userQuery = useQuery({
 		} else {
 			myUrls.value = [];
 		}
-	},
-	onError(err: any) {
-		console.error("Error fetching user urls:", err);
-		myUrls.value = [];
-	},
+	}
+});
+
+watch(userQuery.error, (err: any) => {
+	if (err) console.error("Error fetching user urls:", err);
 });
 
 

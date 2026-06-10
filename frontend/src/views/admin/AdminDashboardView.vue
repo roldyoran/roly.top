@@ -115,11 +115,10 @@ import { computed, onMounted, watch } from "vue";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/stores/adminStore";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, keepPreviousData } from "@tanstack/vue-query";
 import { getAdminStats } from "@/api/admin";
 
 const adminStore = useAdminStore();
-const queryClient = useQueryClient();
 
 // Stats query
 const statsQuery = useQuery({
@@ -143,7 +142,7 @@ const adminUrlsQuery = useQuery({
 		const { getAdminUrls } = await import("@/api/admin");
 		return await getAdminUrls(page, pageSize, search, signal);
 	},
-	keepPreviousData: true,
+	placeholderData: keepPreviousData,
 	refetchOnWindowFocus: false,
 });
 
@@ -160,7 +159,7 @@ const adminUsersQuery = useQuery({
 		const { getAdminUsers } = await import("@/api/admin");
 		return await getAdminUsers(page, pageSize, search, signal);
 	},
-	keepPreviousData: true,
+	placeholderData: keepPreviousData,
 	refetchOnWindowFocus: false,
 });
 

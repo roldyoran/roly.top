@@ -233,7 +233,7 @@ import { toast } from "vue-sonner";
 import type { AdminUrl, AdminUser } from "@/api/admin";
 import { deleteAdminUrl, getUsersByIds, getAdminUrls } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/vue-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -368,52 +368,50 @@ const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | u
 
 const queryClient = useQueryClient();
 
-const adminQuery = useQuery(
-	computed(() => ["adminUrls", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
-	async ({ signal }: any) => {
+const adminQuery = useQuery({
+	queryKey: computed(() => ["adminUrls", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
+	queryFn: async ({ signal }: any) => {
 		const { page, pageSize, search } = adminParams.value;
 		const res = await getAdminUrls(page, pageSize, search, signal);
 		return res;
 	},
-	{
-		keepPreviousData: true,
-		refetchOnWindowFocus: false,
-		onSuccess(data: any) {
-			if (data) {
-				adminStore.urls = data;
-			}
-		},
-		onError(err: any) {
-			console.error("Error fetching admin urls:", err);
-		},
-	},
-);
+	placeholderData: keepPreviousData,
+	refetchOnWindowFocus: false,
+});
+
+watch(adminQuery.data, (data: any) => {
+	if (data) {
+		adminStore.urls = data;
+	}
+});
+
+watch(adminQuery.error, (err: any) => {
+	if (err) console.error("Error fetching admin urls:", err);
+});
 
 watch(adminQuery.isFetching, (v) => {
 	adminStore.isLoadingUrls = v;
 });
 
 // Mutation for deleting admin URL (optimistic)
-const deleteAdminUrlMutation = useMutation<void, unknown, string, { previous: any }>(
-	async (shortCode: string) => {
+const deleteAdminUrlMutation = useMutation<void, unknown, string, { previous: any }>({
+	mutationFn: async (shortCode: string) => {
 		return await deleteAdminUrl(shortCode);
 	},
-	{
-		onMutate: async (shortCode: string) => {
-			await queryClient.cancelQueries({ queryKey: ["adminUrls"] });
-			const previous = adminStore.urls ? JSON.parse(JSON.stringify(adminStore.urls)) : null;
-			if (adminStore.urls && adminStore.urls.data) {
-				adminStore.urls.data = adminStore.urls.data.filter((u: any) => u.shortCode !== shortCode);
-			}
-			return { previous };
-		},
-		onError: (err: unknown, _shortCode: string, context: any) => {
-			if (context?.previous) adminStore.urls = context.previous;
-			console.error('deleteAdminUrlMutation error:', err);
-		},
-		onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUrls"] }),
+	onMutate: async (shortCode: string) => {
+		await queryClient.cancelQueries({ queryKey: ["adminUrls"] });
+		const previous = adminStore.urls ? JSON.parse(JSON.stringify(adminStore.urls)) : null;
+		if (adminStore.urls && adminStore.urls.data) {
+			adminStore.urls.data = adminStore.urls.data.filter((u: any) => u.shortCode !== shortCode);
+		}
+		return { previous };
 	},
-);
+	onError: (err: unknown, _shortCode: string, context: any) => {
+		if (context?.previous) adminStore.urls = context.previous;
+		console.error('deleteAdminUrlMutation error:', err);
+	},
+	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUrls"] }),
+});
 
 
 onMounted(async () => {
