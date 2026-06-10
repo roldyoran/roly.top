@@ -10,29 +10,45 @@ import { useQueryClient, useMutation } from "@tanstack/vue-query";
 export const useUrlShortener = () => {
 	const urlStore = useUrlStore();
 
-
 	const queryClient = useQueryClient();
 
-	const shortenMutation = useMutation<UrlInfoResponse, unknown, { originalUrl: string; customHash?: string }, { previousSaved: any[]; tempShort?: string }>({
+	const shortenMutation = useMutation<
+		UrlInfoResponse,
+		unknown,
+		{ originalUrl: string; customHash?: string },
+		{ previousSaved: any[]; tempShort?: string }
+	>({
 		mutationFn: async ({ originalUrl, customHash }) => {
 			return await shortenUrlRequest(originalUrl, customHash);
 		},
 		onMutate: async ({ originalUrl }) => {
 			await queryClient.cancelQueries({ queryKey: ["userUrls"] });
-			const previousSaved = urlStore.savedUrls ? JSON.parse(JSON.stringify(urlStore.savedUrls)) : [];
+			const previousSaved = urlStore.savedUrls
+				? JSON.parse(JSON.stringify(urlStore.savedUrls))
+				: [];
 			const tempShort = `temp-${Date.now()}`;
 			urlStore.addUrl(originalUrl, tempShort);
 			return { previousSaved, tempShort };
 		},
-		onError: (err: unknown, _vars: { originalUrl: string; customHash?: string }, context: any) => {
+		onError: (
+			err: unknown,
+			_vars: { originalUrl: string; customHash?: string },
+			context: any,
+		) => {
 			if (context?.previousSaved) {
 				// restore previous saved urls
 				urlStore.clearAllUrls();
-				context.previousSaved.forEach((u: any) => urlStore.addUrl(u.original, u.short));
+				context.previousSaved.forEach((u: any) =>
+					urlStore.addUrl(u.original, u.short),
+				);
 			}
-			console.error('shortenMutation error:', err);
+			console.error("shortenMutation error:", err);
 		},
-		onSuccess: (data: UrlInfoResponse, vars: { originalUrl: string; customHash?: string }, context: any) => {
+		onSuccess: (
+			data: UrlInfoResponse,
+			vars: { originalUrl: string; customHash?: string },
+			context: any,
+		) => {
 			// replace temp entry with real shortCode
 			if (context?.tempShort) {
 				// remove temp
@@ -79,7 +95,10 @@ export const useUrlShortener = () => {
 
 		try {
 			urlStore.isLoading = true;
-			const data = await shortenMutation.mutateAsync({ originalUrl, customHash });
+			const data = await shortenMutation.mutateAsync({
+				originalUrl,
+				customHash,
+			});
 			if (data && data.shortCode) {
 				return {
 					success: true,
@@ -90,7 +109,8 @@ export const useUrlShortener = () => {
 			}
 			return { success: false };
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || "Error al acortar la URL";
+			const errorMessage =
+				error?.response?.data?.message || "Error al acortar la URL";
 			toast.error("Error en el servidor", { description: errorMessage });
 			return { success: false };
 		} finally {

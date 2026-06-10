@@ -31,7 +31,9 @@ v1Router.use("*", async (c, next) => {
 	const path = c.req.path;
 	const etagHeader = c.res.headers.get("ETag") || null;
 	const is304 = status === 304;
-	console.log(`[v1] ${method} ${path} -> ${status} ${duration}ms${etagHeader ? ` ETag:${etagHeader}` : ""}${is304 ? ' (304 Not Modified)' : ''}`);
+	console.log(
+		`[v1] ${method} ${path} -> ${status} ${duration}ms${etagHeader ? ` ETag:${etagHeader}` : ""}${is304 ? " (304 Not Modified)" : ""}`,
+	);
 });
 
 // Inyecta urlRepo en el contexto para todas las rutas v1

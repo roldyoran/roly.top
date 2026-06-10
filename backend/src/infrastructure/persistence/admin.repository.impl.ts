@@ -103,7 +103,6 @@ export class AdminRepository implements AdminRepositoryPort {
 		};
 	}
 
-
 	async findUserById(userId: string): Promise<AdminUser | null> {
 		const [row] = await this.db
 			.select({
@@ -162,7 +161,10 @@ export class AdminRepository implements AdminRepositoryPort {
 			})
 			.from(users)
 			.where(
-				sql`${users.id} IN (${sql.join(userIds.map((id) => sql`${id}`), sql`, `)})`,
+				sql`${users.id} IN (${sql.join(
+					userIds.map((id) => sql`${id}`),
+					sql`, `,
+				)})`,
 			);
 
 		const urlCounts = await this.db
@@ -192,7 +194,6 @@ export class AdminRepository implements AdminRepositoryPort {
 			urlCount: urlCountMap.get(row.id) ?? 0,
 		}));
 	}
-
 
 	async banUser(
 		userId: string,

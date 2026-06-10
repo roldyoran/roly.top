@@ -74,12 +74,15 @@ adminRoutes.get("/users", async (c) => {
 			.map((s) => s.trim())
 			.filter(Boolean);
 		const adminRepo = getAdminRepo(c);
-		const useCase = new (await import("@/application/admin/get-users-by-ids.usecase")).GetUsersByIdsUseCase(adminRepo);
+		const useCase = new (
+			await import("@/application/admin/get-users-by-ids.usecase")
+		).GetUsersByIdsUseCase(adminRepo);
 		const users = await useCase.execute(ids);
 
 		// ETag handling for batch response
 		const etag = await computeETag(users);
-		const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+		const ifNone =
+			c.req.header("if-none-match") || c.req.header("If-None-Match");
 		if (ifNone && ifNone === etag) {
 			c.header("ETag", etag);
 			return c.body(null, 304);

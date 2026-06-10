@@ -489,16 +489,27 @@ const removeUrl = (shortCode: string) => {
 
 const queryClient = useQueryClient();
 
-const deleteUrlMutation = useMutation<void, unknown, string, { previousMyUrls: any[] }>({
+const deleteUrlMutation = useMutation<
+	void,
+	unknown,
+	string,
+	{ previousMyUrls: any[] }
+>({
 	mutationFn: async (shortCode: string) => {
 		return await deleteUrlRequest(shortCode);
 	},
 	onMutate: async (shortCode: string) => {
 		await queryClient.cancelQueries({ queryKey: ["userUrls"] });
-		const previousMyUrls = myUrls.value ? JSON.parse(JSON.stringify(myUrls.value)) : [];
+		const previousMyUrls = myUrls.value
+			? JSON.parse(JSON.stringify(myUrls.value))
+			: [];
 		// Optimistically remove from local UI and store
 		myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
-		try { urlStore.removeUrl("", shortCode); } catch (e) { /* ignore */ }
+		try {
+			urlStore.removeUrl("", shortCode);
+		} catch (e) {
+			/* ignore */
+		}
 		return { previousMyUrls };
 	},
 	onError: (err: unknown, _shortCode: string, context: any) => {
@@ -632,9 +643,13 @@ const downloadQR = () => {
 // Integración con Vue Query para lista pública
 const PUBLIC_TTL = 5 * 60 * 1000;
 
-const cachedPublic = urlStore.loadPublicCache ? urlStore.loadPublicCache() : null;
+const cachedPublic = urlStore.loadPublicCache
+	? urlStore.loadPublicCache()
+	: null;
 if (cachedPublic && cachedPublic.length > 0) {
-	shortUrls.value = cachedPublic.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+	shortUrls.value = cachedPublic.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+	);
 }
 
 const publicQuery = useQuery({
@@ -653,7 +668,10 @@ const publicQuery = useQuery({
 watch(publicQuery.data, (data: any) => {
 	if (data) {
 		if (Array.isArray(data)) {
-			shortUrls.value = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+			shortUrls.value = [...data].sort(
+				(a, b) =>
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+			);
 			urlStore.savePublicCache && urlStore.savePublicCache(shortUrls.value);
 			urlStore.updatePublicListFetchTime();
 		} else {
@@ -688,7 +706,10 @@ watch(userQuery.data, (data: any) => {
 			const { urls, urlLimit } = data;
 			urlStore.setUrlLimit(urlLimit);
 			if (Array.isArray(urls)) {
-				myUrls.value = [...urls].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+				myUrls.value = [...urls].sort(
+					(a, b) =>
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				);
 			} else {
 				myUrls.value = [];
 			}
@@ -701,7 +722,6 @@ watch(userQuery.data, (data: any) => {
 watch(userQuery.error, (err: any) => {
 	if (err) console.error("Error fetching user urls:", err);
 });
-
 
 // onMounted: Vue Query maneja las cargas automáticas para public/user URLs a través de `enabled`.
 onMounted(() => {

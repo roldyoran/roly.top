@@ -63,21 +63,37 @@ export function getAxiosInstance(): AxiosInstance {
 				const start = response?.config?.metadata?.startTime;
 				const duration = start ? Date.now() - start : undefined;
 				if (typeof duration !== "undefined") {
-					console.log(`[HTTP] ${response.config.method.toUpperCase()} ${response.config.url} ${response.status} ${duration}ms`);
+					console.log(
+						`[HTTP] ${response.config.method.toUpperCase()} ${response.config.url} ${response.status} ${duration}ms`,
+					);
 					// push to window metrics for debugging
 					if (typeof window !== "undefined") {
-						(window as any).__http_metrics = (window as any).__http_metrics || [];
-						(window as any).__http_metrics.push({ method: response.config.method, url: response.config.url, status: response.status, duration });
+						(window as any).__http_metrics =
+							(window as any).__http_metrics || [];
+						(window as any).__http_metrics.push({
+							method: response.config.method,
+							url: response.config.url,
+							status: response.status,
+							duration,
+						});
 					}
 				}
 
-				if (response && response.config && response.config.method && response.config.method.toLowerCase() === "get") {
+				if (
+					response &&
+					response.config &&
+					response.config.method &&
+					response.config.method.toLowerCase() === "get"
+				) {
 					const etag = response.headers?.etag || response.headers?.ETag;
 					if (etag) {
 						localStorage.setItem(`etag:${response.config.url}`, String(etag));
 					}
 					// cache response body
-					localStorage.setItem(`cache:${response.config.url}`, JSON.stringify(response.data));
+					localStorage.setItem(
+						`cache:${response.config.url}`,
+						JSON.stringify(response.data),
+					);
 				}
 			} catch (e) {
 				// ignore cache errors
@@ -92,15 +108,22 @@ export function getAxiosInstance(): AxiosInstance {
 				try {
 					const cached = localStorage.getItem(`cache:${config.url}`);
 					const data = cached ? JSON.parse(cached) : null;
-					console.log(`[HTTP] ${config.method?.toUpperCase()} ${config.url} 304 (from cache)`);
-					return Promise.resolve({ data, status: 304, headers: error.response.headers, config });
+					console.log(
+						`[HTTP] ${config.method?.toUpperCase()} ${config.url} 304 (from cache)`,
+					);
+					return Promise.resolve({
+						data,
+						status: 304,
+						headers: error.response.headers,
+						config,
+					});
 				} catch (e) {
 					return Promise.reject(error);
 				}
 			}
 			// log timed out / cancelled requests
-			if (error?.message === 'canceled' || error?.code === 'ERR_CANCELED') {
-				console.warn('[HTTP] request canceled', config?.url);
+			if (error?.message === "canceled" || error?.code === "ERR_CANCELED") {
+				console.warn("[HTTP] request canceled", config?.url);
 				return Promise.reject(error);
 			}
 			return Promise.reject(error);
@@ -140,7 +163,10 @@ export async function shortenUrlRequest(
 }
 
 // Función para obtener información de una URL corta
-export async function getUrlInfoRequest(shortCode: string, signal?: AbortSignal) {
+export async function getUrlInfoRequest(
+	shortCode: string,
+	signal?: AbortSignal,
+) {
 	const axiosInstance = getAxiosInstance();
 	const response = await axiosInstance.get(`/v1/urls/${shortCode}`, { signal });
 	return response.data;
@@ -161,8 +187,13 @@ export async function getPublicUrlsRequest(signal?: AbortSignal) {
 }
 
 // Función para eliminar una URL del usuario autenticado
-export async function deleteUrlRequest(shortCode: string, signal?: AbortSignal) {
+export async function deleteUrlRequest(
+	shortCode: string,
+	signal?: AbortSignal,
+) {
 	const axiosInstance = getAxiosInstance();
-	const response = await axiosInstance.delete(`/v1/urls/${shortCode}`, { signal });
+	const response = await axiosInstance.delete(`/v1/urls/${shortCode}`, {
+		signal,
+	});
 	return response.data;
 }

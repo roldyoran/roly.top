@@ -58,13 +58,19 @@ export async function getAdminUsers(
 	return data;
 }
 
-export async function getAdminUser(userId: string, signal?: AbortSignal): Promise<AdminUser> {
+export async function getAdminUser(
+	userId: string,
+	signal?: AbortSignal,
+): Promise<AdminUser> {
 	const axios = getAxiosInstance();
 	const { data } = await axios.get(`/v1/admin/users/${userId}`, { signal });
 	return data;
 }
 
-export async function getUsersByIds(userIds: string[], signal?: AbortSignal): Promise<AdminUser[]> {
+export async function getUsersByIds(
+	userIds: string[],
+	signal?: AbortSignal,
+): Promise<AdminUser[]> {
 	if (!userIds || userIds.length === 0) return [];
 	const axios = getAxiosInstance();
 	const params = { ids: userIds.join(",") };
@@ -112,7 +118,10 @@ export async function getAdminUrls(
 	return data;
 }
 
-export async function deleteAdminUrl(shortCode: string, signal?: AbortSignal): Promise<void> {
+export async function deleteAdminUrl(
+	shortCode: string,
+	signal?: AbortSignal,
+): Promise<void> {
 	const axios = getAxiosInstance();
 	await axios.delete(`/v1/admin/urls/${shortCode}`, { signal });
 }

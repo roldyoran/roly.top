@@ -368,7 +368,12 @@ import {
 	updateUserUrlLimit,
 	getAdminUsers,
 } from "@/api/admin";
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/vue-query";
+import {
+	useQuery,
+	useMutation,
+	useQueryClient,
+	keepPreviousData,
+} from "@tanstack/vue-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -412,12 +417,21 @@ const banReason = ref("");
 let searchTimeout: ReturnType<typeof setTimeout>;
 
 // Admin users query params
-const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | undefined });
+const adminParams = ref({
+	page: 1,
+	pageSize: 20,
+	search: undefined as string | undefined,
+});
 
 const queryClient = useQueryClient();
 
 const adminQuery = useQuery({
-	queryKey: computed(() => ["adminUsers", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
+	queryKey: computed(() => [
+		"adminUsers",
+		adminParams.value.page,
+		adminParams.value.pageSize,
+		adminParams.value.search,
+	]),
 	queryFn: async ({ signal }: any) => {
 		const { page, pageSize, search } = adminParams.value;
 		const res = await getAdminUsers(page, pageSize, search, signal);
@@ -442,16 +456,25 @@ watch(adminQuery.isFetching, (v) => {
 });
 
 // Mutations: optimistic updates
-const deleteUserMutation = useMutation<void, unknown, string, { previous: any }>({
+const deleteUserMutation = useMutation<
+	void,
+	unknown,
+	string,
+	{ previous: any }
+>({
 	mutationFn: async (userId: string) => {
 		return await deleteUser(userId);
 	},
 	onMutate: async (userId: string) => {
 		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		const previous = adminStore.users
+			? JSON.parse(JSON.stringify(adminStore.users))
+			: null;
 		// Optimistically remove user from list
 		if (adminStore.users && adminStore.users.data) {
-			adminStore.users.data = adminStore.users.data.filter((u: any) => u.id !== userId);
+			adminStore.users.data = adminStore.users.data.filter(
+				(u: any) => u.id !== userId,
+			);
 		}
 		return { previous };
 	},
@@ -466,13 +489,26 @@ const deleteUserMutation = useMutation<void, unknown, string, { previous: any }>
 	},
 });
 
-const banMutation = useMutation<void, unknown, { userId: string; reason?: string }, { previous: any }>({
-	mutationFn: async ({ userId, reason }: { userId: string; reason?: string }) => {
+const banMutation = useMutation<
+	void,
+	unknown,
+	{ userId: string; reason?: string },
+	{ previous: any }
+>({
+	mutationFn: async ({
+		userId,
+		reason,
+	}: {
+		userId: string;
+		reason?: string;
+	}) => {
 		return await banUser(userId, reason);
 	},
 	onMutate: async ({ userId }: { userId: string }) => {
 		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		const previous = adminStore.users
+			? JSON.parse(JSON.stringify(adminStore.users))
+			: null;
 		if (adminStore.users && adminStore.users.data) {
 			adminStore.users.data = adminStore.users.data.map((u: any) =>
 				u.id === userId ? { ...u, banned: true } : u,
@@ -493,7 +529,9 @@ const unbanMutation = useMutation<void, unknown, string, { previous: any }>({
 	},
 	onMutate: async (userId: string) => {
 		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		const previous = adminStore.users
+			? JSON.parse(JSON.stringify(adminStore.users))
+			: null;
 		if (adminStore.users && adminStore.users.data) {
 			adminStore.users.data = adminStore.users.data.map((u: any) =>
 				u.id === userId ? { ...u, banned: false } : u,
@@ -508,13 +546,20 @@ const unbanMutation = useMutation<void, unknown, string, { previous: any }>({
 	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
 });
 
-const updateLimitMutation = useMutation<void, unknown, { userId: string; limit: number }, { previous: any }>({
+const updateLimitMutation = useMutation<
+	void,
+	unknown,
+	{ userId: string; limit: number },
+	{ previous: any }
+>({
 	mutationFn: async ({ userId, limit }: { userId: string; limit: number }) => {
 		return await updateUserUrlLimit(userId, limit);
 	},
 	onMutate: async ({ userId, limit }: { userId: string; limit: number }) => {
 		await queryClient.cancelQueries({ queryKey: ["adminUsers"] });
-		const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+		const previous = adminStore.users
+			? JSON.parse(JSON.stringify(adminStore.users))
+			: null;
 		if (adminStore.users && adminStore.users.data) {
 			adminStore.users.data = adminStore.users.data.map((u: any) =>
 				u.id === userId ? { ...u, urlLimit: limit } : u,
@@ -528,7 +573,6 @@ const updateLimitMutation = useMutation<void, unknown, { userId: string; limit: 
 	},
 	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
 });
-
 
 function onSearch() {
 	clearTimeout(searchTimeout);
@@ -557,7 +601,10 @@ function openEditLimit(user: AdminUser) {
 async function handleUpdateLimit() {
 	if (!selectedUser.value) return;
 	try {
-		await updateLimitMutation.mutateAsync({ userId: selectedUser.value.id, limit: newLimit.value });
+		await updateLimitMutation.mutateAsync({
+			userId: selectedUser.value.id,
+			limit: newLimit.value,
+		});
 		toast.success("Límite actualizado");
 		editLimitOpen.value = false;
 	} catch {
@@ -574,7 +621,10 @@ function handleBan(user: AdminUser) {
 async function handleBanConfirm() {
 	if (!selectedUser.value) return;
 	try {
-		await banMutation.mutateAsync({ userId: selectedUser.value.id, reason: banReason.value || undefined });
+		await banMutation.mutateAsync({
+			userId: selectedUser.value.id,
+			reason: banReason.value || undefined,
+		});
 		toast.success("Usuario baneado");
 		banOpen.value = false;
 	} catch {

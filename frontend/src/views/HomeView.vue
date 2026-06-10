@@ -17,7 +17,7 @@
     </motion.div>
 
     <motion.h1
-      class="hero-h1 font-display font-extrabold text-center leading-[1.0] mb-3 tracking-tight w-full max-w-3xl text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground"
+      class="hero-h1 font-display font-extrabold text-center leading-none mb-3 tracking-tight w-full max-w-3xl text-3xl sm:text-4xl md:text-5xl lg:text-5xl text-foreground"
       :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
       :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
       :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }"
@@ -27,7 +27,7 @@
     </motion.h1>
 
     <motion.p
-      class="hero-sub font-body text-center mb-4 max-w-md text-sm sm:text-base text-muted-foreground"
+      class="hero-sub font-body text-center mb-4 max-w-md text-sm sm:text-sm text-muted-foreground"
       :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
       :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
       :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }"
@@ -172,24 +172,13 @@
       />
     </motion.div>
 
-    <motion.button
-      type="button"
-      aria-label="Scroll hacia abajo"
-      @click="scrollDown"
-      class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer"
-      :initial="{ opacity: 0 }"
-      :animate="{ opacity: 1 }"
-      :transition="{ delay: 1.2, duration: 0.5 }"
-    >
-      <span class="text-[10px] font-mono tracking-wider">Explorar</span>
-      <ChevronDown class="w-4 h-4 animate-bounce-subtle" />
-    </motion.button>
+    
   </section>
 </template>
 
 <script setup lang="ts">
 import confetti from "canvas-confetti";
-import { ChevronDown, Copy } from "lucide-vue-next";
+import { Copy } from "lucide-vue-next";
 import { motion } from "motion-v";
 import { computed, nextTick, ref } from "vue";
 import { toast } from "vue-sonner";

@@ -138,7 +138,9 @@ const adminUrlsKey = ["adminUrls", 1, 5, undefined];
 const adminUrlsQuery = useQuery({
 	queryKey: adminUrlsKey,
 	queryFn: async ({ signal }: any) => {
-		const page = 1, pageSize = 5, search = undefined;
+		const page = 1,
+			pageSize = 5,
+			search = undefined;
 		const { getAdminUrls } = await import("@/api/admin");
 		return await getAdminUrls(page, pageSize, search, signal);
 	},
@@ -155,7 +157,9 @@ const adminUsersKey = ["adminUsers", 1, 5, undefined];
 const adminUsersQuery = useQuery({
 	queryKey: adminUsersKey,
 	queryFn: async ({ signal }: any) => {
-		const page = 1, pageSize = 5, search = undefined;
+		const page = 1,
+			pageSize = 5,
+			search = undefined;
 		const { getAdminUsers } = await import("@/api/admin");
 		return await getAdminUsers(page, pageSize, search, signal);
 	},

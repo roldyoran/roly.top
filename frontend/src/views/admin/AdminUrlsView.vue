@@ -233,7 +233,12 @@ import { toast } from "vue-sonner";
 import type { AdminUrl, AdminUser } from "@/api/admin";
 import { deleteAdminUrl, getUsersByIds, getAdminUrls } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/vue-query";
+import {
+	useQuery,
+	useMutation,
+	useQueryClient,
+	keepPreviousData,
+} from "@tanstack/vue-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -292,7 +297,9 @@ function onSearch() {
 		await adminQuery.refetch();
 		// load owner names for the fetched urls (batch)
 		const urls = adminStore.urls?.data ?? [];
-		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+		const ids = Array.from(
+			new Set(urls.map((u) => u.userId).filter(Boolean) as string[]),
+		);
 		const idsToFetch = ids.filter((id) => id && !ownerNames.value[id]);
 		if (idsToFetch.length === 0) return;
 		try {
@@ -305,7 +312,7 @@ function onSearch() {
 			console.error("[AdminUrls] loadOwners error", err);
 		}
 	}, 300);
-} 
+}
 
 function goToPage(page: number) {
 	adminParams.value.page = page;
@@ -313,7 +320,9 @@ function goToPage(page: number) {
 	queryClient.cancelQueries({ queryKey: ["adminUrls"] });
 	adminQuery.refetch().then(async () => {
 		const urls = adminStore.urls?.data ?? [];
-		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+		const ids = Array.from(
+			new Set(urls.map((u) => u.userId).filter(Boolean) as string[]),
+		);
 		const idsToFetch = ids.filter((id) => id && !ownerNames.value[id]);
 		if (idsToFetch.length === 0) return;
 		try {
@@ -326,7 +335,7 @@ function goToPage(page: number) {
 			console.error("[AdminUrls] loadOwners error", err);
 		}
 	});
-} 
+}
 
 function copyUrl(shortCode: string) {
 	copyToClipboard(`${getAppBaseUrl()}/${shortCode}`, "URL copiada");
@@ -345,7 +354,9 @@ async function handleDeleteConfirm() {
 		deleteOpen.value = false;
 		// refresh owners (batch)
 		const urls = adminStore.urls?.data ?? [];
-		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+		const ids = Array.from(
+			new Set(urls.map((u) => u.userId).filter(Boolean) as string[]),
+		);
 		const idsToFetch = ids.filter((id) => id && !ownerNames.value[id]);
 		if (idsToFetch.length > 0) {
 			try {
@@ -361,15 +372,24 @@ async function handleDeleteConfirm() {
 	} catch {
 		toast.error("Error al eliminar la URL");
 	}
-} 
+}
 
 // Admin query params (reactive)
-const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | undefined });
+const adminParams = ref({
+	page: 1,
+	pageSize: 20,
+	search: undefined as string | undefined,
+});
 
 const queryClient = useQueryClient();
 
 const adminQuery = useQuery({
-	queryKey: computed(() => ["adminUrls", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
+	queryKey: computed(() => [
+		"adminUrls",
+		adminParams.value.page,
+		adminParams.value.pageSize,
+		adminParams.value.search,
+	]),
 	queryFn: async ({ signal }: any) => {
 		const { page, pageSize, search } = adminParams.value;
 		const res = await getAdminUrls(page, pageSize, search, signal);
@@ -394,30 +414,40 @@ watch(adminQuery.isFetching, (v) => {
 });
 
 // Mutation for deleting admin URL (optimistic)
-const deleteAdminUrlMutation = useMutation<void, unknown, string, { previous: any }>({
+const deleteAdminUrlMutation = useMutation<
+	void,
+	unknown,
+	string,
+	{ previous: any }
+>({
 	mutationFn: async (shortCode: string) => {
 		return await deleteAdminUrl(shortCode);
 	},
 	onMutate: async (shortCode: string) => {
 		await queryClient.cancelQueries({ queryKey: ["adminUrls"] });
-		const previous = adminStore.urls ? JSON.parse(JSON.stringify(adminStore.urls)) : null;
+		const previous = adminStore.urls
+			? JSON.parse(JSON.stringify(adminStore.urls))
+			: null;
 		if (adminStore.urls && adminStore.urls.data) {
-			adminStore.urls.data = adminStore.urls.data.filter((u: any) => u.shortCode !== shortCode);
+			adminStore.urls.data = adminStore.urls.data.filter(
+				(u: any) => u.shortCode !== shortCode,
+			);
 		}
 		return { previous };
 	},
 	onError: (err: unknown, _shortCode: string, context: any) => {
 		if (context?.previous) adminStore.urls = context.previous;
-		console.error('deleteAdminUrlMutation error:', err);
+		console.error("deleteAdminUrlMutation error:", err);
 	},
 	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUrls"] }),
 });
 
-
 onMounted(async () => {
 	// la query adminQuery se ejecuta automáticamente al montar
 	const urls = adminStore.urls?.data ?? [];
-	const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
+	const ids = Array.from(
+		new Set(urls.map((u) => u.userId).filter(Boolean) as string[]),
+	);
 	const idsToFetch = ids.filter((id) => id);
 	if (idsToFetch.length > 0) {
 		try {

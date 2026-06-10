@@ -30,7 +30,11 @@ export const useUrlStore = defineStore("urlStore", () => {
 			if (!raw) return null;
 			const parsed = JSON.parse(raw);
 			if (!parsed?.fetchedAt || !parsed?.data) return null;
-			if (Date.now() - new Date(parsed.fetchedAt).getTime() > PUBLIC_LIST_TTL_MS) return null;
+			if (
+				Date.now() - new Date(parsed.fetchedAt).getTime() >
+				PUBLIC_LIST_TTL_MS
+			)
+				return null;
 			// actualizar estado en memoria
 			lastPublicListFetch.value = parsed.fetchedAt;
 			return parsed.data as UrlInfoResponse[];
