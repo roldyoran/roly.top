@@ -262,6 +262,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import {
 	Database,
 	Trash,
@@ -486,13 +487,36 @@ const removeUrl = (shortCode: string) => {
 	showDeleteUrlDialog.value = true;
 };
 
+const queryClient = useQueryClient();
+
+const deleteUrlMutation = useMutation(
+	async (shortCode: string) => {
+		return await deleteUrlRequest(shortCode);
+	},
+	{
+		onMutate: async (shortCode: string) => {
+			await queryClient.cancelQueries(["userUrls"]);
+			const previousMyUrls = myUrls.value ? JSON.parse(JSON.stringify(myUrls.value)) : [];
+			// Optimistically remove from local UI and store
+			myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
+			urlStore.removeUrl("", shortCode); // best-effort: remove by short
+			return { previousMyUrls };
+		},
+		onError: (_err, _shortCode, context: any) => {
+			if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries(["userUrls"]);
+			queryClient.invalidateQueries(["publicUrls"]);
+		},
+	},
+);
+
 const confirmDeleteUrl = async () => {
 	if (!urlToDelete.value) return;
 	const shortCode = urlToDelete.value;
 	try {
-		await deleteUrlRequest(shortCode);
-		// Remove from local state
-		myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
+		await deleteUrlMutation.mutateAsync(shortCode);
 		if (paginatedUrls.value.length === 0 && currentPage.value > 1) {
 			currentPage.value--;
 		}

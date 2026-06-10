@@ -336,10 +336,9 @@ function confirmDelete(url: AdminUrl) {
 async function handleDeleteConfirm() {
 	if (!selectedUrl.value) return;
 	try {
-		await deleteAdminUrl(selectedUrl.value.shortCode);
+		await deleteAdminUrlMutation.mutateAsync(selectedUrl.value.shortCode);
 		toast.success("URL eliminada");
 		deleteOpen.value = false;
-		await adminQuery.refetch();
 		// refresh owners (batch)
 		const urls = adminStore.urls?.data ?? [];
 		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
@@ -362,6 +361,8 @@ async function handleDeleteConfirm() {
 
 // Admin query params (reactive)
 const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | undefined });
+
+const queryClient = useQueryClient();
 
 const adminQuery = useQuery(
 	computed(() => ["adminUrls", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
@@ -387,6 +388,28 @@ const adminQuery = useQuery(
 watch(adminQuery.isFetching, (v) => {
 	adminStore.isLoadingUrls = v;
 });
+
+// Mutation for deleting admin URL (optimistic)
+const deleteAdminUrlMutation = useMutation(
+	async (shortCode: string) => {
+		return await deleteAdminUrl(shortCode);
+	},
+	{
+		onMutate: async (shortCode: string) => {
+			await queryClient.cancelQueries(["adminUrls"]);
+			const previous = adminStore.urls ? JSON.parse(JSON.stringify(adminStore.urls)) : null;
+			if (adminStore.urls && adminStore.urls.data) {
+				adminStore.urls.data = adminStore.urls.data.filter((u: any) => u.shortCode !== shortCode);
+			}
+			return { previous };
+		},
+		onError: (_err, _shortCode, context: any) => {
+			if (context?.previous) adminStore.urls = context.previous;
+		},
+		onSettled: () => queryClient.invalidateQueries(["adminUrls"]),
+	},
+);
+
 
 onMounted(async () => {
 	// la query adminQuery se ejecuta automáticamente al montar

@@ -2,6 +2,7 @@ import { useUrlStore } from "@/stores/urlStore";
 import { toast } from "vue-sonner";
 import { shortenUrlRequest, getAppBaseUrl } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
+import { useQueryClient } from "@tanstack/vue-query";
 
 /**
  * Composable para manejar el acortamiento de URLs
@@ -53,6 +54,15 @@ export const useUrlShortener = () => {
 				toast.success("¡URL acortada exitosamente!", {
 					description: `URL corta: ${builtShortUrl}`,
 				});
+
+				// Invalidate related queries
+				try {
+					const qc = useQueryClient();
+					qc.invalidateQueries(["userUrls"]);
+					qc.invalidateQueries(["publicUrls"]);
+				} catch (e) {
+					// ignore if queryClient not available
+				}
 
 				return {
 					success: true,
