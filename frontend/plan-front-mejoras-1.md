@@ -255,16 +255,9 @@ Paso 7 — ETag / If-None-Match (colaboración backend necesaria)
 
 ---
 
-Paso 8 — Opcional: SSE/WebSocket para updates en tiempo real
+Paso 8 — Opcional: SSE/WebSocket para updates en tiempo real (ELIMINADO)
 
-- Descripción
-  Si los casos de uso requieren, implementar SSE o WebSockets para pushes (newUrl/updateUrl/deleteUrl) y evitar polling.
-
-- Dependencias
-  - Soporte backend (SSE or WS)
-  - Infra/scale considerations
-
-- Estimación: 3–7 días
+- Estado: REMOVIDO — Esta opción no se implementará. Se descartó en favor de mantener la arquitectura basada en peticiones y ETag/304, cache y Vue Query para optimización.
 
 ---
 
