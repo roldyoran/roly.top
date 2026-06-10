@@ -103,6 +103,7 @@ export class AdminRepository implements AdminRepositoryPort {
 		};
 	}
 
+
 	async findUserById(userId: string): Promise<AdminUser | null> {
 		const [row] = await this.db
 			.select({
@@ -142,6 +143,56 @@ export class AdminRepository implements AdminRepositoryPort {
 			urlCount: urlCount ?? 0,
 		};
 	}
+
+	async findUsersByIds(userIds: string[]): Promise<AdminUser[]> {
+		if (userIds.length === 0) return [];
+
+		const rows = await this.db
+			.select({
+				id: users.id,
+				name: users.name,
+				email: users.email,
+				image: users.image,
+				role: users.role,
+				banned: users.banned,
+				banReason: users.banReason,
+				banExpires: users.banExpires,
+				urlLimit: users.urlLimit,
+				createdAt: users.createdAt,
+			})
+			.from(users)
+			.where(
+				sql`${users.id} IN (${sql.join(userIds.map((id) => sql`${id}`), sql`, `)})`,
+			);
+
+		const urlCounts = await this.db
+			.select({ userId: urlsTable.userId, count: count() })
+			.from(urlsTable)
+			.where(
+				sql`${urlsTable.userId} IN (${sql.join(
+					userIds.map((id) => sql`${id}`),
+					sql`, `,
+				)})`,
+			)
+			.groupBy(urlsTable.userId);
+
+		const urlCountMap = new Map(urlCounts.map((uc) => [uc.userId, uc.count]));
+
+		return rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			email: row.email,
+			image: row.image,
+			role: row.role ?? "user",
+			banned: row.banned ?? false,
+			banReason: row.banReason ?? null,
+			banExpires: row.banExpires ?? null,
+			urlLimit: row.urlLimit ?? 2,
+			createdAt: row.createdAt,
+			urlCount: urlCountMap.get(row.id) ?? 0,
+		}));
+	}
+
 
 	async banUser(
 		userId: string,

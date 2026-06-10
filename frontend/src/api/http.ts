@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosInstance } from "axios";
 
 // Devuelve la URL base de la API, preferencia: env VITE_API_BASE_URL -> localStorage apiUrl -> fallback
 export function getApiBaseUrl(): string {
@@ -20,12 +20,16 @@ export function getAppBaseUrl(): string {
 	return "";
 }
 
-// Obtiene la instancia de axios configurada
-export function getAxiosInstance() {
+// Singleton axios instance
+let _axiosInstance: AxiosInstance | null = null;
+
+export function getAxiosInstance(): AxiosInstance {
+	if (_axiosInstance) return _axiosInstance;
+
 	const baseURL = getApiBaseUrl();
 	const apiKey = import.meta.env.VITE_API_KEY || "";
 
-	return axios.create({
+	_axiosInstance = axios.create({
 		baseURL,
 		withCredentials: true,
 		headers: {
@@ -33,6 +37,17 @@ export function getAxiosInstance() {
 			"x-api-key": apiKey,
 		},
 	});
+
+	// Basic response interceptor for centralized error handling
+	_axiosInstance.interceptors.response.use(
+		(response) => response,
+		(error) => {
+			// Aquí se puede manejar 401 globalmente, logging, retries, etc.
+			return Promise.reject(error);
+		},
+	);
+
+	return _axiosInstance;
 }
 
 // Función para acortar URL

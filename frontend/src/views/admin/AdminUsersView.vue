@@ -358,7 +358,7 @@ import {
 	Trash2,
 	Users,
 } from "lucide-vue-next";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { toast } from "vue-sonner";
 import type { AdminUser } from "@/api/admin";
 import {
@@ -366,7 +366,9 @@ import {
 	deleteUser,
 	unbanUser,
 	updateUserUrlLimit,
+	getAdminUsers,
 } from "@/api/admin";
+import { useQuery } from "@tanstack/vue-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -396,6 +398,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useAdminStore } from "@/stores/adminStore";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const adminStore = useAdminStore();
 
@@ -409,15 +412,141 @@ const banReason = ref("");
 
 let searchTimeout: ReturnType<typeof setTimeout>;
 
+// Admin users query params
+const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | undefined });
+
+const queryClient = useQueryClient();
+
+const adminQuery = useQuery(
+	computed(() => ["adminUsers", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
+	async () => {
+		const { page, pageSize, search } = adminParams.value;
+		const res = await getAdminUsers(page, pageSize, search);
+		return res;
+	},
+	{
+		keepPreviousData: true,
+		refetchOnWindowFocus: false,
+		onSuccess(data: any) {
+			if (data) {
+				adminStore.users = data;
+			}
+		},
+		onError(err: any) {
+			console.error("Error fetching admin users:", err);
+		},
+	},
+);
+
+watch(adminQuery.isFetching, (v) => {
+	adminStore.isLoadingUsers = v;
+});
+
+// Mutations: optimistic updates
+const deleteUserMutation = useMutation(
+	async (userId: string) => {
+		return await deleteUser(userId);
+	},
+	{
+		onMutate: async (userId: string) => {
+			await queryClient.cancelQueries(["adminUsers"]);
+			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+			// Optimistically remove user from list
+			if (adminStore.users && adminStore.users.data) {
+				adminStore.users.data = adminStore.users.data.filter((u: any) => u.id !== userId);
+			}
+			return { previous };
+		},
+		onError: (_err, _userId, context: any) => {
+			if (context?.previous) {
+				adminStore.users = context.previous;
+			}
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries(["adminUsers"]);
+		},
+	},
+);
+
+const banMutation = useMutation(
+	async ({ userId, reason }: { userId: string; reason?: string }) => {
+		return await banUser(userId, reason);
+	},
+	{
+		onMutate: async ({ userId }) => {
+			await queryClient.cancelQueries(["adminUsers"]);
+			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+			if (adminStore.users && adminStore.users.data) {
+				adminStore.users.data = adminStore.users.data.map((u: any) =>
+					u.id === userId ? { ...u, banned: true } : u,
+				);
+			}
+			return { previous };
+		},
+		onError: (_err, _vars, context: any) => {
+			if (context?.previous) adminStore.users = context.previous;
+		},
+		onSettled: () => queryClient.invalidateQueries(["adminUsers"]),
+	},
+);
+
+const unbanMutation = useMutation(
+	async (userId: string) => {
+		return await unbanUser(userId);
+	},
+	{
+		onMutate: async (userId: string) => {
+			await queryClient.cancelQueries(["adminUsers"]);
+			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+			if (adminStore.users && adminStore.users.data) {
+				adminStore.users.data = adminStore.users.data.map((u: any) =>
+					u.id === userId ? { ...u, banned: false } : u,
+				);
+			}
+			return { previous };
+		},
+		onError: (_err, _userId, context: any) => {
+			if (context?.previous) adminStore.users = context.previous;
+		},
+		onSettled: () => queryClient.invalidateQueries(["adminUsers"]),
+	},
+);
+
+const updateLimitMutation = useMutation(
+	async ({ userId, limit }: { userId: string; limit: number }) => {
+		return await updateUserUrlLimit(userId, limit);
+	},
+	{
+		onMutate: async ({ userId, limit }) => {
+			await queryClient.cancelQueries(["adminUsers"]);
+			const previous = adminStore.users ? JSON.parse(JSON.stringify(adminStore.users)) : null;
+			if (adminStore.users && adminStore.users.data) {
+				adminStore.users.data = adminStore.users.data.map((u: any) =>
+					u.id === userId ? { ...u, urlLimit: limit } : u,
+				);
+			}
+			return { previous };
+		},
+		onError: (_err, _vars, context: any) => {
+			if (context?.previous) adminStore.users = context.previous;
+		},
+		onSettled: () => queryClient.invalidateQueries(["adminUsers"]),
+	},
+);
+
+
 function onSearch() {
 	clearTimeout(searchTimeout);
-	searchTimeout = setTimeout(() => {
-		adminStore.fetchUsers(1, 20, searchQuery.value || undefined);
+	searchTimeout = setTimeout(async () => {
+		adminParams.value.page = 1;
+		adminParams.value.search = searchQuery.value || undefined;
+		await adminQuery.refetch();
 	}, 300);
 }
 
 function goToPage(page: number) {
-	adminStore.fetchUsers(page, 20, searchQuery.value || undefined);
+	adminParams.value.page = page;
+	adminQuery.refetch();
 }
 
 function openEditLimit(user: AdminUser) {
@@ -429,14 +558,9 @@ function openEditLimit(user: AdminUser) {
 async function handleUpdateLimit() {
 	if (!selectedUser.value) return;
 	try {
-		await updateUserUrlLimit(selectedUser.value.id, newLimit.value);
+		await updateLimitMutation.mutateAsync({ userId: selectedUser.value.id, limit: newLimit.value });
 		toast.success("Límite actualizado");
 		editLimitOpen.value = false;
-		adminStore.fetchUsers(
-			adminStore.users?.page ?? 1,
-			20,
-			searchQuery.value || undefined,
-		);
 	} catch {
 		toast.error("Error al actualizar el límite");
 	}
@@ -451,14 +575,9 @@ function handleBan(user: AdminUser) {
 async function handleBanConfirm() {
 	if (!selectedUser.value) return;
 	try {
-		await banUser(selectedUser.value.id, banReason.value || undefined);
+		await banMutation.mutateAsync({ userId: selectedUser.value.id, reason: banReason.value || undefined });
 		toast.success("Usuario baneado");
 		banOpen.value = false;
-		adminStore.fetchUsers(
-			adminStore.users?.page ?? 1,
-			20,
-			searchQuery.value || undefined,
-		);
 	} catch {
 		toast.error("Error al banear usuario");
 	}
@@ -466,13 +585,8 @@ async function handleBanConfirm() {
 
 async function handleUnban(user: AdminUser) {
 	try {
-		await unbanUser(user.id);
+		await unbanMutation.mutateAsync(user.id);
 		toast.success("Usuario desbaneado");
-		adminStore.fetchUsers(
-			adminStore.users?.page ?? 1,
-			20,
-			searchQuery.value || undefined,
-		);
 	} catch {
 		toast.error("Error al desbanear usuario");
 	}
@@ -486,20 +600,16 @@ function confirmDelete(user: AdminUser) {
 async function handleDeleteConfirm() {
 	if (!selectedUser.value) return;
 	try {
-		await deleteUser(selectedUser.value.id);
+		await deleteUserMutation.mutateAsync(selectedUser.value.id);
 		toast.success("Usuario eliminado");
 		deleteOpen.value = false;
-		adminStore.fetchUsers(
-			adminStore.users?.page ?? 1,
-			20,
-			searchQuery.value || undefined,
-		);
 	} catch {
 		toast.error("Error al eliminar usuario");
 	}
 }
 
 onMounted(() => {
-	adminStore.fetchUsers(1, 20);
+	// adminQuery will automatically fetch on mount due to its reactive key
+	adminQuery.refetch();
 });
 </script>

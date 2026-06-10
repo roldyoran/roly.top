@@ -275,6 +275,7 @@ import {
 	ChevronRight,
 } from "lucide-vue-next";
 import { motion } from "motion-v";
+import { useQuery } from "@tanstack/vue-query";
 import {
 	Card,
 	CardContent,
@@ -605,92 +606,93 @@ const downloadQR = () => {
 	}
 };
 
-const loadUrls = async () => {
-	if (
-		!isMyList.value &&
-		!urlStore.shouldFetchPublicList() &&
-		shortUrls.value.length > 0
-	) {
-		return;
-	}
+// Integración con Vue Query para lista pública
+const PUBLIC_TTL = 5 * 60 * 1000;
 
-	if (isMyList.value && !authStore.isAuthenticated) {
-		myUrls.value = [];
-		return;
-	}
+const cachedPublic = urlStore.loadPublicCache ? urlStore.loadPublicCache() : null;
+if (cachedPublic && cachedPublic.length > 0) {
+	shortUrls.value = cachedPublic.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
 
-	isLoading.value = true;
-	try {
-		const response = isMyList.value
-			? await getUrlsRequest()
-			: await getPublicUrlsRequest();
+const publicQuery = useQuery(
+	["publicUrls"],
+	async () => {
+		const res = await getPublicUrlsRequest();
+		return res;
+	},
+	{
+		enabled: computed(() => !isMyList.value),
+		staleTime: PUBLIC_TTL,
+		cacheTime: PUBLIC_TTL * 2,
+		refetchOnWindowFocus: false,
+		initialData: cachedPublic ?? undefined,
+		onSuccess(data) {
+			if (Array.isArray(data)) {
+				shortUrls.value = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+				urlStore.savePublicCache && urlStore.savePublicCache(shortUrls.value);
+				urlStore.updatePublicListFetchTime();
+			} else {
+				shortUrls.value = [];
+			}
+		},
+		onError(err: any) {
+			console.error("Error fetching public urls:", err);
+		},
+	},
+);
 
-		if (
-			isMyList.value &&
-			response &&
-			typeof response === "object" &&
-			"urls" in response
-		) {
-			// Respuesta del nuevo formato: { urls: UrlInfoResponse[], urlLimit: number }
-			const { urls, urlLimit } = response;
-			urlStore.setUrlLimit(urlLimit);
-			if (Array.isArray(urls)) {
-				myUrls.value = urls.sort(
-					(a, b) =>
-						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-				);
-				toast.success("URLs cargadas", {
-					description: "Lista de URLs actualizada correctamente",
-				});
+// Query para las URLs del usuario autenticado (my URLs)
+const userKey = computed(() => ["userUrls", authStore.userId]);
+
+const userQuery = useQuery(
+	userKey,
+	async () => {
+		// backend devuelve { urls: UrlInfoResponse[], urlLimit }
+		const res = await getUrlsRequest();
+		return res;
+	},
+	{
+		enabled: computed(() => isMyList.value && authStore.isAuthenticated),
+		staleTime: PUBLIC_TTL,
+		cacheTime: PUBLIC_TTL * 2,
+		refetchOnWindowFocus: false,
+		onSuccess(data: any) {
+			if (data && typeof data === "object" && "urls" in data) {
+				const { urls, urlLimit } = data;
+				urlStore.setUrlLimit(urlLimit);
+				if (Array.isArray(urls)) {
+					myUrls.value = urls.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+				} else {
+					myUrls.value = [];
+				}
 			} else {
 				myUrls.value = [];
-				toast.warning("Sin URLs", {
-					description: "No se encontraron URLs disponibles",
-				});
 			}
-		} else if (Array.isArray(response)) {
-			// Respuesta del formato antiguo (para URLs públicas)
-			shortUrls.value = response.sort(
-				(a, b) =>
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-			);
-			urlStore.updatePublicListFetchTime();
-			toast.success("URLs cargadas", {
-				description: "Lista de URLs actualizada correctamente",
-			});
-		} else {
-			shortUrls.value = [];
-			toast.warning("Sin URLs", {
-				description: "No se encontraron URLs disponibles",
-			});
-		}
-	} catch (error: any) {
-		console.error("Error loading URLs:", error);
-		const errorMessage =
-			error?.response?.data?.message || "Error al cargar las URLs";
-		toast.error("Error al cargar", {
-			description: errorMessage,
-		});
-		shortUrls.value = [];
-	} finally {
-		isLoading.value = false;
-	}
-};
+		},
+		onError(err: any) {
+			console.error("Error fetching user urls:", err);
+			myUrls.value = [];
+		},
+	},
+);
 
+
+// onMounted: Vue Query maneja las cargas automáticas para public/user URLs a través de `enabled`.
 onMounted(() => {
-	if (!isMyList.value) {
-		loadUrls();
-	} else if (authStore.isAuthenticated) {
-		loadUrls();
-	}
+	// No es necesario forzar fetch: useQuery maneja inicialización.
 });
 
 watch(isMyList, (value) => {
-	if (!value && shortUrls.value.length === 0) {
-		loadUrls();
-	}
-	if (value && authStore.isAuthenticated && myUrls.value.length === 0) {
-		loadUrls();
+	if (!value) {
+		// switched to public list: refetch public query if needed
+		if (shortUrls.value.length === 0) {
+			publicQuery.refetch();
+		}
+	} else {
+		// switched to my list: refetch user query if authenticated
+		if (authStore.isAuthenticated && myUrls.value.length === 0) {
+			userQuery.refetch();
+		}
 	}
 });
 </script>

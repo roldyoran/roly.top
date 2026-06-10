@@ -8,6 +8,7 @@ export interface AdminRepositoryPort {
 		search?: string;
 	}): Promise<PaginatedResult<AdminUser>>;
 	findUserById(userId: string): Promise<AdminUser | null>;
+	findUsersByIds(userIds: string[]): Promise<AdminUser[]>;
 	banUser(userId: string, reason?: string, expiresAt?: Date): Promise<void>;
 	unbanUser(userId: string): Promise<void>;
 	updateUserUrlLimit(userId: string, limit: number): Promise<void>;

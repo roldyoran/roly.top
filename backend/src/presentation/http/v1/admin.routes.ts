@@ -64,6 +64,19 @@ adminRoutes.get("/stats", async (c) => {
 // ── Users ────────────────────────────────────────────────────────────────────
 
 adminRoutes.get("/users", async (c) => {
+	// Support batch fetch by ids: /v1/admin/users?ids=id1,id2
+	const idsParam = c.req.query("ids") ?? undefined;
+	if (idsParam) {
+		const ids = String(idsParam)
+			.split(",")
+			.map((s) => s.trim())
+			.filter(Boolean);
+		const adminRepo = getAdminRepo(c);
+		const useCase = new (await import("@/application/admin/get-users-by-ids.usecase")).GetUsersByIdsUseCase(adminRepo);
+		const users = await useCase.execute(ids);
+		return c.json(users);
+	}
+
 	const page = Number(c.req.query("page") ?? "1");
 	const pageSize = Number(c.req.query("pageSize") ?? "20");
 	const search = c.req.query("search") ?? undefined;

@@ -228,11 +228,12 @@
 
 <script setup lang="ts">
 import { Copy, Link, Search, Trash2 } from "lucide-vue-next";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { toast } from "vue-sonner";
-import type { AdminUrl } from "@/api/admin";
-import { deleteAdminUrl, getAdminUser } from "@/api/admin";
+import type { AdminUrl, AdminUser } from "@/api/admin";
+import { deleteAdminUrl, getUsersByIds, getAdminUrls } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
+import { useQuery } from "@tanstack/vue-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -283,45 +284,45 @@ function formatDate(dateStr: string): string {
 function onSearch() {
 	clearTimeout(searchTimeout);
 	searchTimeout = setTimeout(async () => {
-		await adminStore.fetchUrls(1, 20, searchQuery.value || undefined);
-		// load owner names for the fetched urls
+		// actualizar params de query
+		adminParams.value.page = 1;
+		adminParams.value.search = searchQuery.value || undefined;
+		await adminQuery.refetch();
+		// load owner names for the fetched urls (batch)
 		const urls = adminStore.urls?.data ?? [];
 		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
-		await Promise.all(
-			ids
-				.filter((id) => id && !ownerNames.value[id])
-				.map(async (id) => {
-					try {
-						const user = await getAdminUser(id);
-						ownerNames.value[id] = user.name;
-					} catch (err) {
-						ownerNames.value[id] = "Unknown";
-						console.error("[AdminUrls] loadOwners error", err);
-					}
-				}),
-		);
+		const idsToFetch = ids.filter((id) => id && !ownerNames.value[id]);
+		if (idsToFetch.length === 0) return;
+		try {
+			const users = await getUsersByIds(idsToFetch);
+			users.forEach((u: AdminUser) => {
+				ownerNames.value[u.id] = u.name;
+			});
+		} catch (err) {
+			idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+			console.error("[AdminUrls] loadOwners error", err);
+		}
 	}, 300);
-}
+} 
 
 function goToPage(page: number) {
-	adminStore.fetchUrls(page, 20, searchQuery.value || undefined).then(async () => {
+	adminParams.value.page = page;
+	adminQuery.refetch().then(async () => {
 		const urls = adminStore.urls?.data ?? [];
 		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
-		await Promise.all(
-			ids
-				.filter((id) => id && !ownerNames.value[id])
-				.map(async (id) => {
-					try {
-						const user = await getAdminUser(id);
-						ownerNames.value[id] = user.name;
-					} catch (err) {
-						ownerNames.value[id] = "Unknown";
-						console.error("[AdminUrls] loadOwners error", err);
-					}
-				}),
-		);
+		const idsToFetch = ids.filter((id) => id && !ownerNames.value[id]);
+		if (idsToFetch.length === 0) return;
+		try {
+			const users = await getUsersByIds(idsToFetch);
+			users.forEach((u: AdminUser) => {
+				ownerNames.value[u.id] = u.name;
+			});
+		} catch (err) {
+			idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+			console.error("[AdminUrls] loadOwners error", err);
+		}
 	});
-}
+} 
 
 function copyUrl(shortCode: string) {
 	copyToClipboard(`${getAppBaseUrl()}/${shortCode}`, "URL copiada");
@@ -338,48 +339,70 @@ async function handleDeleteConfirm() {
 		await deleteAdminUrl(selectedUrl.value.shortCode);
 		toast.success("URL eliminada");
 		deleteOpen.value = false;
-		await adminStore.fetchUrls(
-			adminStore.urls?.page ?? 1,
-			20,
-			searchQuery.value || undefined,
-		);
-		// refresh owners
+		await adminQuery.refetch();
+		// refresh owners (batch)
 		const urls = adminStore.urls?.data ?? [];
 		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
-		await Promise.all(
-			ids
-				.filter((id) => id && !ownerNames.value[id])
-				.map(async (id) => {
-					try {
-						const user = await getAdminUser(id);
-						ownerNames.value[id] = user.name;
-					} catch (err) {
-						ownerNames.value[id] = "Unknown";
-						console.error("[AdminUrls] loadOwners error", err);
-					}
-				}),
-		);
+		const idsToFetch = ids.filter((id) => id && !ownerNames.value[id]);
+		if (idsToFetch.length > 0) {
+			try {
+				const users = await getUsersByIds(idsToFetch);
+				users.forEach((u: AdminUser) => {
+					ownerNames.value[u.id] = u.name;
+				});
+			} catch (err) {
+				idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+				console.error("[AdminUrls] loadOwners error", err);
+			}
+		}
 	} catch {
 		toast.error("Error al eliminar la URL");
 	}
-}
+} 
+
+// Admin query params (reactive)
+const adminParams = ref({ page: 1, pageSize: 20, search: undefined as string | undefined });
+
+const adminQuery = useQuery(
+	computed(() => ["adminUrls", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
+	async () => {
+		const { page, pageSize, search } = adminParams.value;
+		const res = await getAdminUrls(page, pageSize, search);
+		return res;
+	},
+	{
+		keepPreviousData: true,
+		refetchOnWindowFocus: false,
+		onSuccess(data: any) {
+			if (data) {
+				adminStore.urls = data;
+			}
+		},
+		onError(err: any) {
+			console.error("Error fetching admin urls:", err);
+		},
+	},
+);
+
+watch(adminQuery.isFetching, (v) => {
+	adminStore.isLoadingUrls = v;
+});
 
 onMounted(async () => {
-	await adminStore.fetchUrls(1, 20);
+	// la query adminQuery se ejecuta automáticamente al montar
 	const urls = adminStore.urls?.data ?? [];
 	const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
-	await Promise.all(
-		ids
-			.filter((id) => id)
-			.map(async (id) => {
-				try {
-					const user = await getAdminUser(id);
-					ownerNames.value[id] = user.name;
-				} catch (err) {
-					ownerNames.value[id] = "Unknown";
-					console.error("[AdminUrls] loadOwners error", err);
-				}
-			}),
-	);
+	const idsToFetch = ids.filter((id) => id);
+	if (idsToFetch.length > 0) {
+		try {
+			const users = await getUsersByIds(idsToFetch);
+			users.forEach((u: AdminUser) => {
+				ownerNames.value[u.id] = u.name;
+			});
+		} catch (err) {
+			idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+			console.error("[AdminUrls] loadOwners error", err);
+		}
+	}
 });
 </script>

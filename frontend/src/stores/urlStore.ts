@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import type { SavedUrlItem } from "@/api/types";
+import type { SavedUrlItem, UrlInfoResponse } from "@/api/types";
 
 export type { SavedUrlItem };
 
@@ -19,6 +19,41 @@ export const useUrlStore = defineStore("urlStore", () => {
 	const lastPublicListFetch = ref<string | null>(null);
 	const lastUserUrlCreated = ref<string | null>(null);
 	const CACHE_DURATION_MS = 5 * 60 * 1000;
+
+	// Persisted public list cache
+	const PUBLIC_LIST_KEY = "publicList_v1";
+	const PUBLIC_LIST_TTL_MS = CACHE_DURATION_MS;
+
+	function loadPublicCache(): UrlInfoResponse[] | null {
+		try {
+			const raw = localStorage.getItem(PUBLIC_LIST_KEY);
+			if (!raw) return null;
+			const parsed = JSON.parse(raw);
+			if (!parsed?.fetchedAt || !parsed?.data) return null;
+			if (Date.now() - new Date(parsed.fetchedAt).getTime() > PUBLIC_LIST_TTL_MS) return null;
+			// actualizar estado en memoria
+			lastPublicListFetch.value = parsed.fetchedAt;
+			return parsed.data as UrlInfoResponse[];
+		} catch (e) {
+			console.error("Error loading public list cache:", e);
+			return null;
+		}
+	}
+
+	function savePublicCache(data: UrlInfoResponse[]) {
+		try {
+			const payload = { fetchedAt: new Date().toISOString(), data };
+			localStorage.setItem(PUBLIC_LIST_KEY, JSON.stringify(payload));
+			lastPublicListFetch.value = payload.fetchedAt;
+		} catch (e) {
+			console.error("Error saving public list cache:", e);
+		}
+	}
+
+	function clearPublicCache() {
+		localStorage.removeItem(PUBLIC_LIST_KEY);
+		lastPublicListFetch.value = null;
+	}
 
 	// Getters computados
 	const urlCount = computed(() => savedUrls.value.length);
@@ -193,6 +228,9 @@ export const useUrlStore = defineStore("urlStore", () => {
 		// Acciones - Cache de lista pública
 		shouldFetchPublicList,
 		updatePublicListFetchTime,
+		loadPublicCache,
+		savePublicCache,
+		clearPublicCache,
 
 		// Inicialización
 		initialize,

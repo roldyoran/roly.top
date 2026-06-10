@@ -63,6 +63,14 @@ export async function getAdminUser(userId: string): Promise<AdminUser> {
 	return data;
 }
 
+export async function getUsersByIds(userIds: string[]): Promise<AdminUser[]> {
+	if (!userIds || userIds.length === 0) return [];
+	const axios = getAxiosInstance();
+	const params = { ids: userIds.join(",") };
+	const { data } = await axios.get(`/v1/admin/users`, { params });
+	return data;
+}
+
 export async function banUser(
 	userId: string,
 	reason?: string,
