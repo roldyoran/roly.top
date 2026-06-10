@@ -419,9 +419,9 @@ const queryClient = useQueryClient();
 
 const adminQuery = useQuery(
 	computed(() => ["adminUsers", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
-	async () => {
+	async ({ signal }: any) => {
 		const { page, pageSize, search } = adminParams.value;
-		const res = await getAdminUsers(page, pageSize, search);
+		const res = await getAdminUsers(page, pageSize, search, signal);
 		return res;
 	},
 	{
@@ -540,12 +540,16 @@ function onSearch() {
 	searchTimeout = setTimeout(async () => {
 		adminParams.value.page = 1;
 		adminParams.value.search = searchQuery.value || undefined;
+		// cancelar consultas en vuelo para abortar la petición anterior
+		queryClient.cancelQueries(["adminUsers"]);
 		await adminQuery.refetch();
 	}, 300);
 }
 
 function goToPage(page: number) {
 	adminParams.value.page = page;
+	// cancelar consultas en vuelo para abortar la petición anterior
+	queryClient.cancelQueries(["adminUsers"]);
 	adminQuery.refetch();
 }
 

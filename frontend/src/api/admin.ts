@@ -39,9 +39,9 @@ export interface AdminUrl {
 	userId: string | null;
 }
 
-export async function getAdminStats(): Promise<AdminStats> {
+export async function getAdminStats(signal?: AbortSignal): Promise<AdminStats> {
 	const axios = getAxiosInstance();
-	const { data } = await axios.get("/v1/admin/stats");
+	const { data } = await axios.get("/v1/admin/stats", { signal });
 	return data;
 }
 
@@ -49,25 +49,26 @@ export async function getAdminUsers(
 	page = 1,
 	pageSize = 20,
 	search?: string,
+	signal?: AbortSignal,
 ): Promise<PaginatedResult<AdminUser>> {
 	const axios = getAxiosInstance();
 	const params: Record<string, string | number> = { page, pageSize };
 	if (search) params.search = search;
-	const { data } = await axios.get("/v1/admin/users", { params });
+	const { data } = await axios.get("/v1/admin/users", { params, signal });
 	return data;
 }
 
-export async function getAdminUser(userId: string): Promise<AdminUser> {
+export async function getAdminUser(userId: string, signal?: AbortSignal): Promise<AdminUser> {
 	const axios = getAxiosInstance();
-	const { data } = await axios.get(`/v1/admin/users/${userId}`);
+	const { data } = await axios.get(`/v1/admin/users/${userId}`, { signal });
 	return data;
 }
 
-export async function getUsersByIds(userIds: string[]): Promise<AdminUser[]> {
+export async function getUsersByIds(userIds: string[], signal?: AbortSignal): Promise<AdminUser[]> {
 	if (!userIds || userIds.length === 0) return [];
 	const axios = getAxiosInstance();
 	const params = { ids: userIds.join(",") };
-	const { data } = await axios.get(`/v1/admin/users`, { params });
+	const { data } = await axios.get(`/v1/admin/users`, { params, signal });
 	return data;
 }
 
@@ -102,15 +103,16 @@ export async function getAdminUrls(
 	page = 1,
 	pageSize = 20,
 	search?: string,
+	signal?: AbortSignal,
 ): Promise<PaginatedResult<AdminUrl>> {
 	const axios = getAxiosInstance();
 	const params: Record<string, string | number> = { page, pageSize };
 	if (search) params.search = search;
-	const { data } = await axios.get("/v1/admin/urls", { params });
+	const { data } = await axios.get("/v1/admin/urls", { params, signal });
 	return data;
 }
 
-export async function deleteAdminUrl(shortCode: string): Promise<void> {
+export async function deleteAdminUrl(shortCode: string, signal?: AbortSignal): Promise<void> {
 	const axios = getAxiosInstance();
-	await axios.delete(`/v1/admin/urls/${shortCode}`);
+	await axios.delete(`/v1/admin/urls/${shortCode}`, { signal });
 }

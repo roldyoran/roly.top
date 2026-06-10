@@ -54,46 +54,55 @@ export function getAxiosInstance(): AxiosInstance {
 export async function shortenUrlRequest(
 	originalUrl: string,
 	shortCode?: string,
+	signal?: AbortSignal,
 ) {
 	const axiosInstance = getAxiosInstance();
 	if (shortCode) {
-		const response = await axiosInstance.post("/v1/urls", {
-			originalUrl: originalUrl,
-			shortCode: shortCode,
-		});
+		const response = await axiosInstance.post(
+			"/v1/urls",
+			{
+				originalUrl: originalUrl,
+				shortCode: shortCode,
+			},
+			{ signal },
+		);
 		return response.data;
 	} else {
-		const response = await axiosInstance.post("/v1/urls", {
-			originalUrl: originalUrl,
-		});
+		const response = await axiosInstance.post(
+			"/v1/urls",
+			{
+				originalUrl: originalUrl,
+			},
+			{ signal },
+		);
 		return response.data;
 	}
 }
 
 // Función para obtener información de una URL corta
-export async function getUrlInfoRequest(shortCode: string) {
+export async function getUrlInfoRequest(shortCode: string, signal?: AbortSignal) {
 	const axiosInstance = getAxiosInstance();
-	const response = await axiosInstance.get(`/v1/urls/${shortCode}`);
+	const response = await axiosInstance.get(`/v1/urls/${shortCode}`, { signal });
 	return response.data;
 }
 
 // Funcion para obtener todas las URLs del usuario autenticado
-export async function getUrlsRequest() {
+export async function getUrlsRequest(signal?: AbortSignal) {
 	const axiosInstance = getAxiosInstance();
-	const response = await axiosInstance.get("/v1/urls");
+	const response = await axiosInstance.get("/v1/urls", { signal });
 	return response.data;
 }
 
 // Funcion para obtener URLs públicas (sin auth)
-export async function getPublicUrlsRequest() {
+export async function getPublicUrlsRequest(signal?: AbortSignal) {
 	const axiosInstance = getAxiosInstance();
-	const response = await axiosInstance.get("/v1/urls/public");
+	const response = await axiosInstance.get("/v1/urls/public", { signal });
 	return response.data;
 }
 
 // Función para eliminar una URL del usuario autenticado
-export async function deleteUrlRequest(shortCode: string) {
+export async function deleteUrlRequest(shortCode: string, signal?: AbortSignal) {
 	const axiosInstance = getAxiosInstance();
-	const response = await axiosInstance.delete(`/v1/urls/${shortCode}`);
+	const response = await axiosInstance.delete(`/v1/urls/${shortCode}`, { signal });
 	return response.data;
 }

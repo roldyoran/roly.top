@@ -640,8 +640,8 @@ if (cachedPublic && cachedPublic.length > 0) {
 
 const publicQuery = useQuery(
 	["publicUrls"],
-	async () => {
-		const res = await getPublicUrlsRequest();
+	async ({ signal }: any) => {
+		const res = await getPublicUrlsRequest(signal);
 		return res;
 	},
 	{
@@ -670,9 +670,9 @@ const userKey = computed(() => ["userUrls", authStore.userId]);
 
 const userQuery = useQuery(
 	userKey,
-	async () => {
+	async ({ signal }: any) => {
 		// backend devuelve { urls: UrlInfoResponse[], urlLimit }
-		const res = await getUrlsRequest();
+		const res = await getUrlsRequest(signal);
 		return res;
 	},
 	{

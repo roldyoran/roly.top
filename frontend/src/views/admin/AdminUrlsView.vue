@@ -287,6 +287,8 @@ function onSearch() {
 		// actualizar params de query
 		adminParams.value.page = 1;
 		adminParams.value.search = searchQuery.value || undefined;
+		// cancelar queries en vuelo para que Vue Query aborte la petición
+		queryClient.cancelQueries(["adminUrls"]);
 		await adminQuery.refetch();
 		// load owner names for the fetched urls (batch)
 		const urls = adminStore.urls?.data ?? [];
@@ -307,6 +309,8 @@ function onSearch() {
 
 function goToPage(page: number) {
 	adminParams.value.page = page;
+	// cancelar queries en vuelo antes de refetch
+	queryClient.cancelQueries(["adminUrls"]);
 	adminQuery.refetch().then(async () => {
 		const urls = adminStore.urls?.data ?? [];
 		const ids = Array.from(new Set(urls.map((u) => u.userId).filter(Boolean) as string[]));
@@ -366,9 +370,9 @@ const queryClient = useQueryClient();
 
 const adminQuery = useQuery(
 	computed(() => ["adminUrls", adminParams.value.page, adminParams.value.pageSize, adminParams.value.search]),
-	async () => {
+	async ({ signal }: any) => {
 		const { page, pageSize, search } = adminParams.value;
-		const res = await getAdminUrls(page, pageSize, search);
+		const res = await getAdminUrls(page, pageSize, search, signal);
 		return res;
 	},
 	{
