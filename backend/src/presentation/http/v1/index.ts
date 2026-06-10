@@ -21,6 +21,19 @@ const v1Router = new Hono<{
 	Variables: Variables & SessionVariables;
 }>();
 
+// Middleware de observabilidad: mide tiempos y logs básicos
+v1Router.use("*", async (c, next) => {
+	const start = Date.now();
+	await next();
+	const duration = Date.now() - start;
+	const status = c.res.status || 200;
+	const method = c.req.method;
+	const path = c.req.path;
+	const etagHeader = c.res.headers.get("ETag") || null;
+	const is304 = status === 304;
+	console.log(`[v1] ${method} ${path} -> ${status} ${duration}ms${etagHeader ? ` ETag:${etagHeader}` : ""}${is304 ? ' (304 Not Modified)' : ''}`);
+});
+
 // Inyecta urlRepo en el contexto para todas las rutas v1
 v1Router.use("*", async (c, next) => {
 	const db = createDb(c.env.DB);

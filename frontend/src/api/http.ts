@@ -38,8 +38,9 @@ export function getAxiosInstance(): AxiosInstance {
 		},
 	});
 
-	// Request interceptor: attach If-None-Match header from local cache for GET requests
+	// Attach timing metadata on request
 	_axiosInstance.interceptors.request.use((config: any) => {
+		config.metadata = { startTime: Date.now() };
 		try {
 			if (config && config.method && config.method.toLowerCase() === "get") {
 				const key = `etag:${config.url}`;
@@ -59,6 +60,17 @@ export function getAxiosInstance(): AxiosInstance {
 	_axiosInstance.interceptors.response.use(
 		(response: any) => {
 			try {
+				const start = response?.config?.metadata?.startTime;
+				const duration = start ? Date.now() - start : undefined;
+				if (typeof duration !== "undefined") {
+					console.log(`[HTTP] ${response.config.method.toUpperCase()} ${response.config.url} ${response.status} ${duration}ms`);
+					// push to window metrics for debugging
+					if (typeof window !== "undefined") {
+						(window as any).__http_metrics = (window as any).__http_metrics || [];
+						(window as any).__http_metrics.push({ method: response.config.method, url: response.config.url, status: response.status, duration });
+					}
+				}
+
 				if (response && response.config && response.config.method && response.config.method.toLowerCase() === "get") {
 					const etag = response.headers?.etag || response.headers?.ETag;
 					if (etag) {
@@ -80,10 +92,16 @@ export function getAxiosInstance(): AxiosInstance {
 				try {
 					const cached = localStorage.getItem(`cache:${config.url}`);
 					const data = cached ? JSON.parse(cached) : null;
+					console.log(`[HTTP] ${config.method?.toUpperCase()} ${config.url} 304 (from cache)`);
 					return Promise.resolve({ data, status: 304, headers: error.response.headers, config });
 				} catch (e) {
 					return Promise.reject(error);
 				}
+			}
+			// log timed out / cancelled requests
+			if (error?.message === 'canceled' || error?.code === 'ERR_CANCELED') {
+				console.warn('[HTTP] request canceled', config?.url);
+				return Promise.reject(error);
 			}
 			return Promise.reject(error);
 		},
