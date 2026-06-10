@@ -111,12 +111,52 @@
 
 <script setup lang="ts">
 import { Eye, Link, Shield, Users } from "lucide-vue-next";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/stores/adminStore";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
+import { getAdminStats } from "@/api/admin";
 
 const adminStore = useAdminStore();
+const queryClient = useQueryClient();
+
+// Stats query
+const statsQuery = useQuery(["adminStats"], async () => {
+	return await getAdminStats();
+}, { refetchOnWindowFocus: false });
+
+watch(statsQuery.data, (v) => {
+	if (v) adminStore.stats = v as any;
+});
+
+// Admin urls (first 5)
+const adminUrlsKey = ["adminUrls", 1, 5, undefined];
+const adminUrlsQuery = useQuery(adminUrlsKey, async () => {
+	const res = await queryClient.fetchQuery(adminUrlsKey as any, async () => {
+		const { page, pageSize, search } = { page: 1, pageSize: 5, search: undefined };
+		return await (await import("@/api/admin")).getAdminUrls(page, pageSize, search);
+	});
+	return res;
+}, { keepPreviousData: true, refetchOnWindowFocus: false });
+
+watch(adminUrlsQuery.data, (v) => {
+	if (v) adminStore.urls = v as any;
+});
+
+// Admin users (first 5)
+const adminUsersKey = ["adminUsers", 1, 5, undefined];
+const adminUsersQuery = useQuery(adminUsersKey, async () => {
+	const res = await queryClient.fetchQuery(adminUsersKey as any, async () => {
+		const { page, pageSize, search } = { page: 1, pageSize: 5, search: undefined };
+		return await (await import("@/api/admin")).getAdminUsers(page, pageSize, search);
+	});
+	return res;
+}, { keepPreviousData: true, refetchOnWindowFocus: false });
+
+watch(adminUsersQuery.data, (v) => {
+	if (v) adminStore.users = v as any;
+});
 
 const statCards = computed(() => [
 	{
@@ -157,8 +197,6 @@ const statCards = computed(() => [
 ]);
 
 onMounted(() => {
-	adminStore.fetchStats();
-	adminStore.fetchUrls(1, 5);
-	adminStore.fetchUsers(1, 5);
+	// queries will fetch automatically; no direct fetch calls
 });
 </script>
