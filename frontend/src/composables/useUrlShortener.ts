@@ -42,7 +42,11 @@ export const useUrlShortener = () => {
 					urlStore.addUrl(u.original, u.short),
 				);
 			}
-			console.error("shortenMutation error:", err);
+			const serverMessage =
+				(err as any)?.response?.data?.error?.message ||
+				(err as any)?.response?.data?.message ||
+				"Error al acortar la URL";
+			toast.error("Error al acortar la URL", { description: serverMessage });
 		},
 		onSuccess: (
 			data: UrlInfoResponse,
@@ -85,20 +89,31 @@ export const useUrlShortener = () => {
 		}
 
 		// Validar hash personalizado si se proporciona
-		if (customHash && !/^[a-z0-9]+$/.test(customHash)) {
-			toast.error("Hash inválido", {
-				description:
-					"El hash personalizado solo puede contener letras, números, guiones y guiones bajos.",
-			});
-			return { success: false };
+		if (customHash) {
+			if (!/^[a-z0-9]+$/.test(customHash)) {
+				toast.error("Hash inválido", {
+					description:
+						"El hash personalizado solo puede contener letras minúsculas y números (a-z, 0-9).",
+				});
+				return { success: false };
+			}
+			if (customHash.length > 9) {
+				toast.error("Hash demasiado largo", {
+					description: "El hash personalizado no puede tener más de 9 caracteres.",
+				});
+				return { success: false };
+			}
 		}
 
 		try {
+			console.log("[shortenUrl] calling shortenMutation", { originalUrl, customHash });
+			console.log("[shortenUrl] urlStore debug:", urlStore.getDebugInfo());
 			urlStore.isLoading = true;
 			const data = await shortenMutation.mutateAsync({
 				originalUrl,
 				customHash,
 			});
+			console.log("[shortenUrl] mutateAsync result:", data);
 			if (data?.shortCode) {
 				return {
 					success: true,
@@ -109,8 +124,12 @@ export const useUrlShortener = () => {
 			}
 			return { success: false };
 		} catch (error: any) {
+			console.error("[shortenUrl] caught error:", error);
 			const errorMessage =
-				error?.response?.data?.message || "Error al acortar la URL";
+				error?.response?.data?.error?.message ||
+				error?.response?.data?.message ||
+				(error?.message as string) ||
+				"Error al acortar la URL";
 			toast.error("Error en el servidor", { description: errorMessage });
 			return { success: false };
 		} finally {

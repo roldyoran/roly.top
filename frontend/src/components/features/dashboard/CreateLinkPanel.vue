@@ -27,14 +27,6 @@
           />
         </div>
 
-        <div class="flex items-center gap-3 p-3 bg-muted border border-border rounded-lg mb-5">
-          <Switch v-model="isPublic" />
-          <div>
-            <div class="text-[13px] font-600">Visible en la lista pública</div>
-            <div class="text-[11px] text-muted-foreground font-mono mt-0.5">Cualquiera puede ver este enlace en la página principal</div>
-          </div>
-        </div>
-
         <div class="flex gap-2">
           <Button
             class="bg-primary text-primary-foreground font-display font-700"
@@ -54,6 +46,11 @@
           </div>
           <Button size="sm" class="bg-primary text-primary-foreground" @click="copyShortUrl">Copiar</Button>
         </div>
+
+        <!-- QR Generator embedded in the dashboard create panel -->
+        <div class="mt-4">
+          <QrGenerator :initialUrl="shortUrl" />
+        </div>
       </CardContent>
     </Card>
   </div>
@@ -67,16 +64,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlShortener } from "@/composables/useUrlShortener";
+import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
 
 const { shortenUrl, isLoading } = useUrlShortener();
 const { copyToClipboard } = useCopyToClipboard();
 
 const urlInput = ref("");
 const alias = ref("");
-const isPublic = ref(true);
 const shortUrl = ref("");
 
 async function handleShorten() {
@@ -103,7 +99,6 @@ function copyShortUrl() {
 function clearForm() {
 	urlInput.value = "";
 	alias.value = "";
-	isPublic.value = true;
 	shortUrl.value = "";
 }
 </script>

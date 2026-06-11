@@ -77,7 +77,7 @@
 import { Copy, Download, QrCode } from "lucide-vue-next";
 import { motion } from "motion-v";
 import qrcode from "qrcode-generator";
-import { nextTick, ref } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,14 +90,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const props = defineProps<{ initialUrl?: string }>();
+
 const urlInput = ref<string>("");
 const qrDataUrl = ref<string>("");
 const error = ref<string>("");
 const isGenerating = ref<boolean>(false);
 const qrResult = ref<HTMLElement | null>(null);
 
-const handleGenerate = async (event: Event) => {
-	event.preventDefault();
+async function generateFromInput() {
 	error.value = "";
 	qrDataUrl.value = "";
 
@@ -123,7 +124,24 @@ const handleGenerate = async (event: Event) => {
 	} catch (err: unknown) {
 		error.value = (err as Error).message || "Error al generar el código QR";
 	}
+}
+
+const handleGenerate = (event: Event) => {
+	event.preventDefault();
+	void generateFromInput();
 };
+
+// If initialUrl prop provided, watch and auto-generate
+watch(
+	() => props.initialUrl,
+	(val) => {
+		if (val) {
+			urlInput.value = val;
+			void generateFromInput();
+		}
+	},
+	{ immediate: true },
+);
 
 const downloadQr = () => {
 	if (!qrDataUrl.value) return;
