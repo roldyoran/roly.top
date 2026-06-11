@@ -17,9 +17,32 @@ type UrlVariables = Variables & {
 
 const urlRoutes = new Hono<{ Bindings: Bindings; Variables: UrlVariables }>();
 
-// GET /v1/urls/public — lista pública de URLs (solo de usuarios admin)
+// GET /v1/urls/public/stats — estadísticas públicas (sin auth)
 import { computeETag } from "./etag";
 
+urlRoutes.get("/public/stats", async (c) => {
+	const urlRepo = c.get("urlRepo");
+	const userRepo = c.get("userRepo");
+
+	const useCase = new GetPublicUrlsUseCase(urlRepo, userRepo);
+	const urls = await useCase.execute();
+
+	const stats = {
+		publicUrls: urls.length,
+		totalRedirects: urls.reduce((sum, u) => sum + (u.visits ?? 0), 0),
+	};
+
+	const etag = await computeETag(stats);
+	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+	if (ifNone && ifNone === etag) {
+		c.header("ETag", etag);
+		return c.body(null, 304);
+	}
+	c.header("ETag", etag);
+	return c.json(stats);
+});
+
+// GET /v1/urls/public — lista pública de URLs (solo de usuarios admin)
 urlRoutes.get("/public", async (c) => {
 	const urlRepo = c.get("urlRepo");
 	const userRepo = c.get("userRepo");
