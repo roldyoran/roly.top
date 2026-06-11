@@ -98,31 +98,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
 import { Copy } from "lucide-vue-next";
+import { computed, ref } from "vue";
+import { toast } from "vue-sonner";
+import { getUrlInfoRequest } from "@/api/http";
+import type { UrlInfoResponse } from "@/api/types";
+import AuthRequired from "@/components/shared/AuthRequired.vue";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getUrlInfoRequest } from "@/api/http";
-import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-import { useAuthStore } from "@/stores/authStore";
-import AuthRequired from "@/components/shared/AuthRequired.vue";
-import { formatDate } from "@/lib/utils";
-import type { UrlInfoResponse } from "@/api/types";
-import { toast } from "vue-sonner";
 import {
 	Tooltip,
-	TooltipTrigger,
 	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
+import { formatDate } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
 
 // Composables
 const { copyToClipboard } = useCopyToClipboard();

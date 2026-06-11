@@ -1,8 +1,8 @@
-import { useUrlStore } from "@/stores/urlStore";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { toast } from "vue-sonner";
-import { shortenUrlRequest, getAppBaseUrl } from "@/api/http";
+import { getAppBaseUrl, shortenUrlRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
-import { useQueryClient, useMutation } from "@tanstack/vue-query";
+import { useUrlStore } from "@/stores/urlStore";
 
 /**
  * Composable para manejar el acortamiento de URLs
@@ -99,7 +99,7 @@ export const useUrlShortener = () => {
 				originalUrl,
 				customHash,
 			});
-			if (data && data.shortCode) {
+			if (data?.shortCode) {
 				return {
 					success: true,
 					shortCode: data.shortCode,

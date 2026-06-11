@@ -110,13 +110,13 @@
 </template>
 
 <script setup lang="ts">
+import { keepPreviousData, useQuery } from "@tanstack/vue-query";
 import { Eye, Link, Shield, Users } from "lucide-vue-next";
 import { computed, onMounted, watch } from "vue";
+import { getAdminStats } from "@/api/admin";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/stores/adminStore";
-import { useQuery, keepPreviousData } from "@tanstack/vue-query";
-import { getAdminStats } from "@/api/admin";
 
 const adminStore = useAdminStore();
 

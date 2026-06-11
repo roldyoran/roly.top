@@ -52,8 +52,8 @@
 </template>
 
 <script setup lang="ts">
+import { Clock, Info, ShieldOff } from "lucide-vue-next";
 import { computed } from "vue";
-import { ShieldOff, Info, Clock } from "lucide-vue-next";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { Button } from "@/components/ui/button";

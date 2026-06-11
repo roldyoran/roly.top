@@ -74,10 +74,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
 import { Copy, Download, QrCode } from "lucide-vue-next";
 import { motion } from "motion-v";
 import qrcode from "qrcode-generator";
+import { nextTick, ref } from "vue";
 import { toast } from "vue-sonner";
 import { Button } from "@/components/ui/button";
 import {

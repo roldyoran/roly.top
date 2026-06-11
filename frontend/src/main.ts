@@ -3,10 +3,10 @@ import { createApp } from "vue";
 import router from "./router";
 import { pinia } from "./stores";
 import "./style.css";
-import App from "./App.vue";
 
 // Vue Query
-import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
+import { QueryClient, VueQueryPlugin } from "@tanstack/vue-query";
+import App from "./App.vue";
 
 const app = createApp(App);
 const head = createHead();

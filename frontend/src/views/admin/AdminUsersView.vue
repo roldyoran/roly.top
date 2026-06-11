@@ -350,6 +350,12 @@
 
 <script setup lang="ts">
 import {
+	keepPreviousData,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/vue-query";
+import {
 	Ban,
 	CheckCircle,
 	MoreHorizontal,
@@ -358,22 +364,16 @@ import {
 	Trash2,
 	Users,
 } from "lucide-vue-next";
-import { onMounted, ref, computed, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import type { AdminUser } from "@/api/admin";
 import {
 	banUser,
 	deleteUser,
+	getAdminUsers,
 	unbanUser,
 	updateUserUrlLimit,
-	getAdminUsers,
 } from "@/api/admin";
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-	keepPreviousData,
-} from "@tanstack/vue-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -471,7 +471,7 @@ const deleteUserMutation = useMutation<
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
 		// Optimistically remove user from list
-		if (adminStore.users && adminStore.users.data) {
+		if (adminStore.users?.data) {
 			adminStore.users.data = adminStore.users.data.filter(
 				(u: any) => u.id !== userId,
 			);
@@ -509,7 +509,7 @@ const banMutation = useMutation<
 		const previous = adminStore.users
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
-		if (adminStore.users && adminStore.users.data) {
+		if (adminStore.users?.data) {
 			adminStore.users.data = adminStore.users.data.map((u: any) =>
 				u.id === userId ? { ...u, banned: true } : u,
 			);
@@ -532,7 +532,7 @@ const unbanMutation = useMutation<void, unknown, string, { previous: any }>({
 		const previous = adminStore.users
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
-		if (adminStore.users && adminStore.users.data) {
+		if (adminStore.users?.data) {
 			adminStore.users.data = adminStore.users.data.map((u: any) =>
 				u.id === userId ? { ...u, banned: false } : u,
 			);
@@ -560,7 +560,7 @@ const updateLimitMutation = useMutation<
 		const previous = adminStore.users
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
-		if (adminStore.users && adminStore.users.data) {
+		if (adminStore.users?.data) {
 			adminStore.users.data = adminStore.users.data.map((u: any) =>
 				u.id === userId ? { ...u, urlLimit: limit } : u,
 			);

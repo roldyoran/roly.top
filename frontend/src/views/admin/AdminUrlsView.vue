@@ -227,18 +227,18 @@
 </template>
 
 <script setup lang="ts">
+import {
+	keepPreviousData,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/vue-query";
 import { Copy, Link, Search, Trash2 } from "lucide-vue-next";
-import { onMounted, ref, computed, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import type { AdminUrl, AdminUser } from "@/api/admin";
-import { deleteAdminUrl, getUsersByIds, getAdminUrls } from "@/api/admin";
+import { deleteAdminUrl, getAdminUrls, getUsersByIds } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-	keepPreviousData,
-} from "@tanstack/vue-query";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -428,7 +428,7 @@ const deleteAdminUrlMutation = useMutation<
 		const previous = adminStore.urls
 			? JSON.parse(JSON.stringify(adminStore.urls))
 			: null;
-		if (adminStore.urls && adminStore.urls.data) {
+		if (adminStore.urls?.data) {
 			adminStore.urls.data = adminStore.urls.data.filter(
 				(u: any) => u.shortCode !== shortCode,
 			);
