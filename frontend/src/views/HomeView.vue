@@ -105,26 +105,26 @@
     <!-- Home content -->
     <main class="flex-grow relative z-10">
       <!-- Hero -->
-      <section class="flex flex-col items-center justify-center px-6 pt-12 pb-14 relative overflow-hidden">
+      <section class="flex flex-col items-center justify-center px-6 pt-10 pb-14 relative overflow-hidden">
         <div class="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none" style="background: radial-gradient(ellipse at 50% 30%, oklch(0.7 0.02 130 / 0.02) 0%, oklch(0.7 0.02 130 / 0.01) 40%, transparent 70%);"></div>
 
         <motion.div
-          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card border border-border text-[11px] font-mono text-muted-foreground mb-8"
+          class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-muted-foreground mb-8"
           :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
           :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
           :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }"
         >
           <CloudflareWorkers class="w-4 h-4" />
-          POWERED by Cloudflare Workers
+          Powered by Cloudflare Workers
         </motion.div>
 
         <motion.h1
-          class="font-display font-800 text-center leading-[0.9] mb-5 text-foreground text-[clamp(44px,6.5vw,90px)] tracking-[-0.04em]"
+          class="font-display font-800 text-center leading-[0.9] mb-4 text-foreground text-[clamp(40px,6vw,80px)] tracking-[-0.04em]"
           :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
           :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }"
         >
-          Shorter links.<br><span class="text-primary" style="text-shadow: 0 0 60px oklch(0.7 0.2 130 / 0.5), 0 0 120px oklch(0.7 0.2 130 / 0.25);">Instant results.</span>
+          Acorta tu URL<br><span class="text-primary" style="text-shadow: 0 0 40px oklch(0.7 0.18 130 / 0.45), 0 0 80px oklch(0.7 0.18 130 / 0.22);">al instante.</span>
         </motion.h1>
 
         <motion.p
@@ -133,7 +133,7 @@
           :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }"
         >
-          Pega cualquier URL larga y obtén un enlace corto y rastreable en menos de un segundo — sin necesidad de cuenta.
+            Simple · Rápido · Gratis · Construido sobre infraestructura Edge
         </motion.p>
 
         <!-- Terminal Shortener Card -->
