@@ -1,4 +1,9 @@
-import axios, { type AxiosInstance } from "axios";
+import axios, {
+	type AxiosError,
+	type AxiosInstance,
+	type AxiosResponse,
+	type InternalAxiosRequestConfig,
+} from "axios";
 
 // Devuelve la URL base de la API, preferencia: env VITE_API_BASE_URL -> localStorage apiUrl -> fallback
 export function getApiBaseUrl(): string {
@@ -38,51 +43,31 @@ export function getAxiosInstance(): AxiosInstance {
 		},
 	});
 
-	// Attach timing metadata on request
-	_axiosInstance.interceptors.request.use((config: any) => {
-		config.metadata = { startTime: Date.now() };
-		try {
-			if (config && config.method && config.method.toLowerCase() === "get") {
-				const key = `etag:${config.url}`;
-				const etag = localStorage.getItem(key);
-				if (etag) {
-					config.headers = config.headers || {};
-					config.headers["If-None-Match"] = etag;
+	// Attach ETag headers on GET requests
+	_axiosInstance.interceptors.request.use(
+		(config: InternalAxiosRequestConfig) => {
+			try {
+				if (config?.method && config.method.toLowerCase() === "get") {
+					const key = `etag:${config.url}`;
+					const etag = localStorage.getItem(key);
+					if (etag) {
+						config.headers = config.headers || {};
+						config.headers["If-None-Match"] = etag;
+					}
 				}
+			} catch (_e) {
+				// ignore
 			}
-		} catch (e) {
-			// ignore
-		}
-		return config;
-	});
+			return config;
+		},
+	);
 
 	// Response interceptor: store ETag + cache GET bodies; handle 304 Not Modified by returning cached payload
 	_axiosInstance.interceptors.response.use(
-		(response: any) => {
+		(response: AxiosResponse) => {
 			try {
-				const start = response?.config?.metadata?.startTime;
-				const duration = start ? Date.now() - start : undefined;
-				if (typeof duration !== "undefined") {
-					console.log(
-						`[HTTP] ${response.config.method.toUpperCase()} ${response.config.url} ${response.status} ${duration}ms`,
-					);
-					// push to window metrics for debugging
-					if (typeof window !== "undefined") {
-						(window as any).__http_metrics =
-							(window as any).__http_metrics || [];
-						(window as any).__http_metrics.push({
-							method: response.config.method,
-							url: response.config.url,
-							status: response.status,
-							duration,
-						});
-					}
-				}
-
 				if (
-					response &&
-					response.config &&
-					response.config.method &&
+					response?.config?.method &&
 					response.config.method.toLowerCase() === "get"
 				) {
 					const etag = response.headers?.etag || response.headers?.ETag;
@@ -95,12 +80,12 @@ export function getAxiosInstance(): AxiosInstance {
 						JSON.stringify(response.data),
 					);
 				}
-			} catch (e) {
+			} catch (_e) {
 				// ignore cache errors
 			}
 			return response;
 		},
-		(error: any) => {
+		(error: AxiosError) => {
 			// If server responds 304 Not Modified, return cached payload
 			const status = error?.response?.status;
 			const config = error?.response?.config || error?.config;
@@ -108,23 +93,15 @@ export function getAxiosInstance(): AxiosInstance {
 				try {
 					const cached = localStorage.getItem(`cache:${config.url}`);
 					const data = cached ? JSON.parse(cached) : null;
-					console.log(
-						`[HTTP] ${config.method?.toUpperCase()} ${config.url} 304 (from cache)`,
-					);
 					return Promise.resolve({
 						data,
 						status: 304,
 						headers: error.response.headers,
 						config,
 					});
-				} catch (e) {
+				} catch (_e) {
 					return Promise.reject(error);
 				}
-			}
-			// log timed out / cancelled requests
-			if (error?.message === "canceled" || error?.code === "ERR_CANCELED") {
-				console.warn("[HTTP] request canceled", config?.url);
-				return Promise.reject(error);
 			}
 			return Promise.reject(error);
 		},
@@ -184,6 +161,13 @@ export async function getPublicUrlsRequest(signal?: AbortSignal) {
 	const axiosInstance = getAxiosInstance();
 	const response = await axiosInstance.get("/v1/urls/public", { signal });
 	return response.data;
+}
+
+// Funcion para obtener estadísticas públicas (sin auth)
+export async function getPublicStatsRequest(signal?: AbortSignal) {
+	const axiosInstance = getAxiosInstance();
+	const response = await axiosInstance.get("/v1/urls/public/stats", { signal });
+	return response.data as { publicUrls: number; totalRedirects: number };
 }
 
 // Función para eliminar una URL del usuario autenticado
