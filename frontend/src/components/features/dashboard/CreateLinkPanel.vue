@@ -46,11 +46,6 @@
           </div>
           <Button size="sm" class="bg-primary text-primary-foreground" @click="copyShortUrl">Copiar</Button>
         </div>
-
-        <!-- QR Generator embedded in the dashboard create panel -->
-        <div class="mt-4">
-          <QrGenerator :initialUrl="shortUrl" />
-        </div>
       </CardContent>
     </Card>
   </div>
@@ -66,7 +61,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlShortener } from "@/composables/useUrlShortener";
-import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
 
 const { shortenUrl, isLoading } = useUrlShortener();
 const { copyToClipboard } = useCopyToClipboard();
