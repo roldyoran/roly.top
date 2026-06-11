@@ -32,8 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import { Github, Link } from "lucide-vue-next";
 import { computed } from "vue";
-import { Link, Github } from "lucide-vue-next";
 
 interface Props {
 	attempts: number;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useColorMode } from "@vueuse/core";
-import { Sun, Moon, Monitor } from "lucide-vue-next";
+import { Monitor, Moon, Sun } from "lucide-vue-next";
 import { computed, ref } from "vue";
 import { Button } from "@/components/ui/button";
 

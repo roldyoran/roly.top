@@ -57,10 +57,10 @@
 </template>
 
 <script setup lang="ts">
-import { Link, ExternalLink, Copy, X, Eye, Clock } from "lucide-vue-next";
+import { Clock, Copy, ExternalLink, Eye, Link, X } from "lucide-vue-next";
 import { motion } from "motion-v";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 defineProps<{
