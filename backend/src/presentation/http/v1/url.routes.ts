@@ -9,6 +9,7 @@ import {
 	UrlLimitReachedError,
 } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
+import { CreateUrlUseCase } from "@/application/url/create-url.usecase";
 
 type UrlVariables = Variables & {
 	user: { id: string } | null;
@@ -110,7 +111,13 @@ urlRoutes.post(
 		const urlRepo = c.get("urlRepo");
 		const userRepo = c.get("userRepo");
 
-		// Verificar límite de URLs
+		// Primero verificar si la URL ya existe para este usuario — si existe, devolverla
+		const existing = await urlRepo.findByOriginalUrl(originalUrl, user.id);
+		if (existing) {
+			return c.json(existing, 200);
+		}
+
+		// Verificar límite de URLs solo cuando se creará una nueva
 		const ADMIN_URL_LIMIT = 999;
 		const dbUser = await userRepo.findLimitAndRoleById(user.id);
 
@@ -121,15 +128,12 @@ urlRoutes.post(
 			throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
 		}
 
-		// Verificar si la URL ya existe para este usuario
-		const existing = await urlRepo.findByOriginalUrl(originalUrl, user.id);
-		if (existing) {
-			return c.json(existing, 200);
-		}
-
-		const created = await urlRepo.createForUser(user.id, {
+		// Usar el caso de uso que valida existencia de shortCode personalizado
+		const useCase = new CreateUrlUseCase(urlRepo);
+		const created = await useCase.execute({
 			originalUrl,
 			shortCode,
+			userId: user.id,
 		});
 		return c.json(created, 201);
 	},
