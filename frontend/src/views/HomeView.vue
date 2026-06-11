@@ -37,6 +37,14 @@
         </Button>
 
         <div v-if="authStore.isAuthenticated" class="hidden sm:flex items-center gap-2">
+          <!-- Explicit Dashboard button for discoverability -->
+          <router-link to="/dashboard" class="inline-flex">
+            <Button variant="outline" size="sm" class="flex items-center gap-2 px-3 h-8">
+              <LayoutDashboard class="w-4 h-4" />
+              <span class="font-mono text-[10px] tracking-wider">Dashboard</span>
+            </Button>
+          </router-link>
+
           <router-link
             to="/dashboard"
             class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/60 hover:bg-muted transition-colors"
@@ -363,7 +371,7 @@ import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { z } from "zod";
-import { getAppBaseUrl, getPublicStatsRequest } from "@/api/http";
+import { getAppBaseUrl, getPublicStatsRequest, getUrlsRequest } from "@/api/http";
 import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
 import UrlInfoForm from "@/components/features/url-info/UrlInfoForm.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
@@ -500,9 +508,36 @@ async function handleSignOut() {
 }
 
 onMounted(async () => {
-	urlStore.initialize();
-	await fetchSession();
-	authStore.initialize();
+	// Inicializar authStore antes de inicializar urlStore con userId
+	// fetchSession() es el helper bajo useAuth y authStore.initialize() ya llama a fetchSession
+	try {
+		await authStore.initialize();
+	} catch (e) {
+		console.error("Error initializing authStore:", e);
+	}
+
+	// Ahora que authStore tiene userId (si está autenticado), inicializamos urlStore con el userId
+	urlStore.initialize(authStore.userId ?? undefined);
+
+	// Sincronizar con el backend: obtener lista y límite real si el usuario está autenticado
+	if (authStore.isAuthenticated) {
+		try {
+			const res = await getUrlsRequest();
+			if (res && typeof res === "object") {
+				// Establecer límite y actualizar la lista local en caso de que difiera
+				if ("urlLimit" in res) urlStore.setUrlLimit(res.urlLimit);
+				if (Array.isArray((res as any).urls)) {
+					// actualizar store local y caché si es necesario
+					const urls = (res as any).urls as any[];
+					// Reemplazamos savedUrls en el store con los del servidor
+					urlStore.clearAllUrls();
+					urls.forEach((u: any) => urlStore.addUrl(u.originalUrl, u.shortCode));
+				}
+			}
+		} catch (e) {
+			console.error("Error fetching user urls for init:", e);
+		}
+	}
 
 	try {
 		const stats = await getPublicStatsRequest();
