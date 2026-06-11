@@ -30,24 +30,29 @@
               type="url"
               placeholder="https://ejemplo.com o pega un enlace roly.top/..."
             />
-            <Button class="bg-primary text-primary-foreground font-display font-700 shrink-0" @click="generateQR">
+            <Button class="bg-primary text-primary-foreground font-display font-700 shrink-0" @click="generateFromInput">
               Generar
             </Button>
           </div>
         </div>
 
-        <div v-if="!qrGenerated" class="flex flex-col items-center justify-center h-[220px] bg-muted border border-dashed border-border rounded-xl">
-          <QrCode class="w-11 h-11 text-muted-foreground/30 mb-2.5" />
-          <p class="text-xs text-muted-foreground font-mono">Selecciona o ingresa una URL para generar</p>
-        </div>
+        <div class="mt-4">
+          <div v-if="error" class="text-destructive text-sm mb-2" role="alert">{{ error }}</div>
 
-        <div v-else class="flex flex-col items-center py-6">
-          <div class="bg-card p-3 rounded-[10px]">
-            <canvas ref="qrCanvas" width="200" height="200"></canvas>
+          <div v-if="qrDataUrl" ref="qrResult" class="space-y-4">
+            <div class="flex justify-center p-4 rounded-lg border bg-muted/30">
+              <img :src="qrDataUrl" alt="Código QR generado" class="w-48 h-48 border-4 border-white" />
+            </div>
+
+            <div class="flex justify-center gap-2">
+              <Button @click="downloadQr" variant="outline" size="sm">Descargar QR</Button>
+              <Button @click="copyQrDataUrl" variant="outline" size="sm">Copiar Imagen</Button>
+            </div>
           </div>
-          <div class="flex gap-2 mt-4">
-            <Button size="sm" class="bg-primary text-primary-foreground" @click="downloadQR">Descargar PNG</Button>
-            <Button variant="secondary" size="sm" @click="copyUrl">Copiar enlace</Button>
+
+          <div v-else class="flex flex-col items-center justify-center h-[220px] bg-muted border border-dashed border-border rounded-xl">
+            <QrCode class="w-11 h-11 text-muted-foreground/30 mb-2.5" />
+            <p class="text-xs text-muted-foreground font-mono">Selecciona o ingresa una URL para generar</p>
           </div>
         </div>
       </CardContent>
@@ -57,10 +62,9 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { QrCode } from "lucide-vue-next";
-import qrcode from "qrcode-generator";
-import { computed, ref, watch } from "vue";
+import { ref, watch, nextTick } from "vue";
 import { toast } from "vue-sonner";
+import { QrCode } from "lucide-vue-next";
 import { getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
 import { Button } from "@/components/ui/button";
@@ -75,12 +79,17 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
+import qrcode from "qrcode-generator";
 
 const { copyToClipboard } = useCopyToClipboard();
 const qrUrl = ref("");
 const selectedUrl = ref("");
-const qrGenerated = ref(false);
-const qrCanvas = ref<HTMLCanvasElement | null>(null);
+
+// QR generator state (adapted from QrGenerator.vue)
+const qrDataUrl = ref<string>("");
+const error = ref<string>("");
+const isGenerating = ref<boolean>(false);
+const qrResult = ref<HTMLElement | null>(null);
 
 const urlsQuery = useQuery({
 	queryKey: ["userUrls"],
@@ -110,55 +119,77 @@ watch(
 watch(selectedUrl, (val) => {
 	if (val) {
 		qrUrl.value = val;
-		generateQR();
+		void generateFromInput();
 	}
 });
 
-function generateQR() {
-	const url = qrUrl.value.trim();
-	if (!url) return;
-
-	const qr = qrcode(0, "M");
-	qr.addData(url);
-	qr.make();
-
-	const canvas = qrCanvas.value;
-	if (!canvas) return;
-	const ctx = canvas.getContext("2d");
-	if (!ctx) return;
-
-	const size = 200;
-	canvas.width = size;
-	canvas.height = size;
-
-	ctx.fillStyle = "#FFFFFF";
-	ctx.fillRect(0, 0, size, size);
-
-	const moduleCount = qr.getModuleCount();
-	const cellSize = size / moduleCount;
-
-	for (let r = 0; r < moduleCount; r++) {
-		for (let c = 0; c < moduleCount; c++) {
-			if (qr.isDark(r, c)) {
-				ctx.fillStyle = "#09090B";
-				ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
-			}
-		}
+async function generateFromInput() {
+	error.value = "";
+	qrDataUrl.value = "";
+	isGenerating.value = true;
+	if (!qrUrl.value.trim()) {
+		error.value = "Por favor ingresa una URL.";
+		isGenerating.value = false;
+		return;
 	}
 
-	qrGenerated.value = true;
+	try {
+		const qr = qrcode(0, "M");
+		qr.addData(qrUrl.value);
+		qr.make();
+
+		qrDataUrl.value = qr.createDataURL(4, 0);
+
+		await nextTick();
+		const el = qrResult.value as unknown as { $el?: HTMLElement } | HTMLElement | null;
+		const realEl = (el as any)?.$el ?? el;
+		if (realEl && typeof (realEl as HTMLElement).scrollIntoView === "function") {
+			(realEl as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	} catch (err: unknown) {
+		error.value = (err as Error).message || "Error al generar el código QR";
+		console.error("[QRDashPanel] generate error", err);
+	} finally {
+		isGenerating.value = false;
+	}
 }
 
-function downloadQR() {
-	const canvas = qrCanvas.value;
-	if (!canvas) return;
-	const a = document.createElement("a");
-	a.href = canvas.toDataURL("image/png");
-	a.download = "qr-roly-top.png";
-	a.click();
-}
+const downloadQr = () => {
+	if (!qrDataUrl.value) return;
+
+	const link = document.createElement("a");
+	link.href = qrDataUrl.value;
+	link.download = "qr-roly-top.png";
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+
+	toast.success("QR descargado correctamente");
+};
+
+const copyQrDataUrl = async () => {
+	if (!qrDataUrl.value) return;
+
+	try {
+		const base64Data = qrDataUrl.value.split(",")[1];
+		const byteCharacters = atob(base64Data);
+		const byteNumbers = new Array(byteCharacters.length);
+		for (let i = 0; i < byteCharacters.length; i++) {
+			byteNumbers[i] = byteCharacters.charCodeAt(i);
+		}
+		const byteArray = new Uint8Array(byteNumbers);
+		const blob = new Blob([byteArray], { type: "image/png" });
+
+		await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+
+		toast.success("Imagen del QR copiada al portapapeles");
+	} catch {
+		toast.error("No se pudo copiar la imagen al portapapeles");
+	}
+};
 
 function copyUrl() {
+	if (!qrUrl.value) return;
 	copyToClipboard(qrUrl.value, "¡URL copiada!");
 }
 </script>

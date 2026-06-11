@@ -43,27 +43,34 @@
       </form>
 
       <motion.div
-        v-if="qrDataUrl"
         ref="qrResult"
         :initial="{ opacity: 0, scale: 0.95, y: 12 }"
-        :animate="{ opacity: 1, scale: 1, y: 0 }"
+        :animate="qrDataUrl ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }"
         :transition="{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }"
         class="space-y-4"
       >
         <div class="flex justify-center p-4 rounded-lg border bg-muted/30">
-          <img
-            :src="qrDataUrl"
-            alt="Código QR generado"
-            class="w-48 h-48 border-4 border-white"
-          />
+          <div class="w-48 h-48 flex items-center justify-center border border-border rounded-md bg-card overflow-hidden">
+            <img
+              v-if="qrDataUrl"
+              :src="qrDataUrl"
+              alt="Código QR generado"
+              class="w-full h-full object-contain"
+            />
+
+            <div v-else class="w-full h-full flex flex-col items-center justify-center text-muted-foreground font-mono">
+              <QrCode class="w-8 h-8 mb-1 text-muted-foreground" />
+              <span class="text-xs">Aquí aparecerá tu QR</span>
+            </div>
+          </div>
         </div>
 
         <div class="flex justify-center gap-2">
-          <Button @click="downloadQr" variant="outline" size="sm">
+          <Button @click="downloadQr" variant="outline" size="sm" :disabled="!qrDataUrl">
             <Download class="w-4 h-4 mr-2" aria-hidden="true" />
             Descargar QR
           </Button>
-          <Button @click="copyQrDataUrl" variant="outline" size="sm">
+          <Button @click="copyQrDataUrl" variant="outline" size="sm" :disabled="!qrDataUrl">
             <Copy class="w-4 h-4 mr-2" aria-hidden="true" />
             Copiar Imagen
           </Button>
@@ -101,9 +108,12 @@ const qrResult = ref<HTMLElement | null>(null);
 async function generateFromInput() {
 	error.value = "";
 	qrDataUrl.value = "";
+	isGenerating.value = true;
+	console.log("[QrGenerator] generateFromInput start", { url: urlInput.value });
 
 	if (!urlInput.value.trim()) {
 		error.value = "Por favor ingresa una URL.";
+		isGenerating.value = false;
 		return;
 	}
 
@@ -121,20 +131,25 @@ async function generateFromInput() {
 		if (el && typeof el.scrollIntoView === "function") {
 			el.scrollIntoView({ behavior: "smooth", block: "center" });
 		}
+		console.log("[QrGenerator] generated successfully");
 	} catch (err: unknown) {
 		error.value = (err as Error).message || "Error al generar el código QR";
+		console.error("[QrGenerator] generate error", err);
+	} finally {
+		isGenerating.value = false;
 	}
 }
 
-const handleGenerate = (event: Event) => {
+const handleGenerate = async (event: Event) => {
 	event.preventDefault();
-	void generateFromInput();
+	await generateFromInput();
 };
 
 // If initialUrl prop provided, watch and auto-generate
 watch(
 	() => props.initialUrl,
 	(val) => {
+		console.log("[QrGenerator] initialUrl changed:", val);
 		if (val) {
 			urlInput.value = val;
 			void generateFromInput();
