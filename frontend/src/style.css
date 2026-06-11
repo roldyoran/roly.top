@@ -295,6 +295,8 @@ body {
 	--border: rgba(132, 204, 22, 0.2);
 	--input: #e4e4e7;
 	--ring: #65a30d;
+	--bg-elevated: #fafafa;
+	--bg-overlay: #f0f0f0;
 	--ambient-1: oklch(0.9 0.15 110 / 0.15);
 	--ambient-2: oklch(0.85 0.15 210 / 0.1);
 	--chart-1: oklch(0.6 0.15 110);
@@ -303,13 +305,13 @@ body {
 	--chart-4: oklch(0.55 0 0);
 	--chart-5: oklch(0.55 0.15 25);
 	--radius: 0.75rem;
-	--sidebar: #fafafa;
+	--sidebar: #ffffff;
 	--sidebar-foreground: #09090b;
 	--sidebar-primary: #65a30d;
 	--sidebar-primary-foreground: #ffffff;
-	--sidebar-accent: #f0f0f0;
-	--sidebar-accent-foreground: #52525b;
-	--sidebar-border: rgba(132, 204, 22, 0.2);
+	--sidebar-accent: rgba(101, 163, 13, 0.07);
+	--sidebar-accent-foreground: #4d7c0f;
+	--sidebar-border: rgba(0, 0, 0, 0.04);
 	--sidebar-ring: #65a30d;
 	--bg-subtle: #e4e4e7;
 	/* Semantic lime accents (light) */
@@ -357,6 +359,8 @@ body {
 	--border: rgba(163, 230, 53, 0.14);
 	--input: #1a1a1c;
 	--ring: #a3e635;
+	--bg-elevated: #1a1a1c;
+	--bg-overlay: #232325;
 	--ambient-1: oklch(0.72 0.15 110 / 0.08);
 	--ambient-2: oklch(0.6 0.15 210 / 0.06);
 	--chart-1: #a3e635;
@@ -369,9 +373,9 @@ body {
 	--sidebar-foreground: #f4f4f5;
 	--sidebar-primary: #a3e635;
 	--sidebar-primary-foreground: #09090b;
-	--sidebar-accent: #232325;
-	--sidebar-accent-foreground: #f4f4f5;
-	--sidebar-border: rgba(163, 230, 53, 0.14);
+	--sidebar-accent: rgba(163, 230, 53, 0.07);
+	--sidebar-accent-foreground: #a3e635;
+	--sidebar-border: rgba(255, 255, 255, 0.04);
 	--sidebar-ring: #a3e635;
 	--bg-subtle: #2a2a2d;
 	/* Semantic lime accents (dark) */
@@ -422,11 +426,10 @@ body {
 	}
 }
 
-/* Unlayered — beats @layer utilities, so it overrides Shadcn's bg-transparent on inputs.
-   Gives light-mode inputs a visible off-white background + stronger border. */
+/* Input light mode — visible background */
 :root:not(.dark) [data-slot="input"] {
-	background-color: var(--sidebar);
-	border-color: var(--text-disabled);
+	background-color: var(--card);
+	border-color: var(--input);
 }
 
 /* Scroll styling (WebKit + Firefox) - placed at end as requested */
@@ -770,179 +773,34 @@ html {
 	border-color: var(--primary);
 }
 
-/* Sidebar */
-.sidebar {
-	width: 248px;
-	flex-shrink: 0;
-	background: var(--card);
-	border-right: 1px solid var(--border);
-	position: fixed;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	display: flex;
-	flex-direction: column;
-	z-index: 200;
-}
-.sidebar-top {
-	padding: 20px 16px;
-	border-bottom: 1px solid var(--border);
-}
-.sidebar-logo {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-.sidebar-logo .logo-name {
-	font-size: 16px;
-}
-
-.sidebar-user {
-	padding: 14px 16px;
-	border-bottom: 1px solid var(--border);
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-.user-avatar {
-	width: 34px;
-	height: 34px;
-	border-radius: 9px;
-	background: var(--primary);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-family: var(--font-display);
-	font-size: 15px;
-	font-weight: 800;
-	color: var(--primary-foreground);
-	flex-shrink: 0;
-}
-.user-info {
-	min-width: 0;
-}
-.user-name {
+/* Sidebar theme variables */
+[data-slot="sidebar"] {
+	--sidebar-accent: var(--bg-elevated);
+	--sidebar-accent-foreground: var(--text-primary);
+	--sidebar-border: var(--border-dim);
 	font-size: 13px;
-	font-weight: 600;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.user-email {
-	font-size: 11px;
-	color: var(--muted-foreground);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-family: var(--font-mono);
+	overflow-x: hidden;
 }
 
-.sidebar-nav {
-	flex: 1;
-	padding: 12px 8px;
+/* Sidebar content scroll */
+[data-slot="sidebar-content"] {
+	overflow-x: hidden;
 	overflow-y: auto;
-}
-.nav-group {
-	margin-bottom: 20px;
-}
-.nav-group-label {
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--muted-foreground);
-	padding: 0 10px;
-	margin-bottom: 4px;
-	font-family: var(--font-mono);
-}
-.nav-item {
-	display: flex;
-	align-items: center;
-	gap: 9px;
-	padding: 9px 10px;
-	border-radius: 8px;
-	cursor: pointer;
-	color: var(--muted-foreground);
-	font-size: 13px;
-	font-weight: 500;
-	transition: all 0.12s;
-	border: 1px solid transparent;
-	background: transparent;
-	width: 100%;
-	font-family: var(--font-body);
-	text-align: left;
-}
-.nav-item:hover {
-	background: var(--muted);
-	color: var(--foreground);
-}
-.nav-item.active {
-	background: var(--lime-soft);
-	color: var(--primary);
-	border-color: var(--border);
-}
-.nav-item.active svg {
-	color: var(--primary);
-}
-.nav-item svg {
-	width: 15px;
-	height: 15px;
-	flex-shrink: 0;
-	opacity: 0.65;
-}
-.nav-item.active svg {
-	opacity: 1;
-}
-.nav-badge {
-	margin-left: auto;
-	font-size: 10px;
-	font-family: var(--font-mono);
-	padding: 1px 7px;
-	border-radius: 999px;
-	background: var(--muted);
-	color: var(--muted-foreground);
-}
-.nav-item.active .nav-badge {
-	background: var(--primary);
-	color: var(--primary-foreground);
-	font-weight: 700;
+	-webkit-overflow-scrolling: touch;
 }
 
-.sidebar-bottom {
-	padding: 10px 8px;
-	border-top: 1px solid var(--border);
+/* Sidebar menu badge — default */
+[data-slot="sidebar-menu-badge"] {
+	background: var(--bg-overlay);
+	color: var(--text-muted);
+	border: 1px solid var(--border-dim);
 }
-
-/* Dashboard main content */
-.dash-content {
-	margin-left: 248px;
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	min-height: 100vh;
-}
-.dash-topbar {
-	height: 56px;
-	flex-shrink: 0;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 28px;
-	border-bottom: 1px solid var(--border);
-	position: sticky;
-	top: 0;
-	z-index: 100;
-	background: color-mix(in srgb, var(--background) 92%, transparent);
-	backdrop-filter: blur(16px);
-}
-.dash-topbar-right {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-.dash-main {
-	padding: 28px;
-	flex: 1;
+/* Sidebar menu badge — when parent is active */
+[data-slot="sidebar-menu-button"][data-active="true"] + [data-slot="sidebar-menu-badge"] {
+	background: var(--lime) !important;
+	color: #09090b !important;
+	font-weight: 700;
+	border-color: var(--lime) !important;
 }
 
 /* Dashboard panels */
@@ -1304,19 +1162,6 @@ html {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-	.sidebar {
-		transform: translateX(-100%);
-		transition: transform 0.25s;
-	}
-	.sidebar.open {
-		transform: translateX(0);
-	}
-	.dash-content {
-		margin-left: 0;
-	}
-	.dash-main {
-		padding: 16px;
-	}
 	.hide-mobile {
 		display: none;
 	}
