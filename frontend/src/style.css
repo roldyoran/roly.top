@@ -775,9 +775,6 @@ html {
 
 /* Sidebar theme variables */
 [data-slot="sidebar"] {
-	--sidebar-accent: var(--bg-elevated);
-	--sidebar-accent-foreground: var(--text-primary);
-	--sidebar-border: var(--border-dim);
 	font-size: 13px;
 	overflow-x: hidden;
 }
@@ -787,20 +784,6 @@ html {
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
-}
-
-/* Sidebar menu badge — default */
-[data-slot="sidebar-menu-badge"] {
-	background: var(--bg-overlay);
-	color: var(--text-muted);
-	border: 1px solid var(--border-dim);
-}
-/* Sidebar menu badge — when parent is active */
-[data-slot="sidebar-menu-button"][data-active="true"] + [data-slot="sidebar-menu-badge"] {
-	background: var(--lime) !important;
-	color: #09090b !important;
-	font-weight: 700;
-	border-color: var(--lime) !important;
 }
 
 /* Dashboard panels */
