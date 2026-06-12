@@ -31,7 +31,7 @@ export const useUrlShortener = () => {
 			return { previousSaved, tempShort };
 		},
 		onError: (
-			err: unknown,
+			_err: unknown,
 			_vars: { originalUrl: string; customHash?: string },
 			context: any,
 		) => {

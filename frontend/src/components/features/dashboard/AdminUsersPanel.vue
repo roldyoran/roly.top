@@ -261,7 +261,7 @@
 </template>
 
 <script setup lang="ts">
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import {
 	Ban,
 	CheckCircle,

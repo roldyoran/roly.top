@@ -111,11 +111,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-
 import defaultLogo from "@/assets/vue.svg";
 
-const { copyToClipboard } = useCopyToClipboard();
 const qrUrl = ref("");
 const selectedUrl = ref("");
 
@@ -346,8 +343,4 @@ const copyQrDataUrl = async () => {
 	}
 };
 
-function copyUrl() {
-	if (!qrUrl.value) return;
-	copyToClipboard(qrUrl.value, "¡URL copiada!");
-}
 </script>

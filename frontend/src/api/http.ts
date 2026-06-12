@@ -96,7 +96,7 @@ export function getAxiosInstance(): AxiosInstance {
 					return Promise.resolve({
 						data,
 						status: 304,
-						headers: error.response.headers,
+						headers: error.response?.headers,
 						config,
 					});
 				} catch (_e) {

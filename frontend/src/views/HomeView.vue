@@ -407,7 +407,7 @@ const authStore = useAuthStore();
 const urlStore = useUrlStore();
 const { shortenUrl, isLoading } = useUrlShortener();
 const { copyToClipboard } = useCopyToClipboard();
-const { fetchSession } = useAuth();
+const { fetchSession: _fetchSession } = useAuth();
 
 const mobileMenuOpen = ref(false);
 const urlInput = ref("");
@@ -458,10 +458,6 @@ const fireConfetti = () => {
 const onAliasInput = (e: Event) => {
 	const val = (e.target as HTMLInputElement).value || "";
 	alias.value = val.replace(/[^a-z0-9]/g, "").slice(0, 9);
-};
-
-const toggleAlias = () => {
-	customAlias.value = !customAlias.value;
 };
 
 async function handleShorten() {

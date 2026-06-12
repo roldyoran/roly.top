@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useColorMode } from "@vueuse/core";
 import { AlertTriangle, Settings, Shield, User } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";

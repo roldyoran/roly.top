@@ -78,7 +78,7 @@
 
       <!-- Mobile cards -->
       <div class="md:hidden flex flex-col gap-2">
-        <Card v-for="(url, index) in urls" :key="url.id">
+        <Card v-for="url in urls" :key="url.id">
           <CardContent class="p-3.5">
             <div class="flex items-start justify-between">
               <div class="min-w-0 flex-1">
@@ -136,11 +136,11 @@
 </template>
 
 <script setup lang="ts">
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { Link, Search, Trash2 } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import type { AdminUrl, AdminUser } from "@/api/admin";
+import type { AdminUrl } from "@/api/admin";
 import { deleteAdminUrl, getAdminUrls, getUsersByIds } from "@/api/admin";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
