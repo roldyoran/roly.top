@@ -126,11 +126,7 @@
 
               <div class="flex items-center gap-3 ml-auto">
                 <div class="flex items-center gap-1.5 text-muted-foreground">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="2" y="14" width="4" height="7" rx="1"/>
-                    <rect x="9" y="9" width="4" height="12" rx="1"/>
-                    <rect x="16" y="4" width="4" height="17" rx="1"/>
-                  </svg>
+                  <MousePointerClick class="size-3.5" />
                   <span class="font-mono text-xs">{{ url.clicks || 0 }} clicks</span>
                 </div>
 
@@ -298,6 +294,7 @@ import {
 	Download,
 	ExternalLink,
 	Globe,
+	MousePointerClick,
 	QrCode,
 	Search,
 	Trash,

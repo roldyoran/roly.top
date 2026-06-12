@@ -9,7 +9,7 @@
     </div>
 
     <div class="mb-4">
-      <div class="relative w-full max-w-[320px]">
+      <div class="relative w-full max-w-md">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <Input v-model="searchQuery" placeholder="Buscar por shortcode o URL..." class="pl-9 h-9 text-xs font-mono" />
       </div>
@@ -51,7 +51,7 @@
               <TableCell>
                 <span class="text-xs text-muted-foreground">{{ getOwnerName(url.userId) }}</span>
               </TableCell>
-              <TableCell class="max-w-[200px]">
+              <TableCell class="max-w-xs">
                 <span class="text-xs text-muted-foreground font-mono truncate block">{{ url.originalUrl }}</span>
               </TableCell>
               <TableCell class="text-center">

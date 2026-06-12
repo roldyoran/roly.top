@@ -1,5 +1,5 @@
 <template>
-  <Card class="max-w-[540px] border-border/60">
+  <Card class="w-full border-border/60">
     <CardHeader>
       <CardTitle class="flex items-center gap-3 font-display">
         <QrCode class="w-6 h-6 shrink-0" />
@@ -10,7 +10,7 @@
       </CardDescription>
     </CardHeader>
 
-    <CardContent class="p-5 flex flex-col gap-4">
+    <CardContent class="p-6 flex flex-col gap-5">
       <form @submit="handleGenerate" class="flex flex-col gap-4">
         <div class="space-y-2">
           <Label for="qr-url">URL</Label>

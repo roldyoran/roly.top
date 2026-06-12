@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-5">
     <div>
       <h2 class="font-display text-lg font-800 tracking-tight">Generador de QR</h2>
       <p class="text-xs font-mono text-muted-foreground mt-0.5">Genera códigos QR para tus enlaces</p>
     </div>
 
-    <Card class="w-full max-w-[540px] border-border/60">
-      <CardContent class="p-5">
+    <Card class="w-full border-border/60">
+      <CardContent class="p-6">
         <div class="mb-4">
           <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground mb-1.5 block">Selecciona un enlace o ingresa una URL</Label>
           <div class="flex flex-col sm:flex-row gap-2">

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full max-w-[580px]">
+  <div class="w-full">
     <div>
       <h2 class="font-display text-lg font-800 tracking-tight">Configuración</h2>
       <p class="text-xs font-mono text-muted-foreground mt-0.5">Administra tu cuenta y preferencias</p>

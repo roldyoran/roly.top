@@ -196,7 +196,7 @@
 						<Separator />
 						<div class="flex items-center justify-between py-2">
 							<span class="text-[10px] font-mono text-muted-foreground">Correo</span>
-							<span class="text-[10px] font-mono text-muted-foreground truncate max-w-[140px] text-right">{{ userEmail || 'N/D' }}</span>
+							<span class="text-[10px] font-mono text-muted-foreground truncate max-w-[200px] text-right">{{ userEmail || 'N/D' }}</span>
 						</div>
 						<Separator />
 						<div class="flex items-center justify-between py-2">

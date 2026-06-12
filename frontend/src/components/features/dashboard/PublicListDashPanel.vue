@@ -5,7 +5,7 @@
 			<p class="text-[10px] font-mono text-muted-foreground mt-0.5">Explora los enlaces acortados públicos</p>
 		</div>
 
-		<div class="relative w-full max-w-sm">
+		<div class="relative w-full max-w-md">
 			<Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
 			<Input
 				v-model="searchQuery"
