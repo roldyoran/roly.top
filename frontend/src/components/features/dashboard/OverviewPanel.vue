@@ -128,7 +128,7 @@
 							</div>
 						</div>
 						<p class="text-3xl font-display font-800 tracking-tight leading-none">
-							{{ isAdmin ? 'Pro' : 'Free' }}
+							{{ isAdmin ? 'Admin' : 'Free' }}
 						</p>
 						<p class="mt-2.5 text-[10px] font-mono text-muted-foreground">
 							{{ userName || 'Usuario' }}
