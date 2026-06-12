@@ -99,14 +99,18 @@ export const useUrlShortener = () => {
 			}
 			if (customHash.length > 9) {
 				toast.error("Hash demasiado largo", {
-					description: "El hash personalizado no puede tener más de 9 caracteres.",
+					description:
+						"El hash personalizado no puede tener más de 9 caracteres.",
 				});
 				return { success: false };
 			}
 		}
 
 		try {
-			console.log("[shortenUrl] calling shortenMutation", { originalUrl, customHash });
+			console.log("[shortenUrl] calling shortenMutation", {
+				originalUrl,
+				customHash,
+			});
 			console.log("[shortenUrl] urlStore debug:", urlStore.getDebugInfo());
 			urlStore.isLoading = true;
 			const data = await shortenMutation.mutateAsync({

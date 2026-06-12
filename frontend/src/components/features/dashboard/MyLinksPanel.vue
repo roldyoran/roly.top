@@ -228,8 +228,8 @@ import {
 	MousePointerClick,
 	Plus,
 	Search,
-	TrendingUp,
 	Trash2,
+	TrendingUp,
 } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";

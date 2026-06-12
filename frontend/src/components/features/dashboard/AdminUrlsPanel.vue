@@ -10,17 +10,17 @@
 
     <div class="mb-4">
       <div class="relative max-w-[320px]">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-        <Input v-model="searchQuery" placeholder="Buscar por shortcode o URL..." class="pl-9 h-9" />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+        <Input v-model="searchQuery" placeholder="Buscar por shortcode o URL..." class="pl-9 h-9 text-xs font-mono" />
       </div>
     </div>
 
-    <div v-if="isLoading" class="space-y-3">
+    <div v-if="isLoading" class="flex flex-col gap-3">
       <Skeleton v-for="i in 5" :key="i" class="h-12 w-full rounded-lg" />
     </div>
 
     <div v-else-if="urls.length === 0" class="text-center py-12">
-      <Link class="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+      <Link class="size-10 text-muted-foreground/30 mx-auto mb-3" />
       <p class="text-sm text-muted-foreground">No se encontraron URLs</p>
     </div>
 
@@ -75,7 +75,7 @@
       </div>
 
       <!-- Mobile cards -->
-      <div class="md:hidden space-y-2">
+      <div class="md:hidden flex flex-col gap-2">
         <Card v-for="(url, index) in urls" :key="url.id">
           <CardContent class="p-3.5">
             <div class="flex items-start justify-between">
@@ -88,8 +88,8 @@
               </div>
               <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
                 <Badge variant="outline" class="font-mono text-[10px]">{{ url.visits }} visitas</Badge>
-                <Button variant="ghost" size="sm" class="h-7 w-7 p-0 text-destructive hover:text-destructive" @click="openDelete(url)">
-                  <Trash2 class="w-3 h-3" />
+                <Button variant="ghost" size="sm" class="size-7 p-0 text-destructive hover:text-destructive" @click="openDelete(url)">
+                  <Trash2 class="size-3" />
                 </Button>
               </div>
             </div>

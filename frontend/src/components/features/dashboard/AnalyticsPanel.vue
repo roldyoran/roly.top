@@ -10,40 +10,66 @@
         </CardContent>
       </Card>
       <template v-else>
-        <Card>
+        <Card class="relative overflow-hidden border-border/60">
           <CardContent class="p-4">
-            <p class="text-xs text-muted-foreground mb-1">Enlaces Totales</p>
-            <p class="text-2xl font-bold font-display">{{ totalLinks }}</p>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Enlaces Totales</span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+                <Link class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="text-3xl font-display font-800 tracking-tight leading-none">{{ totalLinks }}</p>
           </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         </Card>
-        <Card>
+        <Card class="relative overflow-hidden border-border/60">
           <CardContent class="p-4">
-            <p class="text-xs text-muted-foreground mb-1">Total de Clics</p>
-            <p class="text-2xl font-bold font-display">{{ totalClicks }}</p>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Total de Clics</span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+                <MousePointerClick class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="text-3xl font-display font-800 tracking-tight leading-none">{{ totalClicks }}</p>
           </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         </Card>
-        <Card>
+        <Card class="relative overflow-hidden border-border/60">
           <CardContent class="p-4">
-            <p class="text-xs text-muted-foreground mb-1">Clics Promedio</p>
-            <p class="text-2xl font-bold font-display">{{ avgClicks }}</p>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Clics Promedio</span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+                <TrendingUp class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="text-3xl font-display font-800 tracking-tight leading-none">{{ avgClicks }}</p>
           </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         </Card>
-        <Card>
+        <Card class="relative overflow-hidden border-border/60">
           <CardContent class="p-4">
-            <p class="text-xs text-muted-foreground mb-1">Espacios Disponibles</p>
-            <p class="text-2xl font-bold font-display">{{ urlLimit - totalLinks }}</p>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Espacios Disponibles</span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
+                <Gauge class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="text-3xl font-display font-800 tracking-tight leading-none">{{ urlLimit - totalLinks }}</p>
           </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         </Card>
       </template>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <Card>
+      <Card class="border-border/60">
         <CardContent class="p-5">
-          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-            <BarChart3 class="w-4 h-4 text-primary" />
-            Uso de la Cuenta
-          </h3>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+              <BarChart3 class="size-3.5 text-primary" />
+            </div>
+            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Uso de la Cuenta</span>
+          </div>
           <div class="space-y-3">
             <div class="flex items-center justify-between text-xs text-muted-foreground font-mono">
               <span>{{ totalLinks }} enlaces creados</span>
@@ -55,19 +81,21 @@
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="border-border/60">
         <CardContent class="p-5">
-          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-            <TrendingUp class="w-4 h-4 text-primary" />
-            Enlaces Más Visitados
-          </h3>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+              <TrendingUp class="size-3.5 text-primary" />
+            </div>
+            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Enlaces Más Visitados</span>
+          </div>
           <div v-if="topUrls.length === 0" class="text-center py-6 text-xs text-muted-foreground">
             Sin datos de visitas aún
           </div>
           <div v-else class="space-y-2">
             <div v-for="(url, i) in topUrls" :key="url.shortCode" class="flex items-center justify-between">
               <div class="flex items-center gap-2 min-w-0">
-                <Badge variant="outline" class="text-[0.625rem] w-5 h-5 p-0 flex items-center justify-center">{{ i + 1 }}</Badge>
+                <Badge variant="outline" class="size-5 p-0 flex items-center justify-center text-[0.625rem]">{{ i + 1 }}</Badge>
                 <span class="font-mono text-xs text-primary truncate">/{{ url.shortCode }}</span>
               </div>
               <Badge variant="secondary" class="font-mono text-xs">{{ url.visits }} clics</Badge>
@@ -81,7 +109,13 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { BarChart3, TrendingUp } from "lucide-vue-next";
+import {
+	BarChart3,
+	Gauge,
+	Link,
+	MousePointerClick,
+	TrendingUp,
+} from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";

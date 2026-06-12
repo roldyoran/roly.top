@@ -1,11 +1,14 @@
 <template>
   <div>
-    <h2 class="font-display text-lg font-800 tracking-tight mb-5">Generador de Códigos QR</h2>
+    <div>
+      <h2 class="font-display text-lg font-800 tracking-tight">Generador de QR</h2>
+      <p class="text-xs font-mono text-muted-foreground mt-0.5">Genera códigos QR para tus enlaces</p>
+    </div>
 
-    <Card class="max-w-[540px]">
-      <CardContent class="p-7">
+    <Card class="max-w-[540px] border-border/60">
+      <CardContent class="p-5">
         <div class="mb-4">
-          <Label class="text-xs font-semibold mb-1.5 block">Selecciona un enlace o ingresa una URL</Label>
+          <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground mb-1.5 block">Selecciona un enlace o ingresa una URL</Label>
           <div class="flex gap-2">
             <Select v-model="selectedUrl" :disabled="urls.length === 0">
               <SelectTrigger class="flex-1">
@@ -21,7 +24,7 @@
         </div>
 
         <div class="mb-4">
-          <Label class="text-xs font-semibold mb-1.5 block">
+          <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground mb-1.5 block">
             O ingresa manualmente
           </Label>
           <div class="flex gap-2">
@@ -30,7 +33,7 @@
               type="url"
               placeholder="https://ejemplo.com o pega un enlace roly.top/..."
             />
-            <Button class="bg-primary text-primary-foreground font-display font-700 shrink-0" @click="generateFromInput">
+            <Button class="bg-primary text-primary-foreground font-mono font-700 shrink-0" @click="generateFromInput">
               Generar
             </Button>
           </div>
@@ -39,19 +42,19 @@
         <div class="mt-4">
           <div v-if="error" class="text-destructive text-sm mb-2" role="alert">{{ error }}</div>
 
-          <div v-if="qrDataUrl" ref="qrResult" class="space-y-4">
+          <div v-if="qrDataUrl" ref="qrResult" class="flex flex-col gap-4">
             <div class="flex justify-center p-4 rounded-lg border bg-muted/30">
               <img :src="qrDataUrl" alt="Código QR generado" class="w-48 h-48 border-4 border-white" />
             </div>
 
             <div class="flex justify-center gap-2">
-              <Button @click="downloadQr" variant="outline" size="sm">Descargar QR</Button>
-              <Button @click="copyQrDataUrl" variant="outline" size="sm">Copiar Imagen</Button>
+              <Button @click="downloadQr" variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60"><Download class="size-3" data-icon="inline-start" />Descargar QR</Button>
+              <Button @click="copyQrDataUrl" variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60"><Copy class="size-3" data-icon="inline-start" />Copiar Imagen</Button>
             </div>
           </div>
 
-          <div v-else class="flex flex-col items-center justify-center h-[220px] bg-muted border border-dashed border-border rounded-xl">
-            <QrCode class="w-11 h-11 text-muted-foreground/30 mb-2.5" />
+          <div v-else class="flex flex-col items-center justify-center h-[220px] bg-muted/30 border border-dashed border-border/60 rounded-xl">
+            <QrCode class="size-11 text-muted-foreground/30 mb-2.5" />
             <p class="text-xs text-muted-foreground font-mono">Selecciona o ingresa una URL para generar</p>
           </div>
         </div>
@@ -62,9 +65,10 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { ref, watch, nextTick } from "vue";
+import { Copy, Download, QrCode } from "lucide-vue-next";
+import qrcode from "qrcode-generator";
+import { nextTick, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import { QrCode } from "lucide-vue-next";
 import { getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
 import { Button } from "@/components/ui/button";
@@ -79,7 +83,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-import qrcode from "qrcode-generator";
 
 const { copyToClipboard } = useCopyToClipboard();
 const qrUrl = ref("");
@@ -141,10 +144,19 @@ async function generateFromInput() {
 		qrDataUrl.value = qr.createDataURL(4, 0);
 
 		await nextTick();
-		const el = qrResult.value as unknown as { $el?: HTMLElement } | HTMLElement | null;
+		const el = qrResult.value as unknown as
+			| { $el?: HTMLElement }
+			| HTMLElement
+			| null;
 		const realEl = (el as any)?.$el ?? el;
-		if (realEl && typeof (realEl as HTMLElement).scrollIntoView === "function") {
-			(realEl as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
+		if (
+			realEl &&
+			typeof (realEl as HTMLElement).scrollIntoView === "function"
+		) {
+			(realEl as HTMLElement).scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			});
 		}
 	} catch (err: unknown) {
 		error.value = (err as Error).message || "Error al generar el código QR";

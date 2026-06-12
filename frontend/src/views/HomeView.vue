@@ -371,7 +371,11 @@ import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { z } from "zod";
-import { getAppBaseUrl, getPublicStatsRequest, getUrlsRequest } from "@/api/http";
+import {
+	getAppBaseUrl,
+	getPublicStatsRequest,
+	getUrlsRequest,
+} from "@/api/http";
 import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
 import UrlInfoForm from "@/components/features/url-info/UrlInfoForm.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";

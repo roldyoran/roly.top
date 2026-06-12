@@ -218,7 +218,8 @@ async function drawCustomQr(text: string) {
 
 	const moduleCount = qr.getModuleCount();
 	// add padding around QR
-	const pad = typeof canvasPadding !== 'undefined' ? canvasPadding.value || 6 : 6;
+	const pad =
+		typeof canvasPadding !== "undefined" ? canvasPadding.value || 6 : 6;
 	const avail = size - pad * 2;
 	const cell = avail / moduleCount;
 	// slightly increase module size to improve scanner reliability
@@ -304,7 +305,14 @@ async function drawCustomQr(text: string) {
 	qrDataUrl.value = canvas.toDataURL("image/png");
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+	ctx: CanvasRenderingContext2D,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	r: number,
+) {
 	ctx.beginPath();
 	ctx.moveTo(x + r, y);
 	ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -330,7 +338,9 @@ const copyQrDataUrl = async () => {
 	const canvas = qrCanvas.value;
 	if (!canvas) return;
 	try {
-		const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
+		const blob = await new Promise<Blob | null>((resolve) =>
+			canvas.toBlob((b) => resolve(b), "image/png"),
+		);
 		if (!blob) return;
 		await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
 		toast.success("Imagen del QR copiada al portapapeles");

@@ -1,72 +1,87 @@
 <template>
   <div>
-    <h2 class="font-display text-lg font-800 tracking-tight mb-5">Configuración</h2>
+    <div>
+      <h2 class="font-display text-lg font-800 tracking-tight">Configuración</h2>
+      <p class="text-xs font-mono text-muted-foreground mt-0.5">Administra tu cuenta y preferencias</p>
+    </div>
 
-    <div class="space-y-5">
-      <Card>
+    <div class="flex flex-col gap-5">
+      <Card class="border-border/60">
         <CardContent class="p-5">
-          <h3 class="text-sm font-semibold mb-3">Cuenta</h3>
-          <div class="space-y-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+              <User class="size-3.5 text-primary" />
+            </div>
+            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Cuenta</span>
+          </div>
+          <div class="flex flex-col gap-0">
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-xs font-medium">Nombre para mostrar</div>
                 <div class="text-xs text-muted-foreground">{{ userName || 'Usuario' }}</div>
               </div>
-              <Button variant="secondary" size="sm">Editar</Button>
+              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60">Editar</Button>
             </div>
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-xs font-medium">Correo electrónico</div>
                 <div class="text-xs text-muted-foreground font-mono">{{ userEmail || 'N/D' }}</div>
               </div>
-              <Badge variant="secondary">Verificado</Badge>
+              <Badge variant="secondary" class="gap-1"><span class="size-1.5 rounded-full bg-[var(--success)]" />Verificado</Badge>
             </div>
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-xs font-medium">Plan de cuenta</div>
                 <div class="text-xs text-muted-foreground">{{ isAdmin ? 'Admin' : 'Gratis' }} · {{ totalLinks }}/{{ urlLimit }} enlaces usados</div>
               </div>
-              <Button size="sm" class="bg-primary text-primary-foreground font-display font-700">Mejorar</Button>
+              <Button size="sm" class="bg-primary text-primary-foreground font-mono font-700">Mejorar</Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card v-if="isAdmin">
+      <Card v-if="isAdmin" class="border-border/60">
         <CardContent class="p-5">
-          <h3 class="text-sm font-semibold mb-3 flex items-center gap-1.5">
-            <Shield class="w-3.5 h-3.5 text-primary" />
-            Administración
-          </h3>
-          <div class="space-y-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+              <Shield class="size-3.5 text-primary" />
+            </div>
+            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Administración</span>
+          </div>
+          <div class="flex flex-col gap-0">
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-xs font-medium">Gestionar usuarios</div>
                 <div class="text-xs text-muted-foreground">Banear, desbanear y editar límites de usuarios</div>
               </div>
-              <Button variant="outline" size="sm" @click="$emit('navigate', 'admin-users')">Abrir</Button>
+              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60" @click="$emit('navigate', 'admin-users')">Abrir</Button>
             </div>
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-xs font-medium">Gestionar URLs</div>
                 <div class="text-xs text-muted-foreground">Administrar todas las URLs acortadas del sistema</div>
               </div>
-              <Button variant="outline" size="sm" @click="$emit('navigate', 'admin-urls')">Abrir</Button>
+              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60" @click="$emit('navigate', 'admin-urls')">Abrir</Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="border-border/60">
         <CardContent class="p-5">
-          <h3 class="text-sm font-semibold mb-3">Preferencias</h3>
-          <div class="space-y-3">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+              <Settings class="size-3.5 text-primary" />
+            </div>
+            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Preferencias</span>
+          </div>
+          <div class="flex flex-col gap-0">
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-xs font-medium">Tema</div>
                 <div class="text-xs text-muted-foreground">Actualmente: {{ colorMode === 'dark' ? 'Modo oscuro' : 'Modo claro' }}</div>
               </div>
-              <Button variant="secondary" size="sm" @click="toggleTheme">Cambiar</Button>
+              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60" @click="toggleTheme">Cambiar</Button>
             </div>
             <div class="flex items-center justify-between">
               <div>
@@ -81,13 +96,18 @@
 
       <Card class="border-destructive/20">
         <CardContent class="p-5">
-          <h3 class="text-sm font-semibold mb-3 text-destructive">Zona de peligro</h3>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex size-6 items-center justify-center rounded-md bg-destructive/10">
+              <AlertTriangle class="size-3.5 text-destructive" />
+            </div>
+            <span class="text-xs font-mono font-700 tracking-wider uppercase text-destructive">Zona de peligro</span>
+          </div>
           <div class="flex items-center justify-between">
             <div>
               <div class="text-xs font-medium text-destructive">Eliminar todos mis enlaces</div>
               <div class="text-xs text-muted-foreground">No se puede deshacer. Los {{ totalLinks }} enlaces serán eliminados permanentemente.</div>
             </div>
-            <Button variant="destructive" size="sm" :disabled="totalLinks === 0 || isDeletingAll" @click="confirmDeleteAll">
+            <Button variant="destructive" size="sm" class="font-mono font-600 text-[11px]" :disabled="totalLinks === 0 || isDeletingAll" @click="confirmDeleteAll">
               {{ isDeletingAll ? 'Eliminando...' : 'Eliminar todo' }}
             </Button>
           </div>
@@ -117,7 +137,7 @@
 <script setup lang="ts">
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { useColorMode } from "@vueuse/core";
-import { Shield } from "lucide-vue-next";
+import { AlertTriangle, Settings, Shield, User } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import { deleteUrlRequest, getUrlsRequest } from "@/api/http";

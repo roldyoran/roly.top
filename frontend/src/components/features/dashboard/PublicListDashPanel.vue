@@ -1,26 +1,36 @@
 <template>
   <div>
-    <h2 class="font-display text-lg font-800 tracking-tight mb-5">Enlaces Cortos Públicos</h2>
+    <div>
+      <h2 class="font-display text-lg font-800 tracking-tight">Enlaces Públicos</h2>
+      <p class="text-xs font-mono text-muted-foreground mt-0.5">Explora los enlaces acortados públicos</p>
+    </div>
 
     <div class="mb-4">
       <div class="relative max-w-[320px]">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <Input
           v-model="searchQuery"
           placeholder="Buscar URLs públicas..."
-          class="pl-9 h-9"
+          class="pl-9 h-9 text-xs font-mono"
         />
       </div>
     </div>
 
-    <div v-if="isLoading" class="space-y-3">
+    <div v-if="isLoading" class="flex flex-col gap-3">
       <Skeleton v-for="i in 5" :key="i" class="h-12 w-full rounded-lg" />
     </div>
 
-    <div v-else-if="filteredUrls.length === 0" class="text-center py-12">
-      <Globe class="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-      <p class="text-sm text-muted-foreground">No se encontraron enlaces públicos</p>
-    </div>
+    <Empty v-else-if="filteredUrls.length === 0">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Globe />
+        </EmptyMedia>
+        <EmptyTitle class="font-display">Sin enlaces públicos</EmptyTitle>
+        <EmptyDescription class="font-mono">
+          No se encontraron enlaces públicos
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
 
     <div v-else>
       <Table>
@@ -44,9 +54,7 @@
               <Badge variant="secondary" class="font-mono">{{ url.visits }}</Badge>
             </TableCell>
             <TableCell class="text-right">
-              <Button variant="ghost" size="sm" class="h-7 px-2 text-xs" @click="copyUrl(url.shortCode)">
-                Copiar
-              </Button>
+              <Button variant="ghost" size="sm" class="size-7 p-0 text-muted-foreground hover:text-foreground" @click="copyUrl(url.shortCode)"><Copy class="size-3" /></Button>
             </TableCell>
           </TableRow>
         </TableBody>
@@ -57,12 +65,19 @@
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { Globe, Search } from "lucide-vue-next";
+import { Copy, Globe, Search } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { getPublicUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {

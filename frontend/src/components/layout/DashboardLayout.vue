@@ -2,7 +2,11 @@
 import { Plus } from "lucide-vue-next";
 import { computed } from "vue";
 import { Button } from "@/components/ui/button";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+	SidebarInset,
+	SidebarProvider,
+	SidebarTrigger,
+} from "@/components/ui/sidebar";
 import AppSidebar from "./AppSidebar.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 

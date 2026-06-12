@@ -68,7 +68,9 @@ const herramientasItems = [
 	{ id: "publiclist", label: "Enlaces Públicos", icon: Globe },
 ];
 
-const cuentaItems = [{ id: "settings", label: "Configuración", icon: Settings }];
+const cuentaItems = [
+	{ id: "settings", label: "Configuración", icon: Settings },
+];
 
 const adminItems = [
 	{ id: "admin-users", label: "Gestión de Usuarios", icon: Users },
@@ -78,7 +80,8 @@ const adminItems = [
 const activeItemClass =
 	"bg-[rgba(163,230,53,0.12)]! text-[var(--lime)]! border border-[rgba(163,230,53,0.25)]! rounded-[0.625rem]! shadow-[0_0_12px_var(--lime-glow),inset_0_1px_1px_var(--lime-soft)]! font-medium! [&>svg]:text-[var(--lime)]! [&>svg]:drop-shadow-[0_0_4px_var(--lime-glow)]";
 
-const defaultItemClass = "text-[#a1a1aa]! hover:text-[#f4f4f5]! [&>svg]:text-[#a1a1aa]! [&>svg]:hover:text-[#f4f4f5]!";
+const defaultItemClass =
+	"text-[#a1a1aa]! hover:text-[#f4f4f5]! [&>svg]:text-[#a1a1aa]! [&>svg]:hover:text-[#f4f4f5]!";
 </script>
 
 <template>
