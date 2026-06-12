@@ -59,6 +59,22 @@
 							>
 								<Copy class="size-3.5" />
 							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								class="size-7 p-0 text-muted-foreground hover:text-foreground"
+								@click="openExternal(url.shortCode)"
+							>
+								<ExternalLink class="size-3.5" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								class="size-7 p-0 text-muted-foreground hover:text-foreground"
+								@click="openQr(url.shortCode)"
+							>
+								<QrCode class="size-3.5" />
+							</Button>
 						</div>
 					</div>
 				</div>
@@ -66,18 +82,61 @@
 				<span class="font-mono text-sm text-muted-foreground truncate">
 					{{ url.originalUrl }}
 				</span>
+
+				<div class="flex justify-end mt-1">
+					<span class="font-mono text-[10px] text-muted-foreground/60">
+						{{ formatDate(url.createdAt) }}
+					</span>
+				</div>
 			</div>
 		</div>
+
+		<!-- QR Dialog -->
+		<Dialog v-model:open="qrDialogOpen">
+			<DialogContent class="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle>Código QR</DialogTitle>
+					<DialogDescription>
+						Escanea este código para acceder a: {{ currentQrUrl }}
+					</DialogDescription>
+				</DialogHeader>
+				<div class="flex items-center justify-center py-4">
+					<canvas ref="qrCanvas" class="border rounded-lg" />
+				</div>
+				<div class="flex justify-center">
+					<Button @click="downloadQr" variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60">
+						<Download class="size-3" data-icon="inline-start" />
+						Descargar QR
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { Copy, Globe, MousePointerClick, Search } from "lucide-vue-next";
+import {
+	Copy,
+	Download,
+	ExternalLink,
+	Globe,
+	MousePointerClick,
+	QrCode,
+	Search,
+} from "lucide-vue-next";
+import QRCode from "qrcode-generator";
 import { computed, ref, watch } from "vue";
-import { getPublicUrlsRequest } from "@/api/http";
+import { getAppBaseUrl, getPublicUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
@@ -92,6 +151,10 @@ import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 const { copyToClipboard } = useCopyToClipboard();
 const searchQuery = ref("");
 const shortUrls = ref<UrlInfoResponse[]>([]);
+
+const qrDialogOpen = ref(false);
+const currentQrUrl = ref("");
+const qrCanvas = ref<HTMLCanvasElement>();
 
 const publicQuery = useQuery({
 	queryKey: ["publicUrls"],
@@ -133,7 +196,65 @@ const filteredUrls = computed(() => {
 	);
 });
 
+function formatDate(dateStr: string) {
+	if (!dateStr) return "";
+	const d = new Date(dateStr);
+	return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+}
+
 function copyUrl(shortCode: string) {
 	copyToClipboard(`roly.top/${shortCode}`, "¡Copiado!");
+}
+
+function openExternal(shortCode: string) {
+	window.open(`${getAppBaseUrl()}/${shortCode}`, "_blank");
+}
+
+function openQr(shortCode: string) {
+	currentQrUrl.value = `${getAppBaseUrl()}/${shortCode}`;
+	qrDialogOpen.value = true;
+	setTimeout(() => {
+		createQr(currentQrUrl.value);
+	}, 100);
+}
+
+function createQr(url: string) {
+	if (!qrCanvas.value) return;
+	const qr = QRCode(0, "M");
+	qr.addData(url);
+	qr.make();
+	const canvas = qrCanvas.value;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) return;
+	const moduleCount = qr.getModuleCount();
+	const moduleSize = 6;
+	const margin = 4;
+	canvas.width = canvas.height = moduleCount * moduleSize + margin * 2;
+	ctx.fillStyle = "#ffffff";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = "#000000";
+	for (let y = 0; y < moduleCount; y++) {
+		for (let x = 0; x < moduleCount; x++) {
+			if (qr.isDark(y, x)) {
+				ctx.fillRect(
+					margin + x * moduleSize,
+					margin + y * moduleSize,
+					moduleSize,
+					moduleSize,
+				);
+			}
+		}
+	}
+}
+
+function downloadQr() {
+	if (!qrCanvas.value) return;
+	const dataUrl = qrCanvas.value.toDataURL("image/png");
+	const link = document.createElement("a");
+	link.download = "qr-roly-top.png";
+	link.href = dataUrl;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
 }
 </script>
