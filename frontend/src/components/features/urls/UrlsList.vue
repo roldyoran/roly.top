@@ -343,7 +343,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-import { formatDate, truncateText } from "@/lib/utils";
+import { truncateText } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
 
@@ -768,6 +768,12 @@ watch(userQuery.error, (err: any) => {
 onMounted(() => {
 	// No es necesario forzar fetch: useQuery maneja inicialización.
 });
+
+function formatDate(dateStr: string) {
+	if (!dateStr) return "";
+	const d = new Date(dateStr);
+	return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+}
 
 watch(isMyList, (value) => {
 	if (!value) {

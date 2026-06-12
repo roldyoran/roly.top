@@ -85,20 +85,20 @@ const defaultItemClass =
 </script>
 
 <template>
-	<Sidebar>
+	<Sidebar collapsible="icon">
 		<SidebarHeader>
 			<SidebarMenu>
 		<SidebarMenuItem>
-				<router-link :to="{ name: 'home' }" class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sidebar-accent transition-colors">
+				<router-link :to="{ name: 'home' }" class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sidebar-accent transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
 					<div class="w-8 h-8 rounded-[9px] bg-primary flex items-center justify-center flex-shrink-0 shadow-[0_0_16px_oklch(0.7 0.2 130/0.3)]">
 						<Link class="w-4 h-4 text-primary-foreground" />
 					</div>
-					<div>
+					<div class="group-data-[collapsible=icon]:hidden">
 						<span class="font-display! font-800! text-[17px]! tracking-tight">roly<span class="text-primary">.</span>top</span>
 						<span class="block font-mono! text-[11px]! tracking-wider text-muted-foreground leading-none -mt-0.5">by roldyoran</span>
 					</div>
 				</router-link>
-			</SidebarMenuItem>
+		</SidebarMenuItem>
 			</SidebarMenu>
 		</SidebarHeader>
 

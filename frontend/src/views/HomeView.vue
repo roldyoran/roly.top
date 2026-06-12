@@ -206,10 +206,7 @@
 
               <div class="flex items-center justify-between gap-3 flex-wrap">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <span class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" v-model="customAlias" class="sr-only peer" />
-                    <div class="w-9 h-5 bg-muted-foreground/30 peer-checked:bg-primary rounded-full transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-4"></div>
-                  </span>
+                  <Switch v-model="customAlias" />
                   <span class="text-xs text-muted-foreground font-500">Alias personalizado</span>
                 </label>
                 <span class="font-mono text-[11px] text-muted-foreground">
@@ -225,16 +222,17 @@
                   placeholder="mi-alias (a-z 0-9, máx 9 caracteres)"
                   maxlength="9"
                   @input="onAliasInput"
+                  @keydown.enter="handleShorten"
                 />
               </div>
 
-              <div v-if="shortUrl" class="mt-3 p-3.5 bg-primary/5 border border-primary/20 rounded-[10px] flex items-center gap-3" style="animation: slideIn 0.2s ease;">
+              <div v-if="shortUrl" ref="resultCardRef" class="mt-3 p-3.5 bg-primary/5 border border-primary/20 rounded-[10px] flex items-center gap-3" :class="resultLeaving ? 'animate-slide-out' : 'animate-slide-in'">
                 <div class="flex-1 min-w-0">
                   <a class="font-mono text-sm font-700 text-primary block" href="#">{{ shortUrl }}</a>
                   <p class="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">{{ originalUrl }}</p>
                 </div>
                 <Button size="sm" class="bg-primary text-primary-foreground font-display font-700" @click="copyShortUrl">Copiar</Button>
-                <Button variant="ghost" size="sm" class="w-7 h-7 p-0 text-muted-foreground" @click="shortUrl = ''; originalUrl = ''">
+                <Button variant="ghost" size="sm" class="w-7 h-7 p-0 text-muted-foreground" @click="dismissResult">
                   <X class="w-3.5 h-3.5" />
                 </Button>
               </div>
@@ -379,6 +377,7 @@ import {
 import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
 import UrlInfoForm from "@/components/features/url-info/UrlInfoForm.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
+import { Switch } from "@/components/ui/switch";
 import ThemeToggle from "@/components/layout/ThemeToggle.vue";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/composables/useAuth";
@@ -417,6 +416,8 @@ const originalUrl = ref("");
 const shortUrl = ref("");
 const customAlias = ref(false);
 const urlInputRef = ref<HTMLInputElement | null>(null);
+const resultCardRef = ref<HTMLDivElement | null>(null);
+const resultLeaving = ref(false);
 
 const publicStats = reactive({ publicUrls: 0, totalRedirects: 0 });
 
@@ -484,6 +485,7 @@ async function handleShorten() {
 			alias.value = "";
 			customAlias.value = false;
 			await nextTick();
+			resultCardRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
 			fireConfetti();
 		}
 	} catch (err: unknown) {
@@ -495,6 +497,15 @@ async function handleShorten() {
 
 function copyShortUrl() {
 	copyToClipboard(shortUrl.value, "URL copiada al portapapeles");
+}
+
+function dismissResult() {
+	resultLeaving.value = true;
+	setTimeout(() => {
+		shortUrl.value = "";
+		originalUrl.value = "";
+		resultLeaving.value = false;
+	}, 200);
 }
 
 async function handleSignOut() {
@@ -558,6 +569,12 @@ onMounted(async () => {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes slideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-6px); }
+}
+.animate-slide-in { animation: slideIn 0.2s ease; }
+.animate-slide-out { animation: slideOut 0.2s ease forwards; }
 
 .font-800 { font-weight: 800; }
 

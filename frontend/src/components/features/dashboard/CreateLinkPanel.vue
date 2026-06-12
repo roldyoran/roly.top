@@ -29,6 +29,7 @@
               placeholder="mi-enlace"
               maxlength="9"
               class="h-9"
+              @keydown.enter="handleShorten"
             />
           </div>
 

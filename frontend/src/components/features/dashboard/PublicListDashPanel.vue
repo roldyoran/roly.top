@@ -37,8 +37,9 @@
 			<div
 				v-for="url in filteredUrls"
 				:key="url.shortCode"
-				class="rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40"
+				class="rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40 relative overflow-hidden"
 			>
+				<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 				<div class="flex items-center justify-between gap-3">
 					<span class="font-mono text-xl font-semibold text-primary tracking-tight">
 						/{{ url.shortCode }}
@@ -63,17 +64,17 @@
 								variant="ghost"
 								size="sm"
 								class="size-7 p-0 text-muted-foreground hover:text-foreground"
-								@click="openExternal(url.shortCode)"
+								@click="openQr(url.shortCode)"
 							>
-								<ExternalLink class="size-3.5" />
+								<QrCode class="size-3.5" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								class="size-7 p-0 text-muted-foreground hover:text-foreground"
-								@click="openQr(url.shortCode)"
+								@click="openExternal(url.shortCode)"
 							>
-								<QrCode class="size-3.5" />
+								<ExternalLink class="size-3.5" />
 							</Button>
 						</div>
 					</div>

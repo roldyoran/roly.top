@@ -43,8 +43,8 @@
 			</template>
 			<template v-else>
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-3">
-						<div class="flex items-center justify-between mb-2">
+					<CardContent class="px-3 py-2.5">
+						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Enlaces</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 								<Link class="size-3 text-primary" />
@@ -62,22 +62,22 @@
 				</Card>
 
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-3">
-						<div class="flex items-center justify-between mb-2">
+					<CardContent class="px-3 py-2.5">
+						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Clics</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 								<MousePointerClick class="size-3 text-primary" />
 							</div>
 						</div>
 						<p class="text-2xl font-display font-800 tracking-tight leading-none">{{ formatNumber(totalClicks) }}</p>
-						<p class="mt-1.5 text-[9px] font-mono text-muted-foreground">en todos tus enlaces</p>
+						<p class="mt-1 text-[9px] font-mono text-muted-foreground">en todos tus enlaces</p>
 					</CardContent>
 					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 				</Card>
 
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-3">
-						<div class="flex items-center justify-between mb-2">
+					<CardContent class="px-3 py-2.5">
+						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Límite</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 								<Gauge class="size-3 text-primary" />
@@ -86,12 +86,12 @@
 						<p class="text-2xl font-display font-800 tracking-tight leading-none">
 							{{ totalLinks }}<span class="text-sm text-muted-foreground font-600">/{{ urlLimit }}</span>
 						</p>
-						<div class="mt-1.5">
+						<div class="mt-1">
 							<Progress
 								:model-value="Math.min((totalLinks / urlLimit) * 100, 100)"
 								class="h-1"
 							/>
-							<p class="mt-1 text-[9px] font-mono text-muted-foreground">
+							<p class="mt-0.5 text-[9px] font-mono text-muted-foreground">
 								{{ urlLimit - totalLinks }} espacio{{ (urlLimit - totalLinks) !== 1 ? 's' : '' }} restante{{ (urlLimit - totalLinks) !== 1 ? 's' : '' }}
 							</p>
 						</div>
@@ -100,8 +100,8 @@
 				</Card>
 
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-3">
-						<div class="flex items-center justify-between mb-2">
+					<CardContent class="px-3 py-2.5">
+						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Cuenta</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 								<Crown class="size-3 text-primary" />
@@ -123,8 +123,8 @@
 		<div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
 			<!-- Quick Actions -->
 			<Card class="lg:col-span-3 border-border/60">
-				<CardContent class="p-3.5">
-					<div class="flex items-center gap-2 mb-2.5">
+				<CardContent class="p-3">
+					<div class="flex items-center gap-2 mb-2">
 						<div class="flex size-5 items-center justify-center rounded-md bg-primary/10">
 							<Zap class="size-3 text-primary" />
 						</div>
@@ -146,22 +146,22 @@
 						<Button
 							variant="outline"
 							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
-							@click="$emit('navigate', 'myurls')"
-						>
-							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
-								<Link class="size-3.5 text-primary" />
-							</div>
-							<span class="text-[10px] font-mono font-600">Mis Enlaces</span>
-						</Button>
-						<Button
-							variant="outline"
-							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
 							@click="$emit('navigate', 'qrdash')"
 						>
 							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
 								<QrCode class="size-3.5 text-primary" />
 							</div>
 							<span class="text-[10px] font-mono font-600">Código QR</span>
+						</Button>
+						<Button
+							variant="outline"
+							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
+							@click="$emit('navigate', 'myurls')"
+						>
+							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
+								<Link class="size-3.5 text-primary" />
+							</div>
+							<span class="text-[10px] font-mono font-600">Mis Enlaces</span>
 						</Button>
 						<Button
 							variant="outline"
@@ -179,8 +179,8 @@
 
 			<!-- Account Info -->
 			<Card class="lg:col-span-2 border-border/60">
-				<CardContent class="p-3.5">
-					<div class="flex items-center gap-2 mb-2.5">
+				<CardContent class="p-3">
+					<div class="flex items-center gap-2 mb-2">
 						<div class="flex size-5 items-center justify-center rounded-md bg-primary/10">
 							<User class="size-3 text-primary" />
 						</div>
@@ -189,17 +189,17 @@
 						</span>
 					</div>
 					<div class="flex flex-col gap-0">
-						<div class="flex items-center justify-between py-2">
+						<div class="flex items-center justify-between py-1.5">
 							<span class="text-[10px] font-mono text-muted-foreground">Nombre</span>
 							<span class="text-[10px] font-mono font-600">{{ userName || 'Invitado' }}</span>
 						</div>
 						<Separator />
-						<div class="flex items-center justify-between py-2">
+						<div class="flex items-center justify-between py-1.5">
 							<span class="text-[10px] font-mono text-muted-foreground">Correo</span>
 							<span class="text-[10px] font-mono text-muted-foreground truncate max-w-[200px] text-right">{{ userEmail || 'N/D' }}</span>
 						</div>
 						<Separator />
-						<div class="flex items-center justify-between py-2">
+						<div class="flex items-center justify-between py-1.5">
 							<span class="text-[10px] font-mono text-muted-foreground">Rol</span>
 							<Badge
 								:variant="isAdmin ? 'default' : 'secondary'"
