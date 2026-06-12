@@ -276,17 +276,17 @@ body {
 	--font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
 	--font-mono: "Space Mono", ui-monospace, monospace;
 	/* Light mode — new_disenio.html palette */
-	--background: #f4f4f5;
+	--background: #ebebef;
 	--foreground: #09090b;
-	--card: #ffffff;
+	--card: #f5f5f7;
 	--card-foreground: #09090b;
-	--popover: #ffffff;
+	--popover: #f5f5f7;
 	--popover-foreground: #09090b;
 	--primary: #65a30d;
 	--primary-foreground: #ffffff;
-	--secondary: #f0f0f0;
+	--secondary: #e2e2e6;
 	--secondary-foreground: #52525b;
-	--muted: #e4e4e7;
+	--muted: #d8d8dc;
 	--muted-foreground: #a1a1aa;
 	--accent: #f0f0f0;
 	--accent-foreground: #52525b;
@@ -295,8 +295,8 @@ body {
 	--border: rgba(132, 204, 22, 0.2);
 	--input: #e4e4e7;
 	--ring: #65a30d;
-	--bg-elevated: #fafafa;
-	--bg-overlay: #f0f0f0;
+	--bg-elevated: #f0f0f2;
+	--bg-overlay: #e5e5e9;
 	--ambient-1: oklch(0.9 0.15 110 / 0.15);
 	--ambient-2: oklch(0.85 0.15 210 / 0.1);
 	--chart-1: oklch(0.6 0.15 110);
@@ -340,17 +340,17 @@ body {
 .dark {
 	color-scheme: dark;
 	/* Dark mode — new_disenio.html palette */
-	--background: #090909;
+	--background: #060606;
 	--foreground: #f4f4f5;
-	--card: #111112;
+	--card: #0e0e10;
 	--card-foreground: #f4f4f5;
-	--popover: #111112;
+	--popover: #0e0e10;
 	--popover-foreground: #f4f4f5;
 	--primary: #a3e635;
 	--primary-foreground: #09090b;
-	--secondary: #1a1a1c;
+	--secondary: #151517;
 	--secondary-foreground: #f4f4f5;
-	--muted: #1a1a1c;
+	--muted: #151517;
 	--muted-foreground: #a1a1aa;
 	--accent: #232325;
 	--accent-foreground: #f4f4f5;
@@ -359,8 +359,8 @@ body {
 	--border: rgba(163, 230, 53, 0.14);
 	--input: #1a1a1c;
 	--ring: #a3e635;
-	--bg-elevated: #1a1a1c;
-	--bg-overlay: #232325;
+	--bg-elevated: #151517;
+	--bg-overlay: #1c1c1e;
 	--ambient-1: oklch(0.72 0.15 110 / 0.08);
 	--ambient-2: oklch(0.6 0.15 210 / 0.06);
 	--chart-1: #a3e635;

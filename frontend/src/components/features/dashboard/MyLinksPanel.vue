@@ -1,111 +1,242 @@
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-      <h2 class="font-display text-lg font-800 tracking-tight">Mis Enlaces Cortos</h2>
-      <Button size="sm" class="bg-primary text-primary-foreground font-display font-700" @click="$emit('navigate', 'create')">
-        <Plus class="w-3 h-3 mr-1" />
-        Nuevo Enlace
-      </Button>
-    </div>
+	<div class="flex flex-col gap-5">
+		<!-- HEADER -->
+		<div class="flex items-center justify-between flex-wrap gap-3">
+			<div>
+				<h2 class="font-display text-lg font-800 tracking-tight">
+					Mis Enlaces
+				</h2>
+				<p class="text-xs font-mono text-muted-foreground mt-0.5">
+					Administra todos tus enlaces acortados
+				</p>
+			</div>
+			<Button
+				size="sm"
+				class="bg-primary text-primary-foreground font-mono font-700"
+				@click="$emit('navigate', 'create')"
+			>
+				<Plus class="size-3.5" data-icon="inline-start" />
+				Nuevo Enlace
+			</Button>
+		</div>
 
-    <div class="flex items-center gap-2 mb-4">
-      <div class="relative flex-1 max-w-[280px]">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-        <Input
-          v-model="searchQuery"
-          placeholder="Buscar tus enlaces..."
-          class="pl-9 h-9"
-        />
-      </div>
-    </div>
+		<!-- QUICK STATS -->
+		<div class="grid grid-cols-3 gap-3">
+			<Card class="border-border/60">
+				<CardContent class="p-3.5 relative overflow-hidden">
+					<div class="flex items-center gap-2 mb-2">
+						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+							<Link class="size-3 text-primary" />
+						</div>
+						<span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Total</span>
+					</div>
+					<p class="text-2xl font-display font-800 tracking-tight leading-none">{{ urls.length }}</p>
+					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+				</CardContent>
+			</Card>
+			<Card class="border-border/60">
+				<CardContent class="p-3.5 relative overflow-hidden">
+					<div class="flex items-center gap-2 mb-2">
+						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+							<MousePointerClick class="size-3 text-primary" />
+						</div>
+						<span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Clics</span>
+					</div>
+					<p class="text-2xl font-display font-800 tracking-tight leading-none">{{ totalClicks }}</p>
+					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+				</CardContent>
+			</Card>
+			<Card class="border-border/60">
+				<CardContent class="p-3.5 relative overflow-hidden">
+					<div class="flex items-center gap-2 mb-2">
+						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+							<TrendingUp class="size-3 text-primary" />
+						</div>
+						<span class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Promedio</span>
+					</div>
+					<p class="text-2xl font-display font-800 tracking-tight leading-none">{{ avgClicks }}</p>
+					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+				</CardContent>
+			</Card>
+		</div>
 
-    <div v-if="isLoading" class="space-y-3">
-      <Skeleton v-for="i in 4" :key="i" class="h-12 w-full rounded-lg" />
-    </div>
+		<!-- SEARCH -->
+		<div class="relative max-w-sm">
+			<Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+			<Input
+				v-model="searchQuery"
+				placeholder="Buscar enlaces..."
+				class="pl-9 h-9 text-xs font-mono"
+			/>
+		</div>
 
-    <div v-else-if="urls.length === 0" class="text-center py-12">
-      <Link class="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-      <p class="text-sm text-muted-foreground">No tienes enlaces creados</p>
-      <Button size="sm" variant="outline" class="mt-3" @click="$emit('navigate', 'create')">
-        <Plus class="w-3 h-3 mr-1" />
-        Crear tu primer enlace
-      </Button>
-    </div>
+		<!-- LOADING -->
+		<div v-if="isLoading" class="flex flex-col gap-2.5">
+			<Skeleton v-for="i in 4" :key="i" class="h-16 rounded-xl" />
+		</div>
 
-    <div v-else>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Enlace corto</TableHead>
-            <TableHead>Destino</TableHead>
-            <TableHead class="text-center">Clics</TableHead>
-            <TableHead>Creado</TableHead>
-            <TableHead class="text-right">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="url in filteredUrls" :key="url.shortCode">
-            <TableCell class="font-mono text-primary font-medium">
-              roly.top/{{ url.shortCode }}
-            </TableCell>
-            <TableCell class="max-w-[200px] truncate text-muted-foreground font-mono text-xs">
-              {{ url.originalUrl }}
-            </TableCell>
-            <TableCell class="text-center">
-              <Badge variant="secondary" class="font-mono">
-                {{ url.visits }}
-              </Badge>
-            </TableCell>
-            <TableCell class="text-muted-foreground text-xs">
-              {{ formatDate(url.createdAt) }}
-            </TableCell>
-            <TableCell class="text-right">
-              <div class="flex gap-1 justify-end">
-                <Button variant="ghost" size="sm" class="h-7 px-2 text-xs" @click="copyUrl(url.shortCode)">
-                  Copiar
-                </Button>
-                <Button variant="ghost" size="sm" class="h-7 px-2 text-xs text-destructive hover:text-destructive" @click="confirmDelete(url.shortCode)">
-                  Eliminar
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+		<!-- EMPTY STATE -->
+		<Empty v-else-if="urls.length === 0">
+			<EmptyHeader>
+				<EmptyMedia variant="icon">
+					<Link />
+				</EmptyMedia>
+				<EmptyTitle class="font-display">Sin enlaces aún</EmptyTitle>
+				<EmptyDescription class="font-mono">
+					Crea tu primer enlace corto para empezar
+				</EmptyDescription>
+			</EmptyHeader>
+			<Button
+				size="sm"
+				class="bg-primary text-primary-foreground font-mono font-700"
+				@click="$emit('navigate', 'create')"
+			>
+				<Plus class="size-3.5" data-icon="inline-start" />
+				Crear enlace
+			</Button>
+		</Empty>
 
-      <p v-if="filteredUrls.length === 0 && searchQuery" class="text-center py-8 text-muted-foreground text-sm">
-        No se encontraron enlaces para "{{ searchQuery }}"
-      </p>
-    </div>
+		<!-- LINKS LIST -->
+		<template v-else>
+			<div class="flex flex-col gap-2">
+				<Card
+					v-for="url in filteredUrls"
+					:key="url.shortCode"
+					class="border-border/60 relative overflow-hidden"
+				>
+					<CardContent class="p-4">
+						<div class="flex items-center gap-4">
+							<!-- Short URL -->
+							<div class="min-w-0 flex-1">
+								<div class="flex items-center gap-2 mb-1.5">
+									<span class="font-mono text-sm font-700 text-primary truncate">
+										roly.top/{{ url.shortCode }}
+									</span>
+									<Button
+										variant="ghost"
+										size="icon"
+										class="size-5 text-muted-foreground hover:text-foreground"
+										title="Copiar enlace"
+										@click="copyUrl(url.shortCode)"
+									>
+										<Copy class="size-3" />
+									</Button>
+								</div>
+								<p class="text-[11px] font-mono text-muted-foreground truncate max-w-md">
+									{{ url.originalUrl }}
+								</p>
+							</div>
 
-    <Dialog v-model:open="deleteDialogOpen">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Eliminar enlace</DialogTitle>
-          <DialogDescription>
-            Se eliminará permanentemente el enlace <span class="font-mono text-foreground">/{{ deleteTarget }}</span>. Esta acción no se puede deshacer.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" @click="deleteDialogOpen = false">Cancelar</Button>
-          <Button variant="destructive" :disabled="isDeleting" @click="executeDelete">
-            {{ isDeleting ? 'Eliminando...' : 'Eliminar' }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </div>
+							<!-- Stats -->
+							<div class="hidden sm:flex items-center gap-4 flex-shrink-0">
+								<div class="text-right">
+									<div class="flex items-center gap-1.5">
+										<MousePointerClick class="size-3 text-muted-foreground" />
+										<span class="text-sm font-display font-800">{{ url.visits }}</span>
+									</div>
+									<p class="text-[10px] font-mono text-muted-foreground">clics</p>
+								</div>
+								<Separator orientation="vertical" class="h-8" />
+								<div class="text-right min-w-[70px]">
+									<p class="text-[11px] font-mono text-muted-foreground">{{ formatDate(url.createdAt) }}</p>
+								</div>
+							</div>
+
+							<!-- Actions -->
+							<div class="flex items-center gap-1 flex-shrink-0">
+								<Button
+									variant="outline"
+									size="sm"
+									class="h-auto px-2.5 py-1.5 text-[11px] font-mono font-600 border-border/60"
+									@click="copyUrl(url.shortCode)"
+								>
+									<Copy class="size-3" data-icon="inline-start" />
+									<span class="hidden sm:inline">Copiar</span>
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									class="h-auto px-2.5 py-1.5 text-[11px] font-mono font-600 text-destructive border-border/60 hover:bg-destructive/5 hover:border-destructive/30"
+									@click="confirmDelete(url.shortCode)"
+								>
+									<Trash2 class="size-3" data-icon="inline-start" />
+									<span class="hidden sm:inline">Eliminar</span>
+								</Button>
+							</div>
+						</div>
+
+						<!-- Top accent line -->
+						<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
+						<!-- Mobile stats row -->
+						<div class="mt-2.5 flex items-center gap-3 sm:hidden">
+							<div class="flex items-center gap-1.5">
+								<MousePointerClick class="size-3 text-muted-foreground" />
+								<span class="text-xs font-mono font-700">{{ url.visits }} clics</span>
+							</div>
+							<span class="text-[10px] font-mono text-muted-foreground">{{ formatDate(url.createdAt) }}</span>
+						</div>
+					</CardContent>
+				</Card>
+			</div>
+
+			<!-- NO RESULTS -->
+			<div
+				v-if="filteredUrls.length === 0 && searchQuery"
+				class="flex flex-col items-center py-10"
+			>
+				<Search class="size-8 text-muted-foreground/30 mb-2" />
+				<p class="text-xs font-mono text-muted-foreground">
+					Sin resultados para "{{ searchQuery }}"
+				</p>
+			</div>
+		</template>
+
+		<!-- DELETE DIALOG -->
+		<Dialog v-model:open="deleteDialogOpen">
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Eliminar enlace</DialogTitle>
+					<DialogDescription>
+						Se eliminará permanentemente
+						<span class="font-mono text-foreground">/{{ deleteTarget }}</span>.
+						Esta acción no se puede deshacer.
+					</DialogDescription>
+				</DialogHeader>
+				<DialogFooter>
+					<Button variant="outline" @click="deleteDialogOpen = false">
+						Cancelar
+					</Button>
+					<Button
+						variant="destructive"
+						:disabled="isDeleting"
+						@click="executeDelete"
+					>
+						{{ isDeleting ? 'Eliminando...' : 'Eliminar' }}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	</div>
 </template>
 
 <script setup lang="ts">
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
-import { Link, Plus, Search } from "lucide-vue-next";
+import {
+	Copy,
+	Link,
+	MousePointerClick,
+	Plus,
+	Search,
+	TrendingUp,
+	Trash2,
+} from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import { deleteUrlRequest, getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -114,16 +245,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 
 defineEmits<{
@@ -174,6 +305,15 @@ const filteredUrls = computed(() => {
 			u.shortCode.toLowerCase().includes(q) ||
 			u.originalUrl.toLowerCase().includes(q),
 	);
+});
+
+const totalClicks = computed(() =>
+	urls.value.reduce((sum, u) => sum + (u.visits || 0), 0),
+);
+
+const avgClicks = computed(() => {
+	if (urls.value.length === 0) return "0";
+	return String(Math.round(totalClicks.value / urls.value.length));
 });
 
 const deleteMutation = useMutation({
