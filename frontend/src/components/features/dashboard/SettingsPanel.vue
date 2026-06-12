@@ -1,8 +1,8 @@
 <template>
   <div class="w-full">
     <div>
-      <h2 class="font-display text-lg font-800 tracking-tight">Configuración</h2>
-      <p class="text-xs font-mono text-muted-foreground mt-0.5">Administra tu cuenta y preferencias</p>
+      <h2 class="font-display text-xl font-800 tracking-tight">Configuración</h2>
+      <p class="text-sm font-mono text-muted-foreground mt-0.5">Administra tu cuenta y preferencias</p>
     </div>
 
     <div class="flex flex-col gap-5">
@@ -12,27 +12,26 @@
             <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
               <User class="size-3.5 text-primary" />
             </div>
-            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Cuenta</span>
+            <span class="text-sm font-mono font-700 tracking-wider uppercase text-muted-foreground">Cuenta</span>
           </div>
           <div class="flex flex-col gap-0">
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs font-medium">Nombre para mostrar</div>
-                <div class="text-xs text-muted-foreground">{{ userName || 'Usuario' }}</div>
+                <div class="text-sm font-medium">Nombre para mostrar</div>
+                <div class="text-sm text-muted-foreground">{{ userName || 'Usuario' }}</div>
               </div>
-              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60">Editar</Button>
             </div>
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs font-medium">Correo electrónico</div>
-                <div class="text-xs text-muted-foreground font-mono">{{ userEmail || 'N/D' }}</div>
+                <div class="text-sm font-medium">Correo electrónico</div>
+                <div class="text-sm text-muted-foreground font-mono">{{ userEmail || 'N/D' }}</div>
               </div>
               <Badge variant="secondary" class="gap-1"><span class="size-1.5 rounded-full bg-[var(--success)]" />Verificado</Badge>
             </div>
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs font-medium">Plan de cuenta</div>
-                <div class="text-xs text-muted-foreground">{{ isAdmin ? 'Admin' : 'Gratis' }} · {{ totalLinks }}/{{ urlLimit }} enlaces usados</div>
+                <div class="text-sm font-medium">Plan de cuenta</div>
+                <div class="text-sm text-muted-foreground">{{ isAdmin ? 'Admin' : 'Gratis' }} · {{ totalLinks }}/{{ urlLimit }} enlaces usados</div>
               </div>
               <Button size="sm" class="bg-primary text-primary-foreground font-mono font-700">Mejorar</Button>
             </div>
@@ -46,22 +45,22 @@
             <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
               <Shield class="size-3.5 text-primary" />
             </div>
-            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Administración</span>
+            <span class="text-sm font-mono font-700 tracking-wider uppercase text-muted-foreground">Administración</span>
           </div>
           <div class="flex flex-col gap-0">
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs font-medium">Gestionar usuarios</div>
-                <div class="text-xs text-muted-foreground">Banear, desbanear y editar límites de usuarios</div>
+                <div class="text-sm font-medium">Gestionar usuarios</div>
+                <div class="text-sm text-muted-foreground">Banear, desbanear y editar límites de usuarios</div>
               </div>
-              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60" @click="$emit('navigate', 'admin-users')">Abrir</Button>
+              <Button variant="outline" size="sm" class="font-mono font-600 text-xs border-border/60" @click="$emit('navigate', 'admin-users')">Abrir</Button>
             </div>
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs font-medium">Gestionar URLs</div>
-                <div class="text-xs text-muted-foreground">Administrar todas las URLs acortadas del sistema</div>
+                <div class="text-sm font-medium">Gestionar URLs</div>
+                <div class="text-sm text-muted-foreground">Administrar todas las URLs acortadas del sistema</div>
               </div>
-              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60" @click="$emit('navigate', 'admin-urls')">Abrir</Button>
+              <Button variant="outline" size="sm" class="font-mono font-600 text-xs border-border/60" @click="$emit('navigate', 'admin-urls')">Abrir</Button>
             </div>
           </div>
         </CardContent>
@@ -73,22 +72,15 @@
             <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
               <Settings class="size-3.5 text-primary" />
             </div>
-            <span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">Preferencias</span>
+            <span class="text-sm font-mono font-700 tracking-wider uppercase text-muted-foreground">Preferencias</span>
           </div>
           <div class="flex flex-col gap-0">
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs font-medium">Tema</div>
-                <div class="text-xs text-muted-foreground">Actualmente: {{ colorMode === 'dark' ? 'Modo oscuro' : 'Modo claro' }}</div>
+                <div class="text-sm font-medium">Tema</div>
+                <div class="text-sm text-muted-foreground">Actualmente: {{ colorMode === 'dark' ? 'Modo oscuro' : 'Modo claro' }}</div>
               </div>
-              <Button variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60" @click="toggleTheme">Cambiar</Button>
-            </div>
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="text-xs font-medium">Nuevos enlaces públicos por defecto</div>
-                <div class="text-xs text-muted-foreground">Los enlaces creados aparecen en la lista pública</div>
-              </div>
-              <Switch v-model="publicByDefault" />
+              <Button variant="outline" size="sm" class="font-mono font-600 text-xs border-border/60" @click="toggleTheme">Cambiar</Button>
             </div>
           </div>
         </CardContent>

@@ -42,11 +42,6 @@ export const useUrlShortener = () => {
 					urlStore.addUrl(u.original, u.short),
 				);
 			}
-			const serverMessage =
-				(err as any)?.response?.data?.error?.message ||
-				(err as any)?.response?.data?.message ||
-				"Error al acortar la URL";
-			toast.error("Error al acortar la URL", { description: serverMessage });
 		},
 		onSuccess: (
 			data: UrlInfoResponse,
@@ -59,11 +54,6 @@ export const useUrlShortener = () => {
 				urlStore.removeUrl(vars.originalUrl, context.tempShort);
 			}
 			urlStore.addUrl(data.originalUrl, data.shortCode);
-			// show toast
-			const builtShortUrl = `${getAppBaseUrl()}/${data.shortCode}`;
-			toast.success("¡URL acortada exitosamente!", {
-				description: `URL corta: ${builtShortUrl}`,
-			});
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["userUrls"] });
@@ -129,12 +119,6 @@ export const useUrlShortener = () => {
 			return { success: false };
 		} catch (error: any) {
 			console.error("[shortenUrl] caught error:", error);
-			const errorMessage =
-				error?.response?.data?.error?.message ||
-				error?.response?.data?.message ||
-				(error?.message as string) ||
-				"Error al acortar la URL";
-			toast.error("Error en el servidor", { description: errorMessage });
 			return { success: false };
 		} finally {
 			urlStore.isLoading = false;
