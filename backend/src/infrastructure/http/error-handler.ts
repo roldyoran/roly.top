@@ -44,7 +44,9 @@ function getStatusCode(code: string): number {
 export function errorResponse(c: Context, error: AppError): Response {
 	const statusCode = getStatusCode(error.code);
 	// Log error for easier debugging in dev (shows in wrangler / console)
-	console.warn(`[API ERROR] code=${error.code} status=${statusCode} message=${error.message}`);
+	console.warn(
+		`[API ERROR] code=${error.code} status=${statusCode} message=${error.message}`,
+	);
 	return c.json<ApiErrorResponse>(
 		{
 			success: false,
@@ -70,7 +72,9 @@ export function errorResponse(c: Context, error: AppError): Response {
 export function onError(error: Error, c: Context): Response {
 	if (error instanceof AppError) {
 		// Log and return a structured API error so the frontend can show the message
-		console.warn(`[HANDLED APP ERROR] code=${error.code} message=${error.message}`);
+		console.warn(
+			`[HANDLED APP ERROR] code=${error.code} message=${error.message}`,
+		);
 		return errorResponse(c, error);
 	}
 
