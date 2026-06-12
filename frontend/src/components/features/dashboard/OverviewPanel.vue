@@ -1,27 +1,26 @@
 <template>
-	<div class="flex flex-col gap-5">
+	<div class="flex flex-col gap-3">
 		<!-- WELCOME BANNER -->
 		<Card class="relative overflow-hidden border-border/60">
-			<CardContent class="p-5 sm:p-6">
+			<CardContent class="p-3.5 sm:p-4">
 				<div class="relative z-10 flex items-center justify-between">
 					<div>
-						<p class="text-xs font-mono tracking-wider text-muted-foreground mb-1">
+						<p class="text-[10px] font-mono tracking-wider text-muted-foreground">
 							{{ greeting }}
 						</p>
-						<h1 class="text-xl sm:text-2xl font-display font-800 tracking-tight">
+						<h1 class="text-lg sm:text-xl font-display font-800 tracking-tight">
 							{{ userName || 'Usuario' }}
 						</h1>
-						<p class="text-xs text-muted-foreground mt-1.5 font-mono">
-							Tu panel de control — {{ totalLinks }} enlace{{ totalLinks !== 1 ? 's' : '' }} activo{{ totalLinks !== 1 ? 's' : '' }}
+						<p class="text-[10px] text-muted-foreground mt-0.5 font-mono">
+							{{ totalLinks }} enlace{{ totalLinks !== 1 ? 's' : '' }} activo{{ totalLinks !== 1 ? 's' : '' }}
 						</p>
 					</div>
 					<div
-						class="hidden sm:flex size-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20"
+						class="hidden sm:flex size-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20"
 					>
-						<LayoutDashboard class="size-6 text-primary" />
+						<LayoutDashboard class="size-4.5 text-primary" />
 					</div>
 				</div>
-				<!-- Decorative gradient -->
 				<div
 					class="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-primary/5 blur-3xl"
 				/>
@@ -32,34 +31,29 @@
 		</Card>
 
 		<!-- STAT CARDS -->
-		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+		<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
 			<template v-if="isLoading">
 				<Card v-for="i in 4" :key="i" class="border-border/60">
-					<CardContent class="p-4">
-						<Skeleton class="h-3 w-16 mb-3" />
-						<Skeleton class="h-7 w-12 mb-2" />
-						<Skeleton class="h-3 w-24" />
+					<CardContent class="p-3">
+						<Skeleton class="h-2.5 w-14 mb-2" />
+						<Skeleton class="h-6 w-10 mb-1.5" />
+						<Skeleton class="h-2.5 w-20" />
 					</CardContent>
 				</Card>
 			</template>
 			<template v-else>
-				<!-- Enlaces Totales -->
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-4">
-						<div class="flex items-center justify-between mb-3">
-							<span
-								class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground"
-							>Enlaces</span>
-							<div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-								<Link class="size-3.5 text-primary" />
+					<CardContent class="p-3">
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Enlaces</span>
+							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+								<Link class="size-3 text-primary" />
 							</div>
 						</div>
-						<p class="text-3xl font-display font-800 tracking-tight leading-none">
-							{{ totalLinks }}
-						</p>
-						<div class="mt-2.5 flex items-center gap-1.5">
-							<Badge variant="default" class="gap-1">
-								<span class="size-1.5 rounded-full bg-primary-foreground animate-pulse" />
+						<p class="text-2xl font-display font-800 tracking-tight leading-none">{{ totalLinks }}</p>
+						<div class="mt-1.5">
+							<Badge variant="default" class="gap-1 text-[9px] py-0 px-1.5 h-4">
+								<span class="size-1 rounded-full bg-primary-foreground animate-pulse" />
 								Activo
 							</Badge>
 						</div>
@@ -67,48 +61,37 @@
 					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 				</Card>
 
-				<!-- Total Clics -->
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-4">
-						<div class="flex items-center justify-between mb-3">
-							<span
-								class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground"
-							>Clics</span>
-							<div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-								<MousePointerClick class="size-3.5 text-primary" />
+					<CardContent class="p-3">
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Clics</span>
+							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+								<MousePointerClick class="size-3 text-primary" />
 							</div>
 						</div>
-						<p class="text-3xl font-display font-800 tracking-tight leading-none">
-							{{ formatNumber(totalClicks) }}
-						</p>
-						<p class="mt-2.5 text-[10px] font-mono text-muted-foreground">
-							en todos tus enlaces
-						</p>
+						<p class="text-2xl font-display font-800 tracking-tight leading-none">{{ formatNumber(totalClicks) }}</p>
+						<p class="mt-1.5 text-[9px] font-mono text-muted-foreground">en todos tus enlaces</p>
 					</CardContent>
 					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 				</Card>
 
-				<!-- Límite -->
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-4">
-						<div class="flex items-center justify-between mb-3">
-							<span
-								class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground"
-							>Límite</span>
-							<div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-								<Gauge class="size-3.5 text-primary" />
+					<CardContent class="p-3">
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Límite</span>
+							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+								<Gauge class="size-3 text-primary" />
 							</div>
 						</div>
-						<p class="text-3xl font-display font-800 tracking-tight leading-none">
-							{{ totalLinks }}<span class="text-lg text-muted-foreground font-600">/{{ urlLimit }}</span>
+						<p class="text-2xl font-display font-800 tracking-tight leading-none">
+							{{ totalLinks }}<span class="text-sm text-muted-foreground font-600">/{{ urlLimit }}</span>
 						</p>
-						<!-- Progress bar -->
-						<div class="mt-3">
+						<div class="mt-1.5">
 							<Progress
 								:model-value="Math.min((totalLinks / urlLimit) * 100, 100)"
-								class="h-1.5"
+								class="h-1"
 							/>
-							<p class="mt-1.5 text-[10px] font-mono text-muted-foreground">
+							<p class="mt-1 text-[9px] font-mono text-muted-foreground">
 								{{ urlLimit - totalLinks }} espacio{{ (urlLimit - totalLinks) !== 1 ? 's' : '' }} restante{{ (urlLimit - totalLinks) !== 1 ? 's' : '' }}
 							</p>
 						</div>
@@ -116,21 +99,18 @@
 					<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 				</Card>
 
-				<!-- Cuenta -->
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="p-4">
-						<div class="flex items-center justify-between mb-3">
-							<span
-								class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground"
-							>Cuenta</span>
-							<div class="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-								<Crown class="size-3.5 text-primary" />
+					<CardContent class="p-3">
+						<div class="flex items-center justify-between mb-2">
+							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Cuenta</span>
+							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
+								<Crown class="size-3 text-primary" />
 							</div>
 						</div>
-						<p class="text-3xl font-display font-800 tracking-tight leading-none">
+						<p class="text-2xl font-display font-800 tracking-tight leading-none">
 							{{ isAdmin ? 'Admin' : 'Free' }}
 						</p>
-						<p class="mt-2.5 text-[10px] font-mono text-muted-foreground">
+						<p class="mt-1.5 text-[9px] font-mono text-muted-foreground">
 							{{ userName || 'Usuario' }}
 						</p>
 					</CardContent>
@@ -140,58 +120,58 @@
 		</div>
 
 		<!-- BOTTOM ROW: Actions + Account -->
-		<div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
+		<div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
 			<!-- Quick Actions -->
 			<Card class="lg:col-span-3 border-border/60">
-				<CardContent class="p-5">
-					<div class="flex items-center gap-2 mb-3">
-						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
-							<Zap class="size-3.5 text-primary" />
+				<CardContent class="p-3.5">
+					<div class="flex items-center gap-2 mb-2.5">
+						<div class="flex size-5 items-center justify-center rounded-md bg-primary/10">
+							<Zap class="size-3 text-primary" />
 						</div>
-						<span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">
+						<span class="text-[10px] font-mono font-700 tracking-wider uppercase text-muted-foreground">
 							Acciones Rápidas
 						</span>
 					</div>
-					<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+					<div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
 						<Button
 							variant="outline"
-							class="flex flex-col items-center gap-2 h-auto py-3.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
+							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
 							@click="$emit('navigate', 'create')"
 						>
-							<div class="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-								<Plus class="size-4 text-primary" />
+							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
+								<Plus class="size-3.5 text-primary" />
 							</div>
-							<span class="text-[11px] font-mono font-600">Nuevo Enlace</span>
+							<span class="text-[10px] font-mono font-600">Nuevo Enlace</span>
 						</Button>
 						<Button
 							variant="outline"
-							class="flex flex-col items-center gap-2 h-auto py-3.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
+							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
 							@click="$emit('navigate', 'myurls')"
 						>
-							<div class="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-								<Link class="size-4 text-primary" />
+							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
+								<Link class="size-3.5 text-primary" />
 							</div>
-							<span class="text-[11px] font-mono font-600">Mis Enlaces</span>
+							<span class="text-[10px] font-mono font-600">Mis Enlaces</span>
 						</Button>
 						<Button
 							variant="outline"
-							class="flex flex-col items-center gap-2 h-auto py-3.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
+							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
 							@click="$emit('navigate', 'qrdash')"
 						>
-							<div class="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-								<QrCode class="size-4 text-primary" />
+							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
+								<QrCode class="size-3.5 text-primary" />
 							</div>
-							<span class="text-[11px] font-mono font-600">Código QR</span>
+							<span class="text-[10px] font-mono font-600">Código QR</span>
 						</Button>
 						<Button
 							variant="outline"
-							class="flex flex-col items-center gap-2 h-auto py-3.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
+							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
 							@click="$emit('navigate', 'analytics')"
 						>
-							<div class="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-								<BarChart3 class="size-4 text-primary" />
+							<div class="flex size-7 items-center justify-center rounded-md bg-primary/10">
+								<BarChart3 class="size-3.5 text-primary" />
 							</div>
-							<span class="text-[11px] font-mono font-600">Analíticas</span>
+							<span class="text-[10px] font-mono font-600">Analíticas</span>
 						</Button>
 					</div>
 				</CardContent>
@@ -199,31 +179,31 @@
 
 			<!-- Account Info -->
 			<Card class="lg:col-span-2 border-border/60">
-				<CardContent class="p-5">
-					<div class="flex items-center gap-2 mb-3">
-						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
-							<User class="size-3.5 text-primary" />
+				<CardContent class="p-3.5">
+					<div class="flex items-center gap-2 mb-2.5">
+						<div class="flex size-5 items-center justify-center rounded-md bg-primary/10">
+							<User class="size-3 text-primary" />
 						</div>
-						<span class="text-xs font-mono font-700 tracking-wider uppercase text-muted-foreground">
+						<span class="text-[10px] font-mono font-700 tracking-wider uppercase text-muted-foreground">
 							Cuenta
 						</span>
 					</div>
 					<div class="flex flex-col gap-0">
-						<div class="flex items-center justify-between py-2.5">
-							<span class="text-[11px] font-mono text-muted-foreground">Nombre</span>
-							<span class="text-[11px] font-mono font-600">{{ userName || 'Invitado' }}</span>
+						<div class="flex items-center justify-between py-2">
+							<span class="text-[10px] font-mono text-muted-foreground">Nombre</span>
+							<span class="text-[10px] font-mono font-600">{{ userName || 'Invitado' }}</span>
 						</div>
 						<Separator />
-						<div class="flex items-center justify-between py-2.5">
-							<span class="text-[11px] font-mono text-muted-foreground">Correo</span>
-							<span class="text-[11px] font-mono text-muted-foreground truncate max-w-[160px] text-right">{{ userEmail || 'N/D' }}</span>
+						<div class="flex items-center justify-between py-2">
+							<span class="text-[10px] font-mono text-muted-foreground">Correo</span>
+							<span class="text-[10px] font-mono text-muted-foreground truncate max-w-[140px] text-right">{{ userEmail || 'N/D' }}</span>
 						</div>
 						<Separator />
-						<div class="flex items-center justify-between py-2.5">
-							<span class="text-[11px] font-mono text-muted-foreground">Rol</span>
+						<div class="flex items-center justify-between py-2">
+							<span class="text-[10px] font-mono text-muted-foreground">Rol</span>
 							<Badge
 								:variant="isAdmin ? 'default' : 'secondary'"
-								class="gap-1"
+								class="gap-1 text-[9px] py-0 px-1.5 h-4"
 							>
 								<span
 									v-if="isAdmin"

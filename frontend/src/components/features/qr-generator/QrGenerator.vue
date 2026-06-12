@@ -1,5 +1,5 @@
 <template>
-  <Card>
+  <Card class="max-w-[540px] border-border/60">
     <CardHeader>
       <CardTitle class="flex items-center gap-3 font-display">
         <QrCode class="w-6 h-6 shrink-0" />
@@ -10,8 +10,8 @@
       </CardDescription>
     </CardHeader>
 
-    <CardContent class="space-y-6">
-      <form @submit="handleGenerate" class="space-y-4">
+    <CardContent class="p-5 flex flex-col gap-4">
+      <form @submit="handleGenerate" class="flex flex-col gap-4">
         <div class="space-y-2">
           <Label for="qr-url">URL</Label>
           <div class="flex gap-2">
@@ -24,7 +24,7 @@
               placeholder="https://ejemplo.com..."
               required
             />
-            <Button type="submit" :disabled="isGenerating">
+            <Button type="submit" :disabled="isGenerating" class="bg-primary text-primary-foreground font-mono font-700 shrink-0">
               <span v-if="!isGenerating">Generar</span>
               <div v-else class="flex items-center gap-2" aria-live="polite">
                 <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
@@ -41,20 +41,20 @@
         <div class="space-y-2">
           <div :class="['p-3 border rounded-md', qrDataUrl ? 'bg-card border-border' : 'bg-muted/10 border-border-dim']">
             <div class="flex items-center gap-3 mb-2 w-full flex-wrap">
-              <Label class="text-xs">Color</Label>
+              <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Color</Label>
               <input :disabled="!qrDataUrl" type="color" v-model="color1" class="w-10 h-8 p-0 rounded-md border border-border" />
 
-              <Label class="text-xs ml-2">Gradiente</Label>
+              <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground ml-2">Gradiente</Label>
               <Switch :disabled="!qrDataUrl" v-model="useGradient" />
               <input v-if="useGradient" :disabled="!qrDataUrl" type="color" v-model="color2" class="w-10 h-8 p-0 ml-2 rounded-md border border-border" />
 
-              <Label class="text-xs ml-2">Módulos</Label>
+              <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground ml-2">Módulos</Label>
               <Switch :disabled="!qrDataUrl" v-model="roundedModules" />
 
-              <Label class="text-xs ml-2">Logo del sitio</Label>
+              <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground ml-2">Logo del sitio</Label>
               <Switch :disabled="!qrDataUrl" v-model="useDefaultLogo" />
 
-              <div class="ml-auto text-xs text-muted-foreground">Opciones disponibles después de generar</div>
+              <div class="ml-auto text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Opciones disponibles después de generar</div>
             </div>
           </div>
         </div>
@@ -69,13 +69,13 @@
         :initial="{ opacity: 0, scale: 0.95, y: 12 }"
         :animate="qrDataUrl ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }"
         :transition="{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }"
-        class="space-y-4"
+        class="flex flex-col gap-4"
       >
         <div class="flex justify-center p-4 rounded-lg border bg-muted/30">
           <div :class="['w-48 h-48 flex items-center justify-center border border-border rounded-md overflow-hidden relative', qrDataUrl ? 'bg-white' : 'bg-card']">
             <canvas ref="qrCanvas" class="w-full h-full"></canvas>
-            <div v-if="!qrDataUrl" class="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground font-mono pointer-events-none">
-              <QrCode class="w-8 h-8 mb-1 text-muted-foreground" />
+            <div v-if="!qrDataUrl" class="absolute inset-0 flex flex-col items-center justify-center h-[220px] bg-muted/30 border border-dashed border-border/60 rounded-xl text-muted-foreground font-mono pointer-events-none">
+              <QrCode class="size-11 text-muted-foreground/30 mb-2.5" />
               <span class="text-xs">Aquí aparecerá tu QR</span>
             </div>
           </div>
@@ -83,12 +83,12 @@
 
         <div class="flex flex-col items-center gap-2">
           <div class="flex gap-2">
-            <Button @click="downloadQr" variant="outline" size="sm" :disabled="!qrDataUrl">
-              <Download class="w-4 h-4 mr-2" aria-hidden="true" />
+            <Button @click="downloadQr" variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60">
+              <Download class="size-3" data-icon="inline-start" />
               Descargar QR
             </Button>
-            <Button @click="copyQrDataUrl" variant="outline" size="sm" :disabled="!qrDataUrl">
-              <Copy class="w-4 h-4 mr-2" aria-hidden="true" />
+            <Button @click="copyQrDataUrl" variant="outline" size="sm" class="font-mono font-600 text-[11px] border-border/60">
+              <Copy class="size-3" data-icon="inline-start" />
               Copiar Imagen
             </Button>
           </div>

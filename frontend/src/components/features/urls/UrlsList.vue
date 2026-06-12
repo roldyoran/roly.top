@@ -30,12 +30,12 @@
           </div>
 
           <div class="relative w-full sm:w-80">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
               v-model="searchQuery"
               type="text"
               placeholder="Buscar URLs..."
-              class="pl-10"
+              class="pl-9 h-9 text-xs font-mono"
             />
           </div>
         </div>
@@ -46,16 +46,17 @@
       </CardHeader>
 
       <CardContent>
-        <div v-if="!isMyList && isLoading" class="text-center py-12">
-          <div class="flex flex-col items-center space-y-4">
-            <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <div class="space-y-2">
-              <p class="text-lg font-semibold">Cargando URLs...</p>
-              <p class="text-muted-foreground">Obteniendo las URLs más recientes</p>
+        <div v-if="!isMyList && isLoading" class="flex flex-col gap-3 py-4">
+          <div v-for="n in 5" :key="n" class="rounded-xl border border-border bg-card px-4 py-3">
+            <div class="flex items-center justify-between gap-3">
+              <Skeleton class="h-6 w-24" />
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-5 w-16" />
+                <Skeleton class="h-7 w-7 rounded-md" />
+              </div>
             </div>
+            <Skeleton class="mt-2 h-4 w-full max-w-sm" />
+            <Skeleton class="mt-1.5 h-3 w-20 self-end" />
           </div>
         </div>
 
@@ -75,16 +76,32 @@
           <p class="text-muted-foreground">Las URLs acortadas aparecerán aquí automáticamente</p>
         </div>
 
-        <div v-else-if="!isMyList && shortUrls.length === 0" class="text-center py-12">
-          <Globe class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 class="text-lg font-semibold mb-2">No hay URLs disponibles</h3>
-          <p class="text-muted-foreground">Las URLs aparecerán aquí una vez que sean creadas</p>
+        <div v-else-if="!isMyList && shortUrls.length === 0" class="flex justify-center py-12">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Globe class="size-6" />
+              </EmptyMedia>
+              <EmptyTitle class="font-display">No hay URLs disponibles</EmptyTitle>
+              <EmptyDescription class="font-mono">
+                Las URLs aparecerán aquí una vez que sean creadas
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </div>
 
-        <div v-else-if="!isMyList && filteredUrls.length === 0" class="text-center py-12">
-          <Search class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 class="text-lg font-semibold mb-2">No se encontraron resultados</h3>
-          <p class="text-muted-foreground">Intenta con otros términos de búsqueda</p>
+        <div v-else-if="!isMyList && filteredUrls.length === 0" class="flex justify-center py-12">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Search class="size-6" />
+              </EmptyMedia>
+              <EmptyTitle class="font-display">No se encontraron resultados</EmptyTitle>
+              <EmptyDescription class="font-mono">
+                Intenta con otros términos de búsqueda
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </div>
 
         <motion.div
@@ -99,8 +116,9 @@
             v-for="url in displayUrls"
             :key="`${url.shortCode}-${url.originalUrl}`"
             :variants="listItemVariants"
-            class="url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40"
+            class="url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40 relative overflow-hidden"
           >
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             <div class="flex items-center justify-between gap-3">
               <span class="font-mono text-xl font-semibold text-primary tracking-tight">
                 /{{ url.shortCode }}
@@ -199,7 +217,7 @@
                 @click="currentPage = page"
                 :variant="currentPage === page ? 'default' : 'outline'"
                 size="sm"
-                class="w-8 h-8 p-0"
+                :class="currentPage === page ? 'bg-primary text-primary-foreground font-mono font-700 w-8 h-8 p-0' : 'w-8 h-8 p-0'"
               >
                 {{ page }}
               </Button>
@@ -284,7 +302,6 @@ import {
 	Search,
 	Trash,
 } from "lucide-vue-next";
-import Google from "@/assets/google.vue";
 import { motion } from "motion-v";
 import QRCode from "qrcode-generator";
 import { computed, onMounted, ref, watch } from "vue";
@@ -296,6 +313,7 @@ import {
 	getUrlsRequest,
 } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
+import Google from "@/assets/google.vue";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -312,7 +330,15 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Tooltip,
 	TooltipContent,
