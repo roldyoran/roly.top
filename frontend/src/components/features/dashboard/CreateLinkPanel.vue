@@ -8,6 +8,12 @@
     <Card class="border-border/60">
       <CardContent class="p-6">
         <div class="flex flex-col gap-4">
+          <div v-if="hasReachedLimit" class="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <p class="text-sm text-destructive font-medium">
+              Has alcanzado el límite de {{ urlStore.urlLimit }} URLs. Elimina una antes de crear otra.
+            </p>
+          </div>
+
           <div>
             <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground mb-1.5 block">URL de destino *</Label>
             <Input
@@ -15,6 +21,7 @@
               type="url"
               placeholder="https://tu-url-larga.com/con/ruta?y=params"
               class="h-9"
+              :disabled="hasReachedLimit"
               @keydown.enter="handleShorten"
             />
           </div>
@@ -29,6 +36,7 @@
               placeholder="mi-enlace"
               maxlength="9"
               class="h-9"
+              :disabled="hasReachedLimit"
               @keydown.enter="handleShorten"
             />
           </div>
@@ -36,7 +44,7 @@
           <div class="flex gap-2">
             <Button
               class="bg-primary text-primary-foreground font-mono font-700"
-              :disabled="isLoading || !urlInput.trim()"
+              :disabled="isLoading || !urlInput.trim() || hasReachedLimit"
               @click="handleShorten"
             >
               <Link class="size-3.5" data-icon="inline-start" />
@@ -68,7 +76,7 @@
 
 <script setup lang="ts">
 import { Copy, Link } from "lucide-vue-next";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { toast } from "vue-sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,13 +84,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlShortener } from "@/composables/useUrlShortener";
+import { useUrlStore } from "@/stores/urlStore";
 
 const { shortenUrl, isLoading } = useUrlShortener();
 const { copyToClipboard } = useCopyToClipboard();
+const urlStore = useUrlStore();
 
 const urlInput = ref("");
 const alias = ref("");
 const shortUrl = ref("");
+
+const hasReachedLimit = computed(() => !urlStore.canUseService);
 
 async function handleShorten() {
 	const url = urlInput.value.trim();
@@ -93,6 +105,8 @@ async function handleShorten() {
 		if (result.success) {
 			shortUrl.value = result.shortUrl || "";
 			toast.success("¡Enlace creado!", { description: shortUrl.value });
+		} else if (result.error) {
+			toast.error(result.error);
 		}
 	} catch (err: unknown) {
 		toast.error(

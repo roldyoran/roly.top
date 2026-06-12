@@ -69,6 +69,7 @@ export const useUrlShortener = () => {
 		shortCode?: string;
 		shortUrl?: string;
 		originalUrl?: string;
+		error?: string;
 	}> => {
 		// Verificar si puede usar el servicio (límite del backend)
 		if (!urlStore.canUseService) {
@@ -119,7 +120,11 @@ export const useUrlShortener = () => {
 			return { success: false };
 		} catch (error: any) {
 			console.error("[shortenUrl] caught error:", error);
-			return { success: false };
+			const msg =
+				error?.response?.data?.error?.message ||
+				error?.message ||
+				"Error al acortar la URL";
+			return { success: false, error: msg };
 		} finally {
 			urlStore.isLoading = false;
 		}

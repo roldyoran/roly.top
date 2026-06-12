@@ -490,6 +490,8 @@ async function handleShorten() {
 				block: "center",
 			});
 			fireConfetti();
+		} else if (result.error) {
+			toast.error(result.error);
 		}
 	} catch (err: unknown) {
 		toast.error(

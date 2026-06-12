@@ -682,9 +682,14 @@ html {
 	flex-shrink: 0;
 	letter-spacing: 0.01em;
 }
-.shorten-btn:hover {
+.shorten-btn:hover:not(:disabled) {
 	filter: brightness(1.1);
 	box-shadow: -8px 0 24px var(--lime-glow);
+}
+.shorten-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+	filter: grayscale(0.4);
 }
 
 /* Stats strip */
