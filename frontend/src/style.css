@@ -731,6 +731,7 @@ html {
 	margin: 0 auto;
 	padding: 0 28px;
 	display: flex;
+	justify-content: center;
 	gap: 2px;
 }
 .pub-tab {

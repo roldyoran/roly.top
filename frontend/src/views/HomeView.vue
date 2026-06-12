@@ -485,7 +485,10 @@ async function handleShorten() {
 			alias.value = "";
 			customAlias.value = false;
 			await nextTick();
-			resultCardRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
+			resultCardRef.value?.scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			});
 			fireConfetti();
 		}
 	} catch (err: unknown) {
