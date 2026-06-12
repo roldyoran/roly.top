@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-[560px]">
+  <div class="w-full max-w-[560px]">
     <div class="mb-6">
       <h2 class="font-display text-lg font-800 tracking-tight">Crear Nuevo Enlace</h2>
       <p class="text-xs font-mono text-muted-foreground mt-0.5">Acorta una URL y guárdala en tu cuenta</p>
@@ -44,7 +44,7 @@
             <Button variant="secondary" @click="clearForm">Limpiar</Button>
           </div>
 
-          <Card v-if="shortUrl" class="border-border/60 relative overflow-hidden">
+          <Card v-if="shortUrl" class="w-full border-border/60 relative overflow-hidden">
             <CardContent class="p-4">
               <div class="flex items-center gap-3">
                 <div class="flex-1 min-w-0">

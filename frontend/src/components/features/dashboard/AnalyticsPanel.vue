@@ -2,7 +2,7 @@
   <div>
     <h2 class="font-display text-lg font-800 tracking-tight mb-5">Analíticas</h2>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
       <Card v-if="isLoading">
         <CardContent class="p-4">
           <Skeleton class="h-4 w-20 mb-2" />

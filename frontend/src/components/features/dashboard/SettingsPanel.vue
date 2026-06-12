@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div class="w-full max-w-[580px]">
     <div>
       <h2 class="font-display text-lg font-800 tracking-tight">Configuración</h2>
       <p class="text-xs font-mono text-muted-foreground mt-0.5">Administra tu cuenta y preferencias</p>
     </div>
 
     <div class="flex flex-col gap-5">
-      <Card class="border-border/60">
+      <Card class="w-full border-border/60">
         <CardContent class="p-5">
           <div class="flex items-center gap-2 mb-3">
             <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -40,7 +40,7 @@
         </CardContent>
       </Card>
 
-      <Card v-if="isAdmin" class="border-border/60">
+      <Card v-if="isAdmin" class="w-full border-border/60">
         <CardContent class="p-5">
           <div class="flex items-center gap-2 mb-3">
             <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -67,7 +67,7 @@
         </CardContent>
       </Card>
 
-      <Card class="border-border/60">
+      <Card class="w-full border-border/60">
         <CardContent class="p-5">
           <div class="flex items-center gap-2 mb-3">
             <div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -94,7 +94,7 @@
         </CardContent>
       </Card>
 
-      <Card class="border-destructive/20">
+      <Card class="w-full border-destructive/20">
         <CardContent class="p-5">
           <div class="flex items-center gap-2 mb-3">
             <div class="flex size-6 items-center justify-center rounded-md bg-destructive/10">

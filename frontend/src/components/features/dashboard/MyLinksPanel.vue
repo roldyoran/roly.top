@@ -61,7 +61,7 @@
 		</div>
 
 		<!-- SEARCH -->
-		<div class="relative max-w-sm">
+		<div class="relative w-full max-w-sm">
 			<Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
 			<Input
 				v-model="searchQuery"

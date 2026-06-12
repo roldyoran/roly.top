@@ -5,11 +5,11 @@
       <p class="text-xs font-mono text-muted-foreground mt-0.5">Genera códigos QR para tus enlaces</p>
     </div>
 
-    <Card class="max-w-[540px] border-border/60">
+    <Card class="w-full max-w-[540px] border-border/60">
       <CardContent class="p-5">
         <div class="mb-4">
           <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground mb-1.5 block">Selecciona un enlace o ingresa una URL</Label>
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2">
             <Select v-model="selectedUrl" :disabled="urls.length === 0">
               <SelectTrigger class="flex-1">
                 <SelectValue :placeholder="urls.length > 0 ? 'Tus enlaces recientes...' : 'No tienes enlaces'" />
@@ -27,7 +27,7 @@
           <Label class="text-[10px] font-mono font-700 tracking-widest uppercase text-muted-foreground mb-1.5 block">
             O ingresa manualmente
           </Label>
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2">
             <Input
               v-model="qrUrl"
               type="url"
