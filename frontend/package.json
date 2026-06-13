@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
+		"prebuild:local": "vite build",
 		"build": "vue-tsc -b && vite build",
 		"preview": "vite preview",
 		"check": "bun biome check .",
