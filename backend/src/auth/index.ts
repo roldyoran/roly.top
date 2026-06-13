@@ -51,20 +51,21 @@ export function createAuth(env?: CloudflareBindings) {
 					"http://localhost:5173",
 					"http://127.0.0.1:5173",
 					"http://localhost:8787",
+					"https://shorturl.roldyoran.workers.dev",
 				],
 		account: {
 			skipStateCookieCheck: true,
 		},
 		plugins: [admin()],
 		onAPIError: {
-			errorURL: env.DEV_MODE
+			errorURL: env.DEV_MODE === "true"
 				? "http://localhost:5173/auth/error"
 				: "/auth/error",
 		},
 		advanced: {
 			defaultCookieAttributes: {
 				sameSite: "lax",
-				secure: !env.DEV_MODE,
+				secure: env.DEV_MODE !== "true",
 				httpOnly: true,
 				path: "/",
 			},
