@@ -2,6 +2,7 @@ import { createHead } from "@vueuse/head";
 import { createApp } from "vue";
 import router from "./router";
 import { pinia } from "./stores";
+import "./fonts.css";
 import "./style.css";
 
 // Vue Query
