@@ -75,3 +75,4 @@ jobs:
           packageManager: bun
           wranglerVersion: "4"
           command: deploy
+          workingDirectory: backend
