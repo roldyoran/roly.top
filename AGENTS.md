@@ -1,6 +1,6 @@
-# AGENTS.md — shorturl
+# AGENTS.md — roly.top
 
-Monorepo con **bun**. Lee las guías específicas por área antes de editar código.
+Monorepo con **bun** — shortener de URLs. Lee las guías específicas por área antes de editar código.
 
 ## Áreas
 
