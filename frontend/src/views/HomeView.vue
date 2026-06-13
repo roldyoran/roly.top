@@ -350,7 +350,6 @@
 </template>
 
 <script setup lang="ts">
-import confetti from "canvas-confetti";
 import {
 	Github,
 	LayoutDashboard,
@@ -439,7 +438,8 @@ const urlSchema = z
 		message: "Solo se permiten URLs con protocolo http(s)",
 	});
 
-const fireConfetti = () => {
+const fireConfetti = async () => {
+	const { default: confetti } = await import("canvas-confetti");
 	confetti({
 		particleCount: 80,
 		spread: 70,

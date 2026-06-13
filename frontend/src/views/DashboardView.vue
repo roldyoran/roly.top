@@ -15,17 +15,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import AdminUrlsPanel from "@/components/features/dashboard/AdminUrlsPanel.vue";
-import AdminUsersPanel from "@/components/features/dashboard/AdminUsersPanel.vue";
-import AnalyticsPanel from "@/components/features/dashboard/AnalyticsPanel.vue";
-import CreateLinkPanel from "@/components/features/dashboard/CreateLinkPanel.vue";
-import MyLinksPanel from "@/components/features/dashboard/MyLinksPanel.vue";
-import OverviewPanel from "@/components/features/dashboard/OverviewPanel.vue";
-import PublicListDashPanel from "@/components/features/dashboard/PublicListDashPanel.vue";
-import QRDashPanel from "@/components/features/dashboard/QRDashPanel.vue";
-import SettingsPanel from "@/components/features/dashboard/SettingsPanel.vue";
+import { defineAsyncComponent, ref } from "vue";
 import DashboardLayout from "@/components/layout/DashboardLayout.vue";
+
+const OverviewPanel = defineAsyncComponent(() => import("@/components/features/dashboard/OverviewPanel.vue"));
+const MyLinksPanel = defineAsyncComponent(() => import("@/components/features/dashboard/MyLinksPanel.vue"));
+const AnalyticsPanel = defineAsyncComponent(() => import("@/components/features/dashboard/AnalyticsPanel.vue"));
+const CreateLinkPanel = defineAsyncComponent(() => import("@/components/features/dashboard/CreateLinkPanel.vue"));
+const QRDashPanel = defineAsyncComponent(() => import("@/components/features/dashboard/QRDashPanel.vue"));
+const PublicListDashPanel = defineAsyncComponent(() => import("@/components/features/dashboard/PublicListDashPanel.vue"));
+const SettingsPanel = defineAsyncComponent(() => import("@/components/features/dashboard/SettingsPanel.vue"));
+const AdminUsersPanel = defineAsyncComponent(() => import("@/components/features/dashboard/AdminUsersPanel.vue"));
+const AdminUrlsPanel = defineAsyncComponent(() => import("@/components/features/dashboard/AdminUrlsPanel.vue"));
 
 const activePanel = ref("overview");
 </script>
