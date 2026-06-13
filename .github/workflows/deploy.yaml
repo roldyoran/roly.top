@@ -68,11 +68,16 @@ jobs:
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> $GITHUB_ENV
           echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> $GITHUB_ENV
 
+      - name: Generate wrangler.jsonc
+        run: |
+          cp backend/wrangler.example.jsonc backend/wrangler.jsonc
+          sed -i "s/YOUR_DATABASE_NAME/${{ secrets.CLOUDFLARE_D1_DATABASES_NAME }}/g" backend/wrangler.jsonc
+          sed -i "s/YOUR_DATABASE_ID/${{ secrets.CLOUDFLARE_DATABASE_ID }}/g" backend/wrangler.jsonc
+
       - name: Deploy app
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           packageManager: bun
           wranglerVersion: "4"
-          command: deploy --x-autoconfig false
-          workingDirectory: backend
+          command: deploy --config backend/wrangler.jsonc --x-autoconfig false
