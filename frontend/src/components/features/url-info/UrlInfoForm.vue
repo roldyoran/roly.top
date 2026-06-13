@@ -12,8 +12,15 @@
     </CardHeader>
     
     <CardContent class="space-y-6">
-      <!-- Search Form -->
-      <form @submit="handleSubmit" class="space-y-4">
+      <!-- Auth Required Message -->
+      <AuthRequired
+        v-if="!authStore.isAuthenticated"
+        title="Sesión requerida"
+        description="Debes iniciar sesión para ver la información de URLs."
+      />
+
+      <!-- Search Form (only when authenticated) -->
+      <form v-else @submit="handleSubmit" class="space-y-4">
         <div class="space-y-2">
           <Label for="short-url-code">Código de URL Corta</Label>
           <div class="flex gap-2">
@@ -91,32 +98,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
 import { Copy } from "lucide-vue-next";
+import { computed, ref } from "vue";
+import { toast } from "vue-sonner";
+import { getUrlInfoRequest } from "@/api/http";
+import type { UrlInfoResponse } from "@/api/types";
+import AuthRequired from "@/components/shared/AuthRequired.vue";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getUrlInfoRequest } from "@/api/http";
-import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
-import { formatDate } from "@/lib/utils";
-import type { UrlInfoResponse } from "@/api/types";
-import { toast } from "vue-sonner";
 import {
 	Tooltip,
-	TooltipTrigger,
 	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
+import { formatDate } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
 
 // Composables
 const { copyToClipboard } = useCopyToClipboard();
+const authStore = useAuthStore();
 
 // Reactive state
 const shortCode = ref<string>("");
@@ -143,7 +153,7 @@ const handleSubmit = async (event: Event) => {
 	isLoading.value = true;
 
 	try {
-		const data = await getUrlInfoRequest(shortCode.value.trim());
+		const data = await getUrlInfoRequest(shortCode.value.trim().toLowerCase());
 		urlInfo.value = data;
 
 		if (data) {
@@ -151,9 +161,9 @@ const handleSubmit = async (event: Event) => {
 				description: "Se ha encontrado la información de la URL",
 			});
 		}
-} catch (err: any) {
+	} catch (err: any) {
 		const status = err?.response?.status;
-		if (status === 404) {
+		if (status === 404 || status === 400) {
 			const searchedCode = shortCode.value.trim();
 			error.value = `No existe una URL con el código "${searchedCode}"`;
 			toast.error("URL no encontrada", {
@@ -161,7 +171,8 @@ const handleSubmit = async (event: Event) => {
 			});
 		} else {
 			const errorMessage =
-				err?.response?.data?.message || "Error al obtener información de la URL";
+				err?.response?.data?.message ||
+				"Error al obtener información de la URL";
 			error.value = errorMessage;
 			toast.error("Error al obtener información", {
 				description: errorMessage,

@@ -1,12 +1,20 @@
 import { drizzle } from "drizzle-orm/d1";
-import * as schema from "./schema";
+import * as appSchema from "./schema";
+import * as authSchema from "./auth-schema";
+
+const combinedSchema = { ...appSchema, ...authSchema };
+
+let cachedDb: any = null;
 
 /**
- * Crea una instancia de Drizzle conectada al binding D1 del Worker.
+ * Crea o devuelve la instancia cacheada de Drizzle conectada al binding D1.
  * Uso: const db = createDb(c.env.DB);
  */
 export function createDb(d1Binding: D1Database) {
-	return drizzle(d1Binding, { schema });
+	if (!cachedDb) {
+		cachedDb = drizzle(d1Binding, { schema: combinedSchema });
+	}
+	return cachedDb;
 }
 
 export type DrizzleDB = ReturnType<typeof createDb>;

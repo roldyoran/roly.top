@@ -13,6 +13,7 @@ const STATUS_CODE_MAP: Record<string, number> = {
 	VALIDATION_ERROR: 400,
 	SHORT_CODE_ALREADY_EXISTS: 409,
 	URL_NOT_FOUND: 404,
+	URL_LIMIT_REACHED: 409,
 	INTERNAL_SERVER_ERROR: 500,
 };
 
@@ -42,6 +43,10 @@ function getStatusCode(code: string): number {
  */
 export function errorResponse(c: Context, error: AppError): Response {
 	const statusCode = getStatusCode(error.code);
+	// Log error for easier debugging in dev (shows in wrangler / console)
+	console.warn(
+		`[API ERROR] code=${error.code} status=${statusCode} message=${error.message}`,
+	);
 	return c.json<ApiErrorResponse>(
 		{
 			success: false,
@@ -66,6 +71,10 @@ export function errorResponse(c: Context, error: AppError): Response {
 // biome-ignore lint/suspicious/noExplicitAny: Hono onError acepta any
 export function onError(error: Error, c: Context): Response {
 	if (error instanceof AppError) {
+		// Log and return a structured API error so the frontend can show the message
+		console.warn(
+			`[HANDLED APP ERROR] code=${error.code} message=${error.message}`,
+		);
 		return errorResponse(c, error);
 	}
 

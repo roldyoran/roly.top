@@ -20,16 +20,14 @@ export interface SavedUrlItem {
 	date: string;
 }
 
-export interface UserSession {
-	remainingAttempts: number;
-	isAdmin: boolean;
-	sessionId: string;
-	lastReset: string;
-}
-
 export interface ShortenResult {
 	success: boolean;
 	shortCode?: string;
 	shortUrl?: string;
 	originalUrl?: string;
+}
+
+export interface UserUrlsResponse {
+	urls: UrlInfoResponse[];
+	urlLimit: number;
 }

@@ -1,5 +1,5 @@
 ---
-name: git-commit-conventional-enforcer
+name: conventional-commits-enforcer
 description: Execute git commits using Conventional Commits with enforcer and automatic scope inference, diff analysis, intelligent staging, and strict message formatting. Ensures clear, structured, and safe commits while excluding sensitive files.
 license: MIT
 allowed-tools: Bash, Read, Glob

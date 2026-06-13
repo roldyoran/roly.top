@@ -1,21 +1,36 @@
 import type { MiddlewareHandler } from "hono";
+import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
+import type { UserRepositoryPort } from "@/domain/user/user.repository.port";
 
 // Bindings defines the environment variables/bindings available in Cloudflare Workers
 export type Bindings = {
 	// D1 database binding (nombre definido en wrangler.jsonc -> binding: "DB")
 	DB: D1Database;
-	CLOUFLARE_D1_DATABASES_BINDING: string;
+	CLOUDFLARE_D1_DATABASES_BINDING: string;
 	CLOUDFLARE_DATABASE_ID: string;
 	SERVICE_ADMIN_API_KEY: string;
 	// Workers Assets binding (declarado en wrangler.jsonc -> assets.binding: "ASSETS")
 	ASSETS: Fetcher;
+	// Better Auth
+	BETTER_AUTH_SECRET: string;
+	BETTER_AUTH_URL: string;
+	GOOGLE_CLIENT_ID: string;
+	GOOGLE_CLIENT_SECRET: string;
+};
+
+export type Variables = {
+	urlRepo: UrlRepositoryPort;
+	userRepo: UserRepositoryPort;
 };
 
 const ENV_KEYS: (keyof Bindings)[] = [
-	"CLOUFLARE_D1_DATABASES_BINDING",
-	"CLOUDFLARE_DATABASE_ID",
+	"CLOUDFLARE_D1_DATABASES_BINDING",
 	"CLOUDFLARE_DATABASE_ID",
 	"SERVICE_ADMIN_API_KEY",
+	"BETTER_AUTH_SECRET",
+	"BETTER_AUTH_URL",
+	"GOOGLE_CLIENT_ID",
+	"GOOGLE_CLIENT_SECRET",
 ];
 
 /**

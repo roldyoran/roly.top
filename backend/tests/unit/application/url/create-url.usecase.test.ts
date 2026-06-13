@@ -19,15 +19,22 @@ describe("CreateUrlUseCase", () => {
 	});
 
 	describe("cuando la URL original ya existe en la base de datos", () => {
-		it("debe devolver la URL existente sin crear una nueva", async () => {
-			repo.findByOriginalUrl = () => Promise.resolve(urlFixture);
+		it("debe devolver la URL existente sin crear una nueva si pertenece al usuario", async () => {
+			repo.findByOriginalUrl = mock((_originalUrl, userId) => {
+				return Promise.resolve({ ...urlFixture, userId: userId ?? null });
+			});
 
 			const result = await useCase.execute({
 				originalUrl: urlFixture.originalUrl,
+				userId: "user-123",
 			});
 
-			expect(result).toEqual(urlFixture);
+			expect(result.userId).toBe("user-123");
 			expect(repo.create).not.toHaveBeenCalled();
+			expect(repo.findByOriginalUrl).toHaveBeenCalledWith(
+				urlFixture.originalUrl,
+				"user-123",
+			);
 		});
 	});
 

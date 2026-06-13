@@ -9,8 +9,8 @@ declare namespace Cloudflare {
 		DB: D1Database;
 		ASSETS: Fetcher;
 		DEV_MODE: string;
-		CLOUFLARE_D1_DATABASES_BINDING: string;
-		CLOUFLARE_D1_DATABASES_NAME: string;
+		CLOUDFLARE_D1_DATABASES_BINDING: string;
+		CLOUDFLARE_D1_DATABASES_NAME: string;
 		SERVICE_ADMIN_API_KEY: string;
 		CLOUDFLARE_ACCOUNT_ID: string;
 		CLOUDFLARE_DATABASE_ID: string;
