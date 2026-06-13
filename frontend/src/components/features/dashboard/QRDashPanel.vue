@@ -342,5 +342,4 @@ const copyQrDataUrl = async () => {
 		toast.error("No se pudo copiar la imagen al portapapeles");
 	}
 };
-
 </script>

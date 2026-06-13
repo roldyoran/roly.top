@@ -117,7 +117,7 @@
         <div class="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none" style="background: radial-gradient(ellipse at 50% 30%, oklch(0.7 0.02 130 / 0.02) 0%, oklch(0.7 0.02 130 / 0.01) 40%, transparent 70%);"></div>
 
         <motion.div
-          class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-muted-foreground mb-8"
+          class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-foreground/70 mb-8"
           :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
           :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
           :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }"
@@ -249,10 +249,10 @@
         </div>
         <div class="stat-strip-item">
           <div class="stat-strip-num">{{ publicStats.totalRedirects.toLocaleString() }}</div>
-          <div class="stat-strip-label">redirecciones totales</div>
+          <div class="stat-strip-label">clicks totales</div>
         </div>
         <div class="stat-strip-item">
-          <div class="stat-strip-num">&lt;20ms</div>
+          <div class="stat-strip-num">&lt;60ms</div>
           <div class="stat-strip-label">latencia promedio</div>
         </div>
         <div class="stat-strip-item hide-mobile">
@@ -331,7 +331,7 @@
             <div class="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
               <Link class="w-3 h-3 text-primary-foreground" />
             </div>
-            <span class="font-display text-[13px] font-800">roly.top</span>
+            <span class="font-display! font-800 text-[17px] tracking-tight">roly<span class="text-primary">.</span>top</span>
           </div>
           <span class="text-[11px] text-muted-foreground font-mono">&copy; {{ currentYear }} roldyoran</span>
         </div>
