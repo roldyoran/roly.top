@@ -140,11 +140,11 @@ Set these as **Secrets** in Cloudflare Dashboard → Workers → shorturl → Se
 | Secret | Description |
 |--------|-------------|
 | `BETTER_AUTH_SECRET` | Generate with `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | `https://shorturl.roldyoran.workers.dev` |
+| `BETTER_AUTH_URL` | `https://roly.top` |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
 | `SERVICE_ADMIN_API_KEY` | Your admin API key |
-| `TRUSTED_ORIGINS` | `https://shorturl.roldyoran.workers.dev` |
+| `TRUSTED_ORIGINS` | `https://roly.top` |
 | `DEV_MODE` | `false` |
 
 ### 8. Google OAuth redirect URIs
@@ -152,7 +152,7 @@ Set these as **Secrets** in Cloudflare Dashboard → Workers → shorturl → Se
 Add this URI in [Google Cloud Console](https://console.cloud.google.com/) → Credentials → OAuth Client ID → Authorized redirect URIs:
 
 ```
-https://shorturl.roldyoran.workers.dev/api/auth/callback/google
+https://roly.top/api/auth/callback/google
 ```
 
 ---

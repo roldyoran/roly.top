@@ -336,11 +336,11 @@ Las variables de entorno de runtime van en **Cloudflare Dashboard → Workers �
 | Variable | Descripción |
 |----------|-------------|
 | `BETTER_AUTH_SECRET` | Generar con `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | `https://shorturl.roldyoran.workers.dev` |
+| `BETTER_AUTH_URL` | `https://roly.top` |
 | `GOOGLE_CLIENT_ID` | Client ID de Google OAuth |
 | `GOOGLE_CLIENT_SECRET` | Client Secret de Google OAuth |
 | `SERVICE_ADMIN_API_KEY` | API key para operaciones admin |
-| `TRUSTED_ORIGINS` | `https://shorturl.roldyoran.workers.dev` |
+| `TRUSTED_ORIGINS` | `https://roly.top` |
 | `DEV_MODE` | `false` en producción |
 
 ### Google OAuth Redirect URI
@@ -348,7 +348,7 @@ Las variables de entorno de runtime van en **Cloudflare Dashboard → Workers �
 Agregar en Google Cloud Console → Credentials → OAuth Client:
 
 ```
-https://shorturl.roldyoran.workers.dev/api/auth/callback/google
+https://roly.top/api/auth/callback/google
 ```
 
 ---
