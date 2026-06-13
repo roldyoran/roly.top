@@ -120,21 +120,21 @@
           >
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             <div class="flex items-center justify-between gap-3">
-              <span class="font-mono text-xl font-semibold text-primary tracking-tight">
+              <span class="font-mono text-base sm:text-xl font-semibold text-primary tracking-tight">
                 /{{ url.shortCode }}
               </span>
 
-              <div class="flex items-center gap-3 ml-auto">
-                <div class="flex items-center gap-1.5 text-muted-foreground">
-                  <MousePointerClick class="size-3.5" />
-                  <span class="font-mono text-xs">{{ url.clicks || 0 }} clicks</span>
+              <div class="flex items-center gap-2 sm:gap-3 ml-auto">
+                <div class="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
+                  <MousePointerClick class="size-3 sm:size-3.5" />
+                  <span class="font-mono text-[10px] sm:text-xs">{{ url.clicks || 0 }} clicks</span>
                 </div>
 
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-0.5 sm:gap-1">
                   <Tooltip>
                     <TooltipTrigger :asChild="true">
-                      <Button @click="copyFullUrl(url.shortCode)" variant="ghost" size="sm" class="h-7 w-7 p-0">
-                        <Copy class="w-3.5 h-3.5" />
+                      <Button @click="copyFullUrl(url.shortCode)" variant="ghost" size="sm" class="h-6 w-6 sm:h-7 sm:w-7 p-0">
+                        <Copy class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Copiar URL</TooltipContent>
@@ -142,8 +142,8 @@
 
                   <Tooltip>
                     <TooltipTrigger :asChild="true">
-                      <Button @click="generateQR(url.shortCode)" variant="ghost" size="sm" class="h-7 w-7 p-0">
-                        <QrCode class="w-3.5 h-3.5" />
+                      <Button @click="generateQR(url.shortCode)" variant="ghost" size="sm" class="h-6 w-6 sm:h-7 sm:w-7 p-0">
+                        <QrCode class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Generar QR</TooltipContent>
@@ -155,9 +155,9 @@
                         @click="openExternal(getFullShortUrl(url.shortCode))"
                         variant="ghost"
                         size="sm"
-                        class="h-7 w-7 p-0"
+                        class="h-6 w-6 sm:h-7 sm:w-7 p-0"
                       >
-                        <ExternalLink class="w-3.5 h-3.5" />
+                        <ExternalLink class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Abrir en nueva pestaña</TooltipContent>
@@ -169,9 +169,9 @@
                         @click="removeUrl(url.shortCode)"
                         variant="ghost"
                         size="sm"
-                        class="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        class="h-6 w-6 sm:h-7 sm:w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
-                        <Trash class="w-3.5 h-3.5" />
+                        <Trash class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Eliminar</TooltipContent>
@@ -180,7 +180,7 @@
               </div>
             </div>
 
-            <span class="font-mono text-sm text-muted-foreground truncate">
+            <span class="font-mono text-xs sm:text-sm text-muted-foreground truncate">
               {{ truncateText(url.originalUrl, 60) }}
             </span>
 

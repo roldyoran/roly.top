@@ -1,116 +1,430 @@
-# AGENTS.md - Guía para Agentes de IA
+# AGENTS.md — roly.top Frontend
 
-Este documento proporciona información esencial para agentes de IA (como Cursor AI, GitHub Copilot, etc.) que trabajan en el frontend de shorturl.
+Guía de arquitectura y estructura del frontend para agentes de IA y desarrolladores.
 
-## 📋 Resumen del Proyecto
+---
 
-**shorturl Frontend** es una aplicación web construida con Vue 3 que permite:
-- Acortar URLs largas
-- Ver información de URLs acortadas
-- Gestionar URLs guardadas del usuario
-- Ver lista pública de URLs acortadas
-- Autenticación con Google OAuth (Better Auth)
+## Descripción del Proyecto
 
-## 🛠️ Stack Tecnológico
+**roly.top Frontend** es una aplicación web SPA construida con **Vue 3** que permite:
+- Acortar URLs largas con códigos personalizados o auto-generados
+- Visualizar información detallada de URLs acortadas
+- Gestionar URLs propias (crear, listar, eliminar)
+- Generar códigos QR personalizados para URLs acortadas
+- Navegar la lista pública de URLs (solo usuarios admin)
+- Autenticación completa con Google OAuth (Better Auth)
+- Panel de administración para gestión de usuarios y URLs
+
+---
+
+## Stack Tecnológico
 
 ### Core
-- **Vue 3** (Composition API con `<script setup>`)
-- **TypeScript** - Tipado estático
-- **Vite** - Build tool y dev server
-- **Pinia** - Gestión de estado global
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `vue` | ^3.5.24 | Framework (Composition API + `<script setup>`) |
+| `vue-router` | 4 | Enrutamiento SPA |
+| `pinia` | ^3.0.4 | Gestión de estado global |
+| `typescript` | ~5.8.3 | Tipado estático |
+| `vite` | ^6.4.1 | Build tool + dev server |
 
 ### UI/Estilos
-- **Tailwind CSS v4** - Framework de utilidades CSS
-- **Shadcn-VUE** - Componentes UI reutilizables
-- **Radix Vue** - Componentes primitivos accesibles
-- **Lucide Vue Next** - Iconos (ÚNICO sistema de iconos permitido)
-- **Vue Sonner** - Sistema de notificaciones toast
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `tailwindcss` | ^4.1.17 | Framework de utilidades CSS |
+| `@tailwindcss/vite` | ^4.1.17 | Plugin Vite para Tailwind |
+| `reka-ui` | ^2.9.0 | Primitivas UI headless (Radix Vue) |
+| `class-variance-authority` | ^0.7.1 | Gestión de variantes de componentes |
+| `clsx` | ^2.1.1 | Clases condicionales |
+| `tailwind-merge` | ^3.4.0 | Deduplicación de clases Tailwind |
+| `tw-animate-css` | ^1.4.0 | Utilidades de animación Tailwind |
+| `lucide-vue-next` | ^0.511.0 | Iconos (ÚNICO sistema permitido) |
+| `vue-sonner` | ^2.0.9 | Notificaciones toast |
+| `motion-v` | ^2.3.0 | Animaciones Vue (Motion One) |
+| `vaul-vue` | ^0.4.1 | Componente drawer |
 
-### Validación y Formularios
-- **Vee-Validate** - Validación de formularios
-- **Zod** - Schema validation
+### Datos y Formularios
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `@tanstack/vue-query` | ^5.101.0 | Server state / data fetching |
+| `@tanstack/vue-table` | ^8.21.3 | Tabla headless (paneles admin) |
+| `vee-validate` | ^4.15.1 | Validación de formularios |
+| `@vee-validate/zod` | ^4.15.1 | Adaptador Zod para VeeValidate |
+| `zod` | ^4.1.12 | Validación de esquemas |
+| `axios` | ^1.13.2 | Cliente HTTP |
 
 ### Autenticación
-- **Better Auth** - Client con admin plugin (Google OAuth, sesiones cookie)
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `better-auth` | ^1.6.15 | Cliente auth (Google OAuth) |
 
 ### Utilidades
-- **Axios** - Cliente HTTP
-- **VueUse** - Colección de composables Vue
-- **QRCode Generator** - Generación de códigos QR
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `@vueuse/core` | ^13.9.0 | Composables Vue |
+| `@vueuse/head` | ^2.0.0 | Gestión de meta tags |
+| `canvas-confetti` | ^1.9.4 | Efecto confetti |
+| `qrcode-generator` | ^1.5.2 | Generación de códigos QR |
 
 ### Herramientas de Desarrollo
-- **Biome** - Linter y formateador (reemplaza ESLint/Prettier)
-- **Vue TSC** - Type checking
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `@biomejs/biome` | 2.4.5 | Linter + formateador |
+| `vue-tsc` | ^2.2.12 | Type checking Vue |
+| `@vitejs/plugin-vue` | ^5.2.4 | Soporte SFC Vue |
 
-## 📁 Estructura del Proyecto
+---
+
+## Scripts Disponibles
+
+```bash
+# Desarrollo
+bun dev                           # Servidor de desarrollo con HMR
+
+# Verificación de código (NO build)
+bun check                         # Verifica código con Biome (tipo-check + lint)
+bun format                        # Formatea código con Biome
+bun lint                          # Lint y auto-fix con Biome
+
+# Preview
+bun preview                       # Previsualiza build de producción
+
+# Build (solo para generar archivos de producción)
+bun build                         # Type-check + build para producción
+```
+
+**Comandos del monorepo (desde la raíz):**
+```bash
+bun run dev:front                 # Inicia servidor frontend
+bun run build:front               # Build del frontend
+bun run check                     # Check del frontend
+```
+
+---
+
+## Configuración de TypeScript
+
+- **Strict mode**: habilitado (`strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`)
+- **Project references**: `tsconfig.app.json` (código de la app) + `tsconfig.node.json` (config de Vite)
+- **Path alias**: `@/*` → `./src/*`
+- **Incluye**: `src/**/*.ts`, `src/**/*.tsx`, `src/**/*.vue`
+
+---
+
+## Configuración de Biome
+
+- **Formatter**: tabs, comillas dobles para JS
+- **Linter**: reglas recomendadas habilitadas
+- **Vue overrides**: `useConst`, `useImportType`, `noUnusedVariables`, `noUnusedImports` deshabilitados (compatibilidad Vue SFC)
+- **CSS**: `tailwindDirectives: true`
+- **Assist**: auto-organize imports habilitado
+- **VCS**: git-aware, usa `.gitignore`
+
+---
+
+## Estructura del Proyecto
 
 ```
 frontend/
 ├── src/
-│   ├── api/                    # Servicios HTTP y tipos compartidos
-│   │   ├── http.ts             # Instancia de Axios (sin VITE_API_BASE_URL, usa proxy)
-│   │   └── types.ts            # Tipos TypeScript (UrlInfoResponse, SavedUrlItem, etc.)
+│   ├── main.ts                              # Bootstrap de la app
+│   ├── App.vue                              # Componente raíz: tema, auth, SEO, overlay baneado
+│   ├── router/index.ts                      # 4 rutas + guards de autenticación
+│   ├── style.css                            # Estilos globales (~1108 líneas)
 │   │
-│   ├── views/                  # Componentes de página (rutas/vistas)
-│   │   └── HomeView.vue        # Vista principal (hero + form de acortar)
+│   ├── views/
+│   │   ├── HomeView.vue                     # Landing público (hero + shortener + tabs)
+│   │   ├── DashboardView.vue                # Dashboard autenticado (sidebar + paneles)
+│   │   ├── BannedView.vue                   # Pantalla de usuario baneado
+│   │   └── admin/
+│   │       ├── AdminDashboardView.vue       # Dashboard admin
+│   │       ├── AdminUsersView.vue           # Gestión de usuarios admin
+│   │       └── AdminUrlsView.vue            # Gestión de URLs admin
 │   │
 │   ├── components/
-│   │   ├── shared/             # Componentes reutilizables no-UI
-│   │   │   ├── UrlResultCard.vue    # Card de resultado de URL acortada
-│   │   │   └── AttemptsBadge.vue    # Badge de intentos restantes
+│   │   ├── ui/                              # 28 directorios de componentes Shadcn-VUE
+│   │   │   ├── alert/  badge/  button/  card/  checkbox/
+│   │   │   ├── collapsible/  dialog/  drawer/  dropdown-menu/
+│   │   │   ├── empty/  form/  input/  label/  navigation-menu/
+│   │   │   ├── pagination/  popover/  progress/  select/
+│   │   │   ├── separator/  sheet/  sidebar/  skeleton/
+│   │   │   ├── sonner/  switch/  table/  tabs/  textarea/  tooltip/
 │   │   │
-│   │   ├── config/             # Componentes de configuración/debug
-│   │   │   └── ApiConfigDialog.vue  # Dialog de info de API
+│   │   ├── layout/
+│   │   │   ├── AppSidebar.vue               # Sidebar del dashboard (paneles + items admin)
+│   │   │   ├── DashboardLayout.vue          # SidebarProvider + header + main slot
+│   │   │   ├── NavbarHeader.vue             # (legacy) componente header
+│   │   │   ├── FooterComponent.vue          # (legacy) componente footer
+│   │   │   └── ThemeToggle.vue              # Claro/oscuro con View Transitions API
 │   │   │
-│   │   ├── features/           # Componentes de funcionalidad
-│   │   │   ├── url-shortener/        # Acortamiento de URLs
-│   │   │   │   └── ShortenUrlForm.vue
-│   │   │   ├── url-info/              # Información de URLs
-│   │   │   │   └── UrlInfoForm.vue
-│   │   │   └── urls/                  # Lista de URLs
-│   │   │       └── UrlsList.vue      # Soporta modo "my" y "public"
+│   │   ├── shared/
+│   │   │   ├── AuthRequired.vue             # Gate de autenticación con Google sign-in
+│   │   │   ├── SignInModal.vue              # Modal de inicio de sesión
+│   │   │   └── UrlResultCard.vue            # Card de resultado de URL
 │   │   │
-│   │   ├── layout/             # Componentes de layout
-│   │   │   ├── NavbarHeader.vue     # Incluye botón auth y badge admin
-│   │   │   ├── FooterComponent.vue
-│   │   │   └── ThemeToggle.vue
-│   │   │
-│   │   └── ui/                # Componentes Shadcn-VUE (NO modificar estilos)
-│   │       ├── button/
-│   │       ├── card/
-│   │       ├── dialog/
-│   │       ├── form/
-│   │       ├── tabs/
-│   │       └── ... (más componentes)
+│   │   └── features/
+│   │       ├── url-shortener/
+│   │       │   └── ShortenUrlForm.vue       # Formulario de acortamiento de URLs
+│   │       ├── url-info/
+│   │       │   └── UrlInfoForm.vue          # Formulario de consulta de URLs
+│   │       ├── urls/
+│   │       │   └── UrlsList.vue             # Lista unificada de URLs (paginada, búsqueda, QR, delete)
+│   │       ├── qr-generator/
+│   │       │   └── QrGenerator.vue          # Generador de códigos QR con personalización
+│   │       ├── admin/
+│   │       │   └── AdminLayout.vue          # Layout de páginas admin (sidebar + router-view)
+│   │       └── dashboard/
+│   │           ├── OverviewPanel.vue        # Banner de bienvenida + stat cards + quick actions
+│   │           ├── MyLinksPanel.vue         # Gestión de links del usuario
+│   │           ├── AnalyticsPanel.vue       # Panel de analíticas
+│   │           ├── CreateLinkPanel.vue      # Formulario crear nuevo link
+│   │           ├── QRDashPanel.vue          # Panel de QR codes en dashboard
+│   │           ├── PublicListDashPanel.vue  # Lista de URLs públicas en dashboard
+│   │           ├── SettingsPanel.vue        # Configuración de usuario
+│   │           ├── AdminUsersPanel.vue      # Admin: gestión de usuarios
+│   │           └── AdminUrlsPanel.vue       # Admin: gestión de URLs
 │   │
-│   ├── composables/            # Composables reutilizables
-│   │   ├── useUrlShortener.ts       # Lógica de negocio para acortar URLs
-│   │   ├── useCopyToClipboard.ts    # Utilidad para copiar al portapapeles
-│   │   └── useAuth.ts              # Better Auth (signIn, signOut, session, isAdmin)
+│   ├── composables/
+│   │   ├── useAuth.ts                       # Better Auth (signIn, signOut, session, isAdmin)
+│   │   ├── useUrlShortener.ts               # Lógica de negocio para acortar URLs
+│   │   ├── useCopyToClipboard.ts            # Utilidad para copiar al portapapeles
+│   │   └── useSeo.ts                        # Gestión de SEO y meta tags
 │   │
-│   ├── stores/                  # Stores de Pinia
-│   │   ├── index.ts            # Configuración de Pinia
-│   │   ├── urlStore.ts         # Store principal de URLs
-│   │   └── authStore.ts        # Store de autenticación (Better Auth)
+│   ├── stores/
+│   │   ├── index.ts                         # Configuración de Pinia
+│   │   ├── urlStore.ts                      # Store principal de URLs
+│   │   └── authStore.ts                     # Store de autenticación (Better Auth)
 │   │
-│   ├── lib/                    # Utilidades
-│   │   ├── utils.ts            # Funciones helper (cn, formatDate, etc.)
-│   │   └── auth-client.ts      # Better Auth client (con adminClient plugin)
+│   ├── api/
+│   │   ├── http.ts                          # Instancia de Axios (proxy via Vite)
+│   │   └── types.ts                         # Tipos TypeScript (UrlInfoResponse, SavedUrlItem, etc.)
 │   │
-│   ├── App.vue                 # Componente raíz
-│   ├── main.ts                 # Punto de entrada
-│   └── style.css               # Estilos globales
+│   ├── lib/
+│   │   ├── utils.ts                         # Funciones helper (cn, formatDate, etc.)
+│   │   └── auth-client.ts                   # Better Auth client (con adminClient plugin)
+│   │
+│   └── assets/
+│       └── fonts/
+│           └── fonts.css                    # Fuentes auto-hospedadas (Syne, Inter, Space Mono)
 │
-├── public/                     # Archivos estáticos
+├── public/                                  # Archivos estáticos
 ├── package.json
-├── vite.config.ts              # Proxy para /api y /v1
+├── vite.config.ts                           # Proxy para /api y /v1
 ├── tsconfig.json
-└── biome.json                  # Configuración de Biome
+├── tsconfig.app.json
+├── tsconfig.node.json
+└── biome.json                               # Configuración de Biome
 ```
 
-## 🎯 Convenciones y Reglas Importantes
+---
 
-### ⚠️ REGLAS CRÍTICAS (NO VIOLAR)
+## Enrutamiento
+
+| Ruta | Nombre | Componente | Auth | Notas |
+|------|--------|------------|------|-------|
+| `/` | `home` | `HomeView.vue` | No | Landing público |
+| `/auth/error` | `auth-error` | `BannedView.vue` | No | Error de autenticación/baneo |
+| `/dashboard` | `dashboard` | `DashboardView.vue` | Sí | Dashboard de usuario |
+| `/admin` | — | `AdminLayout.vue` | Sí + Admin | Redirige a `/admin/dashboard` |
+| `/admin/dashboard` | `admin-dashboard` | `AdminDashboardView.vue` | Sí + Admin | |
+| `/admin/users` | `admin-users` | `AdminUsersView.vue` | Sí + Admin | |
+| `/admin/urls` | `admin-urls` | `AdminUrlsView.vue` | Sí + Admin | |
+
+### Navigation Guard (`router.beforeEach`)
+1. Si la ruta requiere auth/admin, verifica `authStore.isInitialized`
+2. Si no está inicializado, llama a `authStore.initialize()` (obtiene sesión)
+3. Si no está autenticado → redirige a home
+4. Si requiere admin y no es admin → redirige a home
+
+---
+
+## Gestión de Estado (Pinia Stores)
+
+### `urlStore.ts` — Estado de URLs
+- **State**: `savedUrls[]`, `isLoading`, `currentTab`, `urlLimit` (default 2), `currentUserId`
+- **Computed**: `urlCount`, `canUseService` (count < limit)
+- **Persistencia**: localStorage por usuario (`savedUrls_{userId}`), máximo 50 items
+- **Deduplicación**: por campo `original`
+- **Cache de lista pública**: localStorage `publicList_v1` con TTL de 5 minutos
+- **Límites por rol**: admin = 999, usuario normal = 2
+
+### `authStore.ts` — Estado de Autenticación
+- **Envuelve** el composable `useAuth()`
+- **Computed**: `currentUser`, `userId`, `userName`, `userEmail`, `userImage`, `isAdmin`, `isBanned`, `banReason`, `banExpires`
+- **Watch**: cambios en `userId` → reinicializa `urlStore` con nuevo usuario
+- **`initialize()`**: obtiene sesión, luego establece límite de URLs según rol
+- **`resetAuth()`**: limpia URLs del usuario, reinicia límites, anula user/session
+
+---
+
+## Composables
+
+### `useAuth.ts`
+- **Estado global** (refs a nivel de módulo, compartidos entre consumidores): `user`, `session`, `isLoading`
+- `signInWithGoogle()` → `authClient.signIn.social({ provider: "google" })`
+- `signOutUser()` → `authClient.signOut()` + limpia localStorage
+- `fetchSession()` → `authClient.getSession()`
+
+### `useUrlShortener.ts`
+- Usa `@tanstack/vue-query` `useMutation` con actualizaciones optimistas
+- **Optimista**: agrega entrada temporal en `onMutate`, restaura en error
+- **Éxito**: reemplaza entrada temporal con shortCode real
+- **Settled**: invalida keys `userUrls` y `publicUrls`
+- Valida hash personalizado: `/^[a-z0-9]+$/`, máximo 9 chars
+- Retorna `{ shortenUrl, isLoading }`
+
+### `useCopyToClipboard.ts`
+- `navigator.clipboard.writeText()` con notificaciones toast
+- Toasts de éxito/error via `vue-sonner`
+
+### `useSeo.ts`
+- Envuelve `@vueuse/head` `useHead()`
+- Soporta: `title`, `description`, `ogTitle`, `ogDescription`, `ogImage`, `canonical`, `robots`, `jsonLd`
+- Auto-genera canonical desde `window.location.origin + route.path`
+- Imagen OG predeterminada: `/shorturl.svg`
+- Nombre del sitio: `roly.top`
+
+---
+
+## Integración API
+
+### Cliente HTTP (`http.ts`)
+- Instancia singleton de Axios con `withCredentials: true`
+- **Resolución de base URL**: `VITE_API_BASE_URL` env → `localStorage.apiUrl` → vacío (proxy)
+- **ETag caching**: interceptor de request adjunta `If-None-Match`, interceptor de response almacena ETag + body; 304 retorna payload cacheado
+- **API key header**: `x-api-key` desde env `VITE_API_KEY`
+
+### Funciones API
+
+| Función | Método | Endpoint | Auth |
+|---------|--------|----------|------|
+| `shortenUrlRequest(url, shortCode?)` | POST | `/v1/urls` | Cookie |
+| `getUrlInfoRequest(shortCode)` | GET | `/v1/urls/{shortCode}` | Cookie |
+| `getUrlsRequest()` | GET | `/v1/urls` | Cookie |
+| `getPublicUrlsRequest()` | GET | `/v1/urls/public` | No |
+| `getPublicStatsRequest()` | GET | `/v1/urls/public/stats` | No |
+| `deleteUrlRequest(shortCode)` | DELETE | `/v1/urls/{shortCode}` | Cookie |
+
+### Tipos (`types.ts`)
+- `UrlInfoResponse`: `{ id, shortCode, originalUrl, visits, createdAt }`
+- `SavedUrlItem`: `{ original, short, date }`
+- `ShortenResult`: `{ success, shortCode?, shortUrl?, originalUrl? }`
+- `UserUrlsResponse`: `{ urls: UrlInfoResponse[], urlLimit: number }`
+
+---
+
+## Flujo de Autenticación
+
+1. **Cliente**: `auth-client.ts` crea Better Auth client con plugin `adminClient()`
+2. **Sign-in**: `authClient.signIn.social({ provider: "google", callbackURL: origin })` → redirige a Google OAuth
+3. **Callback**: Google redirige de vuelta, Better Auth establece cookie de sesión `better-auth.session_token`
+4. **Obtención de sesión**: `authClient.getSession()` → popula refs `user` y `session`
+5. **Route guard**: `router.beforeEach` verifica estado de auth antes de rutas protegidas
+6. **Sistema de baneo**: `authStore.isBanned` → muestra overlay `BannedView`, bloquea todo el contenido
+7. **Rol admin**: `user.role === "admin"` → habilita panel admin, URLs ilimitadas (límite 999)
+
+---
+
+## Sistema de Estilos
+
+### Tailwind CSS v4
+- **Import**: `@import "tailwindcss"` + `@import "tw-animate-css"`
+- **Dark mode**: basado en clase (`@custom-variant dark (&:is(.dark *))`)
+- **Tema**: variables CSS inline vía bloque `@theme inline`
+- **Fuentes personalizadas**: Syne (display), Inter (body), Space Mono (mono) — auto-hospedadas via `fonts.css`
+
+### Sistema de Diseño
+- **Variables CSS**: 80+ tokens semánticos para colores, bordes, espaciado
+- **Modo claro**: primario lime/green (`#65a30d`), fondos gris claro
+- **Modo oscuro**: primario lime brillante (`#a3e635`), fondos casi negros
+- **Tokens semánticos**: `--lime`, `--lime-bright`, `--lime-glow`, `--success`, `--danger`, `--warning`
+- **Jerarquía de texto**: `--text-primary`, `--text-secondary`, `--text-muted`, `--text-disabled`
+
+### Estilos de Componentes
+- **Shadcn-VUE** en `components/ui/` (28 directorios) — usando `class-variance-authority` para variantes
+- **Utilidad**: función `cn()` de `lib/utils.ts` (clsx + tailwind-merge)
+- **Clases CSS personalizadas**: `shortener-card`, `terminal-row`, `terminal-prompt`, `stats-strip`, `status-pill`, `dash-grid`, `panel-card`, `url-table`, `chip`, `activity-*`, etc.
+- **Animaciones**: `animate-slide-up`, `animate-fade-in`, `animate-fade-in-up`, `animate-pulse-slow` + `motion-v` para animaciones de scroll/enter
+- **Reduced motion**: `@media (prefers-reduced-motion: reduce)` desactiva todas las animaciones
+- **View Transitions API**: `ThemeToggle` usa `document.startViewTransition` con animación circular de clip-path para cambio de tema
+
+### Scrollbar Personalizado
+- Firefox: `scrollbar-width: thin`
+- WebKit: 12px personalizado, redondeado, con temas de variables CSS
+- Móvil: 8px en `max-width: 640px`
+
+---
+
+## SEO y Meta Tags
+
+- **`@vueuse/head`** integrado en `main.ts` via `createHead()`
+- **`useSeo()`** composable usado en `App.vue` y `HomeView.vue`
+- **App.vue**: título dinámico según ruta (Admin → "Admin", auth-error → "Error de autenticación", default → "Acortador de URLs")
+- **Robots**: `noindex, nofollow` para rutas admin/auth-error
+- **HomeView**: JSON-LD structured data (`WebApplication` schema)
+- **OG tags**: title, description, image, url — todos computed reactivamente
+- **Twitter cards**: twitter:title, twitter:description
+
+---
+
+## Características Destacadas
+
+### Actualizaciones Optimistas UI
+- `useUrlShortener` agrega entradas temporalmente, revierte en error
+- `UrlsList` delete mutation con eliminación optimista y rollback
+
+### ETag HTTP Caching
+- Interceptores de Axios implementan cache ETag del lado del cliente en localStorage
+- Requests GET adjuntan `If-None-Match`, responses 304 retornan bodies cacheados
+
+### Generador de Códigos QR
+- Renderizado QR personalizado en canvas: selector de color, soporte de degradado, módulos redondeados, overlay de logo
+- Preview en vivo: las opciones auto-regeneran QR con debounce de 150ms
+- Copiar al portapapeles como PNG blob, descargar como archivo
+
+### Efecto Confetti
+- `canvas-confetti` dispara 3 ráfagas (izquierda, derecha, centro) en acortamiento exitoso de URL
+
+### Arquitectura de Paneles Dashboard
+- `DashboardView` usa `defineAsyncComponent` para los 9 paneles (lazy loading)
+- Cambio de panel vía ref `activePanel`, sin cambios de ruta — navegación puramente del lado del cliente
+- `DashboardLayout` envuelve sidebar + header + patrón de slot de contenido
+
+### Sistema de Rol Admin
+- Panel admin accesible tanto como rutas `/admin/*` como items del sidebar del dashboard
+- Items admin renderizados condicionalmente vía `authStore.isAdmin`
+- Límite URLs: admin = 999, usuario regular = 2
+
+### Mobile-First Responsive
+- Menú móvil en `HomeView` con hamburger toggle
+- Admin layout usa `Sheet` (drawer) para sidebar en móvil
+- Dashboard sidebar usa `SidebarProvider` con modo icono colapsable
+- Scrollbar se reduce en móvil, stats strip se envuelve
+
+### Accesibilidad
+- Skip link (`.skip-link`) para navegación por teclado
+- `focus-visible` outlines, `touch-action: manipulation` para botones/enlaces
+- `aria-label`, `aria-hidden`, `aria-live` regions
+- Media query reduced motion desactiva todas las animaciones
+- Estructura HTML semántica
+
+### Sistema de Baneo
+- `authStore.isBanned` computed desde datos de sesión
+- `App.vue` renderiza `BannedView` como overlay completo cuando está baneado
+- Ruta de error auth (`/auth/error`) bypass del overlay de baneo para mostrar info del error
+- Razón de baneo y expiración mostrados al usuario
+
+### Estrategia localStorage
+- Storage por usuario: `savedUrls_{userId}`
+- Cache de lista pública: `publicList_v1` con TTL de 5 minutos
+- Cache ETag: keys `etag:{url}` y `cache:{url}`
+- Override de URL API: key `apiUrl`
+
+---
+
+## Convenciones y Reglas Importantes
+
+### Reglas Críticas (No Violar)
 
 1. **NO modificar estilos de componentes Shadcn-VUE**
    - Los componentes en `/src/components/ui/` deben usarse tal cual
@@ -143,26 +457,9 @@ frontend/
    - NO usar `alert()`, `confirm()`, o sistemas de notificación personalizados
    - Importar: `import { toast } from "vue-sonner"`
 
-## 🔧 Configuración de API
+---
 
-### Variables de Entorno
-- `VITE_API_BASE_URL` - No se usa (eliminado). El frontend usa proxy de Vite para mismo origen.
-
-### Proxy (vite.config.ts)
-- `/api` → `http://localhost:8787` (Better Auth)
-- `/v1` → `http://localhost:8787` (API routes)
-
-### Autenticación (Better Auth)
-- Cliente configurado en `src/lib/auth-client.ts` con `adminClient` plugin
-- Composable `src/composables/useAuth.ts` para signIn, signOut, session, isAdmin
-- Store `src/stores/authStore.ts` para estado de sesión
-- Sesiones via cookie `better-auth.session_token` (same-origin via proxy)
-
-### Instancia de Axios
-- Usar `getAxiosInstance()` de `/src/api/http.ts`
-- Sin headers de API key (usar Better Auth sessions)
-
-## 📝 Patrones de Código
+## Patrones de Código
 
 ### Componentes Vue
 ```vue
@@ -213,10 +510,24 @@ onMounted(() => {
 - Separar estado, getters y acciones claramente
 - Persistir en localStorage cuando sea necesario
 
-## 🚀 Tareas Comunes
+---
+
+## Variables de Entorno
+
+| Variable | Propósito |
+|----------|-----------|
+| `VITE_API_BASE_URL` | No se usa (eliminado). El frontend usa proxy de Vite para mismo origen. |
+| `VITE_API_KEY` | API key para header `x-api-key` |
+
+### Proxy (vite.config.ts)
+- `/api` → `http://localhost:8787` (Better Auth)
+- `/v1` → `http://localhost:8787` (API routes)
+
+---
+
+## Tareas Comunes
 
 ### Agregar un Nuevo Componente de Funcionalidad
-
 1. Crear carpeta en `/src/components/features/[feature-name]/`
 2. Crear componente Vue con `<script setup lang="ts">`
 3. Usar componentes Shadcn-VUE para UI
@@ -225,7 +536,6 @@ onMounted(() => {
 6. Agregar a `App.vue` si es necesario
 
 ### Agregar una Nueva Petición API
-
 1. Agregar función en `/src/api/http.ts`
 2. Usar `getAxiosInstance()` para obtener instancia de Axios
 3. Definir tipos en `/src/api/types.ts` si es necesario
@@ -233,146 +543,33 @@ onMounted(() => {
 5. Usar `toast` para notificar errores al usuario
 
 ### Agregar un Nuevo Store
-
 1. Crear archivo en `/src/stores/[storeName].ts`
 2. Usar `defineStore` con Composition API
 3. Exportar el store
 4. Importar en componentes que lo necesiten
 
 ### Modificar Estilos
-
 1. **NO modificar componentes UI** (Shadcn-VUE)
 2. Usar clases de Tailwind CSS directamente en componentes de features
 3. Agregar estilos globales en `style.css` solo si es absolutamente necesario
 4. Usar variables CSS de Tailwind para temas
 
-## 🐛 Debugging
+---
 
-### Información de Debug
-El store `urlStore` incluye una función `getDebugInfo()` que retorna:
-- Estado de la sesión
-- Conteo de URLs
-- Si puede usar el servicio
-- Si necesita reset
+## Errores Comunes a Evitar
 
-El store `authStore` incluye:
-- `user` - Usuario actual de Better Auth
-- `isAdmin` - Si el usuario tiene rol admin
-- `isAuthenticated` - Si hay sesión activa
+1. Modificar estilos de componentes Shadcn-VUE
+2. Usar iconos que no sean de `lucide-vue-next`
+3. Crear estilos personalizados para temas
+4. Usar `alert()` o `confirm()` en lugar de Sonner
+5. Crear stores duplicados cuando ya existe uno
+6. No manejar errores en funciones async
+7. Usar `any` en TypeScript sin justificación
+8. Importar todo el módulo cuando solo se necesita una función
 
-### Herramientas
-- **Vue DevTools** - Para inspeccionar componentes y stores
-- **Browser DevTools** - Para inspeccionar localStorage y network
-- **TypeScript** - Para verificar tipos en tiempo de desarrollo
+---
 
-## 📦 Scripts Disponibles
-
-> **IMPORTANTE**: NO ejecutar `build` para verificar que el código funcione. Usar solo para generar archivos de producción.
-
-```bash
-# Desarrollo
-bun dev               # Inicia servidor de desarrollo
-
-# Verificación de código (NO build)
-bun check             # Verifica código con Biome (tipo-check + lint)
-bun format            # Formatea código con Biome
-bun lint              # Lint y auto-fix con Biome
-
-# Preview (solo cuando sea necesario)
-bun preview           # Previsualiza build de producción
-
-# Build (solo para generar archivos de producción)
-bun build             # Construye para producción
-```
-
-### En el root del monorepo
-
-Todos los comandos deben especificar explícitamente si son para `front` o `back`:
-
-```bash
-# Incorrecto (no hacer esto)
-bun run dev
-bun run build
-bun run check
-
-# Correcto (siempre especificar)
-bun run dev:front     # Inicia servidor frontend
-bun run dev:back      # Inicia servidor backend
-bun run build:front  # Build del frontend
-bun run build:back   # Build del backend
-bun run check        # Check del frontend (asumir frontend por defecto)
-```
-
-## 🔍 Búsqueda de Código
-
-### Archivos Clave para Entender el Proyecto
-
-1. **`src/App.vue`** - Componente raíz, estructura principal
-2. **`src/stores/urlStore.ts`** - Lógica de negocio principal
-3. **`src/stores/authStore.ts`** - Estado de autenticación (Better Auth)
-4. **`src/composables/useAuth.ts`** - Funciones de auth (signIn, signOut, session)
-5. **`src/lib/auth-client.ts`** - Better Auth client config
-6. **`src/api/http.ts`** - Configuración de API (proxy via Vite)
-7. **`src/components/features/`** - Funcionalidades principales
-8. **`package.json`** - Dependencias del proyecto
-
-### Cómo Buscar Funcionalidad
-
-- **Acortar URL**: `ShortenUrlForm.vue` + `useUrlShortener.ts`
-- **Información de URL**: `UrlInfoForm.vue`
-- **URLs guardadas**: `MyUrlsList.vue` + `urlStore.ts`
-- **Lista pública**: `PublicUrlsList.vue` (solo admins)
-- **Autenticación**: `useAuth.ts` + `authStore.ts` + `auth-client.ts`
-- **Admin badge**: `NavbarHeader.vue` (usa `isAdmin` del authStore)
-- **Notificaciones**: Vue Sonner (`toast`)
-- **Temas**: `ThemeToggle.vue` + `@vueuse/core`
-
-## ⚡ Mejores Prácticas para Agentes de IA
-
-1. **Leer primero, modificar después**
-   - Siempre leer archivos relevantes antes de hacer cambios
-   - Entender la estructura existente
-
-2. **Seguir convenciones existentes**
-   - Usar el mismo estilo de código que ya existe
-   - Seguir los patrones establecidos
-
-3. **No romper funcionalidad existente**
-   - Verificar que los cambios no afecten otras partes
-   - Mantener compatibilidad con stores y composables existentes
-
-4. **Usar TypeScript correctamente**
-   - Definir tipos para props, emits, y funciones
-   - No usar `any` a menos que sea absolutamente necesario
-
-5. **Manejar errores apropiadamente**
-   - Usar try/catch en funciones async
-   - Mostrar mensajes de error al usuario con `toast`
-
-6. **Optimizar imports**
-   - Importar solo lo necesario
-   - Usar alias `@/` para imports desde `src/`
-
-7. **Comentarios cuando sea necesario**
-   - Agregar comentarios para lógica compleja
-   - Documentar funciones no obvias
-
-## 🎨 Sistema de Diseño
-
-### Colores y Temas
-- Los componentes Shadcn-VUE usan variables CSS de Tailwind
-- Los temas (claro/oscuro) se manejan automáticamente
-- NO crear paletas de colores personalizadas
-
-### Espaciado
-- Usar sistema de espaciado de Tailwind (4px base)
-- `p-4` = 16px, `p-2` = 8px, etc.
-
-### Tipografía
-- Usar clases de Tailwind para tipografía
-- `text-sm`, `text-base`, `text-lg`, etc.
-
-## 📚 Recursos Adicionales
+## Recursos Adicionales
 
 - **Vue 3 Docs**: https://vuejs.org/
 - **Shadcn-VUE**: https://www.shadcn-vue.com/
@@ -380,19 +577,3 @@ bun run check        # Check del frontend (asumir frontend por defecto)
 - **Pinia**: https://pinia.vuejs.org/
 - **VueUse**: https://vueuse.org/
 - **Lucide Icons**: https://lucide.dev/
-
-## ⚠️ Errores Comunes a Evitar
-
-1. ❌ Modificar estilos de componentes Shadcn-VUE
-2. ❌ Usar iconos que no sean de `lucide-vue-next`
-3. ❌ Crear estilos personalizados para temas
-4. ❌ Usar `alert()` o `confirm()` en lugar de Sonner
-5. ❌ Crear stores duplicados cuando ya existe uno
-6. ❌ No manejar errores en funciones async
-7. ❌ Usar `any` en TypeScript sin justificación
-8. ❌ Importar todo el módulo cuando solo se necesita una función
-
----
-
-**Última actualización**: Este documento refleja el estado del proyecto después de la migración completa a Shadcn-VUE con soporte de temas.
-
