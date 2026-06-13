@@ -38,7 +38,6 @@ jobs:
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
           packageManager: bun
           wranglerVersion: "4"
           command: deploy --config backend/wrangler.jsonc --x-autoconfig false
