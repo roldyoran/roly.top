@@ -32,13 +32,13 @@ jobs:
       - name: Generate wrangler.jsonc
         run: |
           cp backend/wrangler.example.jsonc backend/wrangler.jsonc
-          sed -i "s/YOUR_DATABASE_NAME/${{ secrets.CLOUDFLARE_D1_DATABASES_NAME }}/g" backend/wrangler.jsonc
-          sed -i "s/YOUR_DATABASE_ID/${{ secrets.CLOUDFLARE_DATABASE_ID }}/g" backend/wrangler.jsonc
-          sed -i "s/YOUR_BETTER_AUTH_SECRET/${{ secrets.BETTER_AUTH_SECRET }}/g" backend/wrangler.jsonc
+          sed -i "s|YOUR_DATABASE_NAME|${{ secrets.CLOUDFLARE_D1_DATABASES_NAME }}|g" backend/wrangler.jsonc
+          sed -i "s|YOUR_DATABASE_ID|${{ secrets.CLOUDFLARE_DATABASE_ID }}|g" backend/wrangler.jsonc
+          sed -i "s|YOUR_BETTER_AUTH_SECRET|${{ secrets.BETTER_AUTH_SECRET }}|g" backend/wrangler.jsonc
           sed -i "s|YOUR_BETTER_AUTH_URL|${{ secrets.BETTER_AUTH_URL }}|g" backend/wrangler.jsonc
-          sed -i "s/YOUR_GOOGLE_CLIENT_ID/${{ secrets.GOOGLE_CLIENT_ID }}/g" backend/wrangler.jsonc
-          sed -i "s/YOUR_GOOGLE_CLIENT_SECRET/${{ secrets.GOOGLE_CLIENT_SECRET }}/g" backend/wrangler.jsonc
-          sed -i "s/YOUR_SERVICE_ADMIN_API_KEY/${{ secrets.SERVICE_ADMIN_API_KEY }}/g" backend/wrangler.jsonc
+          sed -i "s|YOUR_GOOGLE_CLIENT_ID|${{ secrets.GOOGLE_CLIENT_ID }}|g" backend/wrangler.jsonc
+          sed -i "s|YOUR_GOOGLE_CLIENT_SECRET|${{ secrets.GOOGLE_CLIENT_SECRET }}|g" backend/wrangler.jsonc
+          sed -i "s|YOUR_SERVICE_ADMIN_API_KEY|${{ secrets.SERVICE_ADMIN_API_KEY }}|g" backend/wrangler.jsonc
           sed -i "s|YOUR_TRUSTED_ORIGINS|${{ secrets.TRUSTED_ORIGINS }}|g" backend/wrangler.jsonc
 
       - name: Deploy to Cloudflare
