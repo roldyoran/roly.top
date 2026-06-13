@@ -74,5 +74,5 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           packageManager: bun
           wranglerVersion: "4"
-          command: deploy --no-project-config
+          command: deploy --x-autoconfig false
           workingDirectory: backend
