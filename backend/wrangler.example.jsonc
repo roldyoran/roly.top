@@ -5,7 +5,14 @@
   "compatibility_date": "2026-03-03",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false
+    }
   },
   "vars": {
     "BETTER_AUTH_SECRET": "YOUR_BETTER_AUTH_SECRET",
