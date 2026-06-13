@@ -256,6 +256,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
+import { useUrlStore } from "@/stores/urlStore";
 
 defineEmits<{
 	navigate: [panel: string];
@@ -263,6 +264,7 @@ defineEmits<{
 
 const { copyToClipboard } = useCopyToClipboard();
 const queryClient = useQueryClient();
+const urlStore = useUrlStore();
 const searchQuery = ref("");
 const deleteDialogOpen = ref(false);
 const deleteTarget = ref("");
@@ -290,6 +292,13 @@ watch(
 				(a, b) =>
 					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 			);
+			if (typeof data.urlLimit === "number") {
+				urlStore.setUrlLimit(data.urlLimit);
+			}
+			urlStore.clearAllUrls();
+			data.urls.forEach((u) => {
+				urlStore.addUrl(u.originalUrl, u.shortCode);
+			});
 		} else {
 			urls.value = [];
 		}
@@ -324,10 +333,24 @@ const deleteMutation = useMutation({
 		await queryClient.cancelQueries({ queryKey: ["userUrls"] });
 		const previous = urls.value;
 		urls.value = urls.value.filter((u) => u.shortCode !== shortCode);
+
+		// Optimistically remove from urlStore to update limit state immediately
+		const targetUrl = previous.find((u) => u.shortCode === shortCode);
+		if (targetUrl) {
+			urlStore.removeUrl(targetUrl.originalUrl, shortCode);
+		}
+
 		return { previous };
 	},
-	onError: (_err, _shortCode, context) => {
-		if (context?.previous) urls.value = context.previous;
+	onError: (_err, shortCode, context) => {
+		if (context?.previous) {
+			urls.value = context.previous;
+			// Rollback urlStore state
+			const targetUrl = context.previous.find((u) => u.shortCode === shortCode);
+			if (targetUrl) {
+				urlStore.addUrl(targetUrl.originalUrl, shortCode);
+			}
+		}
 		toast.error("Error al eliminar", {
 			description: "No se pudo eliminar el enlace.",
 		});

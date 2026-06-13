@@ -243,12 +243,14 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/stores/authStore";
+import { useUrlStore } from "@/stores/urlStore";
 
 defineEmits<{
 	navigate: [panel: string];
 }>();
 
 const authStore = useAuthStore();
+const urlStore = useUrlStore();
 const isAdmin = computed(() => authStore.isAdmin);
 const userName = computed(() => authStore.userName);
 const userEmail = computed(() => authStore.userEmail);
@@ -273,7 +275,14 @@ watch(
 	(data) => {
 		if (data?.urls && Array.isArray(data.urls)) {
 			urls.value = data.urls;
-			if (data.urlLimit) urlLimit.value = data.urlLimit;
+			if (data.urlLimit) {
+				urlLimit.value = data.urlLimit;
+				urlStore.setUrlLimit(data.urlLimit);
+			}
+			urlStore.clearAllUrls();
+			data.urls.forEach((u) => {
+				urlStore.addUrl(u.originalUrl, u.shortCode);
+			});
 		} else {
 			urls.value = [];
 		}
