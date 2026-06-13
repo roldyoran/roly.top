@@ -1,1 +1,0 @@
-CREATE INDEX `user_id_idx` ON `urls` (`user_id`);

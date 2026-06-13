@@ -317,6 +317,9 @@ bun run db:migrate:local   # Aplica migraciones en D1 local (.wrangler/state)
 bun run db:migrate:remote  # Aplica migraciones en D1 remoto (producción)
 bun run db:push            # Push directo del schema al D1 remoto vía drizzle-kit
 
+# Migración completa (cuando hay drift en el schema remoto)
+bun --env-file=.env ./node_modules/.bin/wrangler.exe d1 execute DB --remote --config wrangler.jsonc --file drizzle/full_migration.sql
+
 # Tests
 bun test                   # Todos los tests
 bun run test:watch         # Modo watch
@@ -324,6 +327,28 @@ bun run test:coverage      # Con cobertura
 
 # Formato
 bun format                 # Formatea el código con Biome
+```
+
+### Cloudflare Workers Variables
+
+Las variables de entorno de runtime van en **Cloudflare Dashboard → Workers → shorturl → Settings → Variables and Secrets** (no en GitHub Actions):
+
+| Variable | Descripción |
+|----------|-------------|
+| `BETTER_AUTH_SECRET` | Generar con `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | `https://shorturl.roldyoran.workers.dev` |
+| `GOOGLE_CLIENT_ID` | Client ID de Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Client Secret de Google OAuth |
+| `SERVICE_ADMIN_API_KEY` | API key para operaciones admin |
+| `TRUSTED_ORIGINS` | `https://shorturl.roldyoran.workers.dev` |
+| `DEV_MODE` | `false` en producción |
+
+### Google OAuth Redirect URI
+
+Agregar en Google Cloud Console → Credentials → OAuth Client:
+
+```
+https://shorturl.roldyoran.workers.dev/api/auth/callback/google
 ```
 
 ---

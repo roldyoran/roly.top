@@ -1,1 +1,0 @@
-ALTER TABLE `users` ADD `url_limit` integer DEFAULT 2;

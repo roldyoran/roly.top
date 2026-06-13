@@ -114,6 +114,47 @@ bun run db:migrate:local
 bun run db:migrate:remote
 ```
 
+### 6. Full schema sync (remote D1)
+
+If the remote database schema is out of sync or you need a clean slate, run the full migration:
+
+```bash
+cd backend
+# Execute the full migration SQL against remote D1
+bun --env-file=.env ./node_modules/.bin/wrangler.exe d1 execute DB --remote --config wrangler.jsonc --file drizzle/full_migration.sql
+```
+
+> **Warning**: This drops and recreates all tables. Use only when setting up a new database or fixing schema drift.
+
+The full migration creates these tables with all columns matching the Drizzle schema:
+- `users` — Better Auth users (with `role`, `banned`, `url_limit`)
+- `sessions` — Better Auth sessions (with `impersonated_by`)
+- `accounts` — Better Auth accounts (OAuth providers)
+- `verifications` — Better Auth email verifications
+- `urls` — Short URLs (with `user_id`)
+
+### 7. Cloudflare Workers variables
+
+Set these as **Secrets** in Cloudflare Dashboard → Workers → shorturl → Settings → Variables and Secrets:
+
+| Secret | Description |
+|--------|-------------|
+| `BETTER_AUTH_SECRET` | Generate with `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | `https://shorturl.roldyoran.workers.dev` |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
+| `SERVICE_ADMIN_API_KEY` | Your admin API key |
+| `TRUSTED_ORIGINS` | `https://shorturl.roldyoran.workers.dev` |
+| `DEV_MODE` | `false` |
+
+### 8. Google OAuth redirect URIs
+
+Add this URI in [Google Cloud Console](https://console.cloud.google.com/) → Credentials → OAuth Client ID → Authorized redirect URIs:
+
+```
+https://shorturl.roldyoran.workers.dev/api/auth/callback/google
+```
+
 ---
 
 ## Authentication
