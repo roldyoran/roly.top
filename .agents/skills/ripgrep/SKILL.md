@@ -1,84 +1,83 @@
 ---
+name: ripgrep
+description: Uses `ripgrep (rg)` as the main tool to search for text, symbols, functions, classes, configurations, and patterns within software projects. It is significantly faster than grep in large repositories and automatically respects `.gitignore`.
+---
 
-name: ripgrep-search
-description: Utiliza `ripgrep (rg)` como herramienta principal para buscar texto, símbolos, funciones, clases, configuraciones y patrones dentro de proyectos de software. Es significativamente más rápido que grep en repositorios grandes y respeta `.gitignore` automáticamente.
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Skill: Ripgrep (rg) - High-Performance Code Search
 
-# Skill: Ripgrep (rg) - Búsqueda de Código de Alto Rendimiento
+## Rules
 
-## Reglas
+1. Always try to find information with `rg` before opening complete files.
+2. Prefer JSON output (`--json`) when the information will be consumed by an AI agent.
+3. Limit the search by file type when possible (`-t`).
+4. Use literal search (`-F`) when you don't need regular expressions.
+5. Use `-n` to get line numbers.
+6. Use `-C`, `-A` or `-B` to get context.
+7. If you find no results and suspect exclusions due to `.gitignore`, use `-uu`.
+8. Never scan the entire project unnecessarily when you know the target language or directory.
+9. Before opening full files, try to get enough context through structured searches.
 
-1. Siempre intenta encontrar información con `rg` antes de abrir archivos completos.
-2. Prefiere salida JSON (`--json`) cuando la información será consumida por un agente de IA.
-3. Limita la búsqueda por tipo de archivo cuando sea posible (`-t`).
-4. Usa búsqueda literal (`-F`) cuando no necesites expresiones regulares.
-5. Usa `-n` para obtener números de línea.
-6. Usa `-C`, `-A` o `-B` para obtener contexto.
-7. Si no encuentras resultados y sospechas exclusiones por `.gitignore`, utiliza `-uu`.
-8. Nunca escanees todo el proyecto innecesariamente cuando conozcas el lenguaje o directorio objetivo.
-9. Antes de abrir archivos completos, intenta obtener suficiente contexto mediante búsquedas estructuradas.
+## Priority for AI Agents
 
-## Prioridad para Agentes de IA
-
-Cuando sea posible utiliza:
+When possible use:
 
 rg --json "<pattern>"
 
-La salida JSON contiene metadatos estructurados como:
+JSON output contains structured metadata such as:
 
-* Ruta completa del archivo.
-* Número de línea.
-* Posición de la coincidencia.
-* Texto coincidente.
-* Eventos de inicio y fin de archivo.
-* Estadísticas de búsqueda.
+* Full file path.
+* Line number.
+* Match position.
+* Matched text.
+* File start and end events.
+* Search statistics.
 
-Esto permite a un agente:
+This enables an agent to:
 
-* Identificar exactamente dónde buscar.
-* Reducir lecturas innecesarias.
-* Construir mapas de dependencias.
-* Correlacionar múltiples resultados automáticamente.
-* Tomar decisiones basadas en estructura y no en texto plano.
+* Identify exactly where to look.
+* Reduce unnecessary reads.
+* Build dependency maps.
+* Correlate multiple results automatically.
+* Make decisions based on structure rather than plain text.
 
-## Comandos Recomendados para IA
+## Recommended Commands for AI
 
-Buscar en JSON:
+Search in JSON:
 rg --json "pattern"
 
-Buscar con contexto en JSON:
+Search with context in JSON:
 rg --json -C 3 "pattern"
 
-Buscar por lenguaje:
+Search by language:
 rg --json -t go "CreateUser"
 
-Buscar símbolos específicos:
+Search specific symbols:
 rg --json -w "UserService"
 
-Buscar texto literal:
+Search literal text:
 rg --json -F "user.name"
 
-Buscar varios patrones:
+Search multiple patterns:
 rg --json -e "TODO" -e "FIXME"
 
-Buscar ignorando filtros:
+Search ignoring filters:
 rg --json -uu "pattern"
 
-## Estrategia Recomendada
+## Recommended Strategy
 
-Para localizar implementación:
+To locate implementation:
 
-1. rg --json -t <lenguaje> "<nombre>"
-2. Analizar archivos más relevantes.
-3. Abrir únicamente los fragmentos necesarios.
+1. rg --json -t <language> "<name>"
+2. Analyze most relevant files.
+3. Open only the necessary snippets.
 
-Para entender arquitectura:
+To understand architecture:
 
-1. rg --json "<concepto>"
-2. Agrupar resultados por archivo.
-3. Identificar puntos de entrada.
-4. Abrir únicamente archivos con mayor densidad de coincidencias.
+1. rg --json "<concept>"
+2. Group results by file.
+3. Identify entry points.
+4. Open only files with the highest density of matches.
 
-## Objetivo
+## Objective
 
-Minimizar lectura innecesaria de archivos y maximizar velocidad de descubrimiento de código. Utilizar `ripgrep` como mecanismo principal de exploración y preferir siempre salidas estructuradas cuando un agente automatizado sea el consumidor de los resultados.
+Minimize unnecessary file reading and maximize code discovery speed. Use `ripgrep` as the primary exploration mechanism and always prefer structured output when an automated agent is the consumer of the results.

@@ -9,6 +9,7 @@ Este documento proporciona información esencial para agentes de IA (como Cursor
 - Ver información de URLs acortadas
 - Gestionar URLs guardadas del usuario
 - Ver lista pública de URLs acortadas
+- Autenticación con Google OAuth (Better Auth)
 
 ## 🛠️ Stack Tecnológico
 
@@ -29,6 +30,9 @@ Este documento proporciona información esencial para agentes de IA (como Cursor
 - **Vee-Validate** - Validación de formularios
 - **Zod** - Schema validation
 
+### Autenticación
+- **Better Auth** - Client con admin plugin (Google OAuth, sesiones cookie)
+
 ### Utilidades
 - **Axios** - Cliente HTTP
 - **VueUse** - Colección de composables Vue
@@ -44,8 +48,8 @@ Este documento proporciona información esencial para agentes de IA (como Cursor
 frontend/
 ├── src/
 │   ├── api/                    # Servicios HTTP y tipos compartidos
-│   │   ├── http.ts             # Instancia de Axios y funciones de API
-│   │   └── types.ts            # Tipos TypeScript (UrlInfoResponse, SavedUrlItem, UserSession, etc.)
+│   │   ├── http.ts             # Instancia de Axios (sin VITE_API_BASE_URL, usa proxy)
+│   │   └── types.ts            # Tipos TypeScript (UrlInfoResponse, SavedUrlItem, etc.)
 │   │
 │   ├── views/                  # Componentes de página (rutas/vistas)
 │   │   └── HomeView.vue        # Vista principal (hero + form de acortar)
@@ -56,9 +60,7 @@ frontend/
 │   │   │   └── AttemptsBadge.vue    # Badge de intentos restantes
 │   │   │
 │   │   ├── config/             # Componentes de configuración/debug
-│   │   │   ├── ApiConfigDialog.vue  # Dialog de info de API
-│   │   │   ├── RedirectTest.vue     # Herramienta de prueba de redirección
-│   │   │   └── ToastDemo.vue        # Demo del sistema de notificaciones
+│   │   │   └── ApiConfigDialog.vue  # Dialog de info de API
 │   │   │
 │   │   ├── features/           # Componentes de funcionalidad
 │   │   │   ├── url-shortener/        # Acortamiento de URLs
@@ -69,7 +71,7 @@ frontend/
 │   │   │       └── UrlsList.vue      # Soporta modo "my" y "public"
 │   │   │
 │   │   ├── layout/             # Componentes de layout
-│   │   │   ├── NavbarHeader.vue
+│   │   │   ├── NavbarHeader.vue     # Incluye botón auth y badge admin
 │   │   │   ├── FooterComponent.vue
 │   │   │   └── ThemeToggle.vue
 │   │   │
@@ -83,14 +85,17 @@ frontend/
 │   │
 │   ├── composables/            # Composables reutilizables
 │   │   ├── useUrlShortener.ts       # Lógica de negocio para acortar URLs
-│   │   └── useCopyToClipboard.ts     # Utilidad para copiar al portapapeles
+│   │   ├── useCopyToClipboard.ts    # Utilidad para copiar al portapapeles
+│   │   └── useAuth.ts              # Better Auth (signIn, signOut, session, isAdmin)
 │   │
 │   ├── stores/                  # Stores de Pinia
 │   │   ├── index.ts            # Configuración de Pinia
-│   │   └── urlStore.ts         # Store principal de URLs y sesión
+│   │   ├── urlStore.ts         # Store principal de URLs
+│   │   └── authStore.ts        # Store de autenticación (Better Auth)
 │   │
 │   ├── lib/                    # Utilidades
-│   │   └── utils.ts            # Funciones helper (cn, formatDate, etc.)
+│   │   ├── utils.ts            # Funciones helper (cn, formatDate, etc.)
+│   │   └── auth-client.ts      # Better Auth client (con adminClient plugin)
 │   │
 │   ├── App.vue                 # Componente raíz
 │   ├── main.ts                 # Punto de entrada
@@ -98,7 +103,7 @@ frontend/
 │
 ├── public/                     # Archivos estáticos
 ├── package.json
-├── vite.config.ts
+├── vite.config.ts              # Proxy para /api y /v1
 ├── tsconfig.json
 └── biome.json                  # Configuración de Biome
 ```
@@ -141,16 +146,21 @@ frontend/
 ## 🔧 Configuración de API
 
 ### Variables de Entorno
-- `VITE_API_BASE_URL` - URL base de la API (opcional)
-- `VITE_API_KEY` - API key para autenticación (opcional)
+- `VITE_API_BASE_URL` - No se usa (eliminado). El frontend usa proxy de Vite para mismo origen.
 
-### Configuración Dinámica
-- La URL de la API se puede configurar desde localStorage con la clave `apiUrl`
-- Prioridad: `VITE_API_BASE_URL` → `localStorage.apiUrl` → fallback por defecto
+### Proxy (vite.config.ts)
+- `/api` → `http://localhost:8787` (Better Auth)
+- `/v1` → `http://localhost:8787` (API routes)
+
+### Autenticación (Better Auth)
+- Cliente configurado en `src/lib/auth-client.ts` con `adminClient` plugin
+- Composable `src/composables/useAuth.ts` para signIn, signOut, session, isAdmin
+- Store `src/stores/authStore.ts` para estado de sesión
+- Sesiones via cookie `better-auth.session_token` (same-origin via proxy)
 
 ### Instancia de Axios
 - Usar `getAxiosInstance()` de `/src/api/http.ts`
-- Incluye headers automáticos (`Content-Type`, `x-api-key`)
+- Sin headers de API key (usar Better Auth sessions)
 
 ## 📝 Patrones de Código
 
@@ -245,6 +255,11 @@ El store `urlStore` incluye una función `getDebugInfo()` que retorna:
 - Si puede usar el servicio
 - Si necesita reset
 
+El store `authStore` incluye:
+- `user` - Usuario actual de Better Auth
+- `isAdmin` - Si el usuario tiene rol admin
+- `isAuthenticated` - Si hay sesión activa
+
 ### Herramientas
 - **Vue DevTools** - Para inspeccionar componentes y stores
 - **Browser DevTools** - Para inspeccionar localStorage y network
@@ -294,17 +309,22 @@ bun run check        # Check del frontend (asumir frontend por defecto)
 
 1. **`src/App.vue`** - Componente raíz, estructura principal
 2. **`src/stores/urlStore.ts`** - Lógica de negocio principal
-3. **`src/api/http.ts`** - Configuración de API
-4. **`src/components/features/`** - Funcionalidades principales
-5. **`package.json`** - Dependencias del proyecto
+3. **`src/stores/authStore.ts`** - Estado de autenticación (Better Auth)
+4. **`src/composables/useAuth.ts`** - Funciones de auth (signIn, signOut, session)
+5. **`src/lib/auth-client.ts`** - Better Auth client config
+6. **`src/api/http.ts`** - Configuración de API (proxy via Vite)
+7. **`src/components/features/`** - Funcionalidades principales
+8. **`package.json`** - Dependencias del proyecto
 
 ### Cómo Buscar Funcionalidad
 
 - **Acortar URL**: `ShortenUrlForm.vue` + `useUrlShortener.ts`
 - **Información de URL**: `UrlInfoForm.vue`
 - **URLs guardadas**: `MyUrlsList.vue` + `urlStore.ts`
-- **Lista pública**: `PublicUrlsList.vue`
-- **Notificaciones**: `useToast.ts` + Vue Sonner
+- **Lista pública**: `PublicUrlsList.vue` (solo admins)
+- **Autenticación**: `useAuth.ts` + `authStore.ts` + `auth-client.ts`
+- **Admin badge**: `NavbarHeader.vue` (usa `isAdmin` del authStore)
+- **Notificaciones**: Vue Sonner (`toast`)
 - **Temas**: `ThemeToggle.vue` + `@vueuse/core`
 
 ## ⚡ Mejores Prácticas para Agentes de IA

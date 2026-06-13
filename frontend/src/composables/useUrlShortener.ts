@@ -1,13 +1,65 @@
-import { useUrlStore } from "@/stores/urlStore";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { toast } from "vue-sonner";
-import { shortenUrlRequest, getApiBaseUrl } from "@/api/http";
+import { getAppBaseUrl, shortenUrlRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
+import { useUrlStore } from "@/stores/urlStore";
 
 /**
  * Composable para manejar el acortamiento de URLs
  */
 export const useUrlShortener = () => {
 	const urlStore = useUrlStore();
+
+	const queryClient = useQueryClient();
+
+	const shortenMutation = useMutation<
+		UrlInfoResponse,
+		unknown,
+		{ originalUrl: string; customHash?: string },
+		{ previousSaved: any[]; tempShort?: string }
+	>({
+		mutationFn: async ({ originalUrl, customHash }) => {
+			return await shortenUrlRequest(originalUrl, customHash);
+		},
+		onMutate: async ({ originalUrl }) => {
+			await queryClient.cancelQueries({ queryKey: ["userUrls"] });
+			const previousSaved = urlStore.savedUrls
+				? JSON.parse(JSON.stringify(urlStore.savedUrls))
+				: [];
+			const tempShort = `temp-${Date.now()}`;
+			urlStore.addUrl(originalUrl, tempShort);
+			return { previousSaved, tempShort };
+		},
+		onError: (
+			_err: unknown,
+			_vars: { originalUrl: string; customHash?: string },
+			context: any,
+		) => {
+			if (context?.previousSaved) {
+				// restore previous saved urls
+				urlStore.clearAllUrls();
+				context.previousSaved.forEach((u: any) =>
+					urlStore.addUrl(u.original, u.short),
+				);
+			}
+		},
+		onSuccess: (
+			data: UrlInfoResponse,
+			vars: { originalUrl: string; customHash?: string },
+			context: any,
+		) => {
+			// replace temp entry with real shortCode
+			if (context?.tempShort) {
+				// remove temp
+				urlStore.removeUrl(vars.originalUrl, context.tempShort);
+			}
+			urlStore.addUrl(data.originalUrl, data.shortCode);
+		},
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ["userUrls"] });
+			queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
+		},
+	});
 
 	const shortenUrl = async (
 		originalUrl: string,
@@ -17,66 +69,62 @@ export const useUrlShortener = () => {
 		shortCode?: string;
 		shortUrl?: string;
 		originalUrl?: string;
+		error?: string;
 	}> => {
-		// Verificar si puede usar el servicio
+		// Verificar si puede usar el servicio (límite del backend)
 		if (!urlStore.canUseService) {
-			toast.error("Límite de intentos alcanzado", {
-				description:
-					"Ha alcanzado el límite máximo de 3 intentos. Los intentos se reinician cada 24 horas.",
+			toast.error("Límite de URLs alcanzado", {
+				description: `Has alcanzado el límite máximo de ${urlStore.urlLimit} URLs. Elimina URLs existentes o contacta al administrador.`,
 			});
 			return { success: false };
 		}
 
-		try {
-			urlStore.isLoading = true;
-
-			// Validar hash personalizado si se proporciona
-			if (customHash && !/^[a-z0-9]+$/.test(customHash)) {
+		// Validar hash personalizado si se proporciona
+		if (customHash) {
+			if (!/^[a-z0-9]+$/.test(customHash)) {
 				toast.error("Hash inválido", {
 					description:
-						"El hash personalizado solo puede contener letras, números, guiones y guiones bajos.",
+						"El hash personalizado solo puede contener letras minúsculas y números (a-z, 0-9).",
 				});
 				return { success: false };
 			}
+			if (customHash.length > 9) {
+				toast.error("Hash demasiado largo", {
+					description:
+						"El hash personalizado no puede tener más de 9 caracteres.",
+				});
+				return { success: false };
+			}
+		}
 
-			// Realizar petición a la API
-			const data: UrlInfoResponse = await shortenUrlRequest(
+		try {
+			console.log("[shortenUrl] calling shortenMutation", {
 				originalUrl,
 				customHash,
-			);
-
-			if (data && data.shortCode) {
-				// Decrementar intentos (solo para no-admin)
-				urlStore.decrementAttempts();
-
-				// Agregar URL al store
-				urlStore.addUrl(data.originalUrl, data.shortCode);
-
-				// Construir URL completa y mostrar notificación de éxito
-				const builtShortUrl = `${getApiBaseUrl().replace(/\/$/, "")}/${data.shortCode}`;
-				toast.success("¡URL acortada exitosamente!", {
-					description: `URL corta: ${builtShortUrl}`,
-				});
-
+			});
+			console.log("[shortenUrl] urlStore debug:", urlStore.getDebugInfo());
+			urlStore.isLoading = true;
+			const data = await shortenMutation.mutateAsync({
+				originalUrl,
+				customHash,
+			});
+			console.log("[shortenUrl] mutateAsync result:", data);
+			if (data?.shortCode) {
 				return {
 					success: true,
 					shortCode: data.shortCode,
-					shortUrl: builtShortUrl,
+					shortUrl: `${getAppBaseUrl()}/${data.shortCode}`,
 					originalUrl: data.originalUrl,
 				};
-			} else {
-				toast.error("Respuesta inválida", {
-					description: "La respuesta de la API no es válida.",
-				});
-				return { success: false };
 			}
-		} catch (error: any) {
-			const errorMessage =
-				error?.response?.data?.message || "Error al acortar la URL";
-			toast.error("Error en el servidor", {
-				description: errorMessage,
-			});
 			return { success: false };
+		} catch (error: any) {
+			console.error("[shortenUrl] caught error:", error);
+			const msg =
+				error?.response?.data?.error?.message ||
+				error?.message ||
+				"Error al acortar la URL";
+			return { success: false, error: msg };
 		} finally {
 			urlStore.isLoading = false;
 		}

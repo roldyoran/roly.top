@@ -13,7 +13,7 @@
             @click="confirmClearUrls"
             variant="destructive"
             size="sm"
-            :disabled="urlStore.savedUrls.length === 0"
+            :disabled="normalizedMyUrls.length === 0"
           >
             <Trash class="w-4 h-4 mr-2" />
             Borrar Todo
@@ -30,63 +30,95 @@
           </div>
 
           <div class="relative w-full sm:w-80">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
               v-model="searchQuery"
               type="text"
               placeholder="Buscar URLs..."
-              class="pl-10"
+              class="pl-9 h-9 text-xs font-mono"
             />
           </div>
         </div>
 
         <CardDescription v-if="isMyList">
-          Tus URLs acortadas guardadas localmente ({{ urlStore.savedUrls.length }})
+          Tus URLs acortadas ({{ normalizedMyUrls.length }})
         </CardDescription>
       </CardHeader>
 
       <CardContent>
-        <div v-if="!isMyList && isLoading" class="text-center py-12">
-          <div class="flex flex-col items-center space-y-4">
-            <svg class="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <div class="space-y-2">
-              <p class="text-lg font-semibold">Cargando URLs...</p>
-              <p class="text-muted-foreground">Obteniendo las URLs más recientes</p>
+        <div v-if="!isMyList && isLoading" class="flex flex-col gap-3 py-4">
+          <div v-for="n in 5" :key="n" class="rounded-xl border border-border bg-card px-4 py-3">
+            <div class="flex items-center justify-between gap-3">
+              <Skeleton class="h-6 w-24" />
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-5 w-16" />
+                <Skeleton class="h-7 w-7 rounded-md" />
+              </div>
             </div>
+            <Skeleton class="mt-2 h-4 w-full max-w-sm" />
+            <Skeleton class="mt-1.5 h-3 w-20 self-end" />
           </div>
         </div>
 
-        <div v-else-if="isMyList && urlStore.savedUrls.length === 0" class="text-center py-12">
+        <div v-else-if="isMyList && !authStore.isAuthenticated" class="text-center py-12">
+          <Database class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 class="text-lg font-semibold mb-2">Inicia sesión para ver tus URLs</h3>
+          <p class="text-muted-foreground mb-4">Accede a tu cuenta para gestionar tus URLs acortadas</p>
+          <Button @click="authStore.signIn" class="gap-2">
+            <Google class="w-4 h-4" />
+            Iniciar sesión con Google
+          </Button>
+        </div>
+
+        <div v-else-if="isMyList && normalizedMyUrls.length === 0" class="text-center py-12">
           <Database class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 class="text-lg font-semibold mb-2">No hay URLs guardadas</h3>
           <p class="text-muted-foreground">Las URLs acortadas aparecerán aquí automáticamente</p>
         </div>
 
-        <div v-else-if="!isMyList && shortUrls.length === 0" class="text-center py-12">
-          <Globe class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 class="text-lg font-semibold mb-2">No hay URLs disponibles</h3>
-          <p class="text-muted-foreground">Las URLs aparecerán aquí una vez que sean creadas</p>
+        <div v-else-if="!isMyList && shortUrls.length === 0" class="flex justify-center py-12">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Globe class="size-6" />
+              </EmptyMedia>
+              <EmptyTitle class="font-display">No hay URLs disponibles</EmptyTitle>
+              <EmptyDescription class="font-mono">
+                Las URLs aparecerán aquí una vez que sean creadas
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </div>
 
-        <div v-else-if="!isMyList && filteredUrls.length === 0" class="text-center py-12">
-          <Search class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 class="text-lg font-semibold mb-2">No se encontraron resultados</h3>
-          <p class="text-muted-foreground">Intenta con otros términos de búsqueda</p>
+        <div v-else-if="!isMyList && filteredUrls.length === 0" class="flex justify-center py-12">
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Search class="size-6" />
+              </EmptyMedia>
+              <EmptyTitle class="font-display">No se encontraron resultados</EmptyTitle>
+              <EmptyDescription class="font-mono">
+                Intenta con otros términos de búsqueda
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </div>
 
-        <div
+        <motion.div
           v-else
           class="space-y-2"
           :class="shouldUseScroll ? 'max-h-[70vh] overflow-y-auto pr-1 scroll-container' : ''"
+          initial="hidden"
+          animate="visible"
+          :variants="listContainerVariants"
         >
-          <div
+          <motion.div
             v-for="url in displayUrls"
             :key="`${url.shortCode}-${url.originalUrl}`"
-            class="url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40"
+            :variants="listItemVariants"
+            class="url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40 relative overflow-hidden"
           >
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             <div class="flex items-center justify-between gap-3">
               <span class="font-mono text-xl font-semibold text-primary tracking-tight">
                 /{{ url.shortCode }}
@@ -94,11 +126,7 @@
 
               <div class="flex items-center gap-3 ml-auto">
                 <div class="flex items-center gap-1.5 text-muted-foreground">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="2" y="14" width="4" height="7" rx="1"/>
-                    <rect x="9" y="9" width="4" height="12" rx="1"/>
-                    <rect x="16" y="4" width="4" height="17" rx="1"/>
-                  </svg>
+                  <MousePointerClick class="size-3.5" />
                   <span class="font-mono text-xs">{{ url.clicks || 0 }} clicks</span>
                 </div>
 
@@ -138,7 +166,7 @@
                   <Tooltip v-else>
                     <TooltipTrigger :asChild="true">
                       <Button
-                        @click="removeUrl((url.raw as SavedUrl).original, (url.raw as SavedUrl).short)"
+                        @click="removeUrl(url.shortCode)"
                         variant="ghost"
                         size="sm"
                         class="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -161,8 +189,8 @@
                 {{ formatDate(url.createdAt) }}
               </span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         <div v-if="isMyList && totalPages > 1" class="flex items-center justify-between mt-4">
           <p class="text-sm text-muted-foreground">
@@ -185,7 +213,7 @@
                 @click="currentPage = page"
                 :variant="currentPage === page ? 'default' : 'outline'"
                 size="sm"
-                class="w-8 h-8 p-0"
+                :class="currentPage === page ? 'bg-primary text-primary-foreground font-mono font-700 w-8 h-8 p-0' : 'w-8 h-8 p-0'"
               >
                 {{ page }}
               </Button>
@@ -257,49 +285,67 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import {
-	Database,
-	Trash,
-	Globe,
-	Search,
-	ExternalLink,
-	Copy,
-	QrCode,
-	Download,
 	ChevronLeft,
 	ChevronRight,
+	Copy,
+	Database,
+	Download,
+	ExternalLink,
+	Globe,
+	MousePointerClick,
+	QrCode,
+	Search,
+	Trash,
 } from "lucide-vue-next";
+import { motion } from "motion-v";
+import QRCode from "qrcode-generator";
+import { computed, onMounted, ref, watch } from "vue";
+import { toast } from "vue-sonner";
+import {
+	deleteUrlRequest,
+	getAppBaseUrl,
+	getPublicUrlsRequest,
+	getUrlsRequest,
+} from "@/api/http";
+import type { UrlInfoResponse } from "@/api/types";
+import Google from "@/assets/google.vue";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
 import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
 	Tooltip,
-	TooltipTrigger,
 	TooltipContent,
 	TooltipProvider,
+	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import QRCode from "qrcode-generator";
-import { getUrlsRequest, getApiBaseUrl } from "@/api/http";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
+import { truncateText } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
-import { formatDate, truncateText } from "@/lib/utils";
-import type { UrlInfoResponse } from "@/api/types";
-import { toast } from "vue-sonner";
 
 type Mode = "my" | "public";
 
@@ -326,12 +372,12 @@ const props = withDefaults(defineProps<{ mode?: Mode }>(), {
 const isMyList = computed(() => props.mode === "my");
 
 const urlStore = useUrlStore();
+const authStore = useAuthStore();
 const { copyToClipboard } = useCopyToClipboard();
-
-const baseUrl = getApiBaseUrl();
 
 // Public list state
 const shortUrls = ref<UrlInfoResponse[]>([]);
+const myUrls = ref<UrlInfoResponse[]>([]);
 const searchQuery = ref<string>("");
 const isLoading = ref<boolean>(false);
 
@@ -347,7 +393,7 @@ const currentQRUrl = ref<string>("");
 // Confirmation dialogs (my list)
 const showDeleteUrlDialog = ref(false);
 const showClearAllDialog = ref(false);
-const urlToDelete = ref<{ original: string; short: string } | null>(null);
+const urlToDelete = ref<string | null>(null);
 
 // Computed: normalize lists
 const publicClicksByShort = computed(() => {
@@ -358,8 +404,17 @@ const publicClicksByShort = computed(() => {
 	return map;
 });
 
-const normalizedMyUrls = computed<NormalizedUrl[]>(() =>
-	urlStore.savedUrls.map((url: SavedUrl) => {
+const normalizedMyUrls = computed<NormalizedUrl[]>(() => {
+	if (myUrls.value.length > 0) {
+		return myUrls.value.map((url) => ({
+			shortCode: url.shortCode,
+			originalUrl: url.originalUrl,
+			createdAt: url.createdAt,
+			clicks: url.visits || 0,
+			raw: url,
+		}));
+	}
+	return urlStore.savedUrls.map((url: SavedUrl) => {
 		const savedClicks = url.clicks ?? url.visits;
 		const clicks = savedClicks ?? publicClicksByShort.value.get(url.short) ?? 0;
 		return {
@@ -369,8 +424,8 @@ const normalizedMyUrls = computed<NormalizedUrl[]>(() =>
 			clicks,
 			raw: url,
 		};
-	}),
-);
+	});
+});
 
 const normalizedPublicUrls = computed<NormalizedUrl[]>(() =>
 	shortUrls.value.map((url) => ({
@@ -429,8 +484,27 @@ const shouldUseScroll = computed(() => {
 	return filteredUrls.value.length > 8;
 });
 
+const listContainerVariants = {
+	hidden: {},
+	visible: {
+		transition: {
+			staggerChildren: 0.04,
+		},
+	},
+};
+
+const listItemVariants = {
+	hidden: { opacity: 0, y: 8, filter: "blur(4px)" },
+	visible: {
+		opacity: 1,
+		y: 0,
+		filter: "blur(0px)",
+		transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+	},
+};
+
 const getFullShortUrl = (shortCode: string): string => {
-	return `${baseUrl.replace(/\/$/, "")}/${shortCode}`;
+	return `${getAppBaseUrl()}/${shortCode}`;
 };
 
 const copyFullUrl = (shortCode: string) => {
@@ -441,23 +515,65 @@ const openExternal = (url: string) => {
 	window.open(url, "_blank");
 };
 
-const removeUrl = (original: string, short: string) => {
-	urlToDelete.value = { original, short };
+const removeUrl = (shortCode: string) => {
+	urlToDelete.value = shortCode;
 	showDeleteUrlDialog.value = true;
 };
 
-const confirmDeleteUrl = () => {
-	if (urlToDelete.value) {
-		urlStore.removeUrl(urlToDelete.value.original, urlToDelete.value.short);
+const queryClient = useQueryClient();
+
+const deleteUrlMutation = useMutation<
+	void,
+	unknown,
+	string,
+	{ previousMyUrls: any[] }
+>({
+	mutationFn: async (shortCode: string) => {
+		return await deleteUrlRequest(shortCode);
+	},
+	onMutate: async (shortCode: string) => {
+		await queryClient.cancelQueries({ queryKey: ["userUrls"] });
+		const previousMyUrls = myUrls.value
+			? JSON.parse(JSON.stringify(myUrls.value))
+			: [];
+		// Optimistically remove from local UI and store
+		myUrls.value = myUrls.value.filter((u) => u.shortCode !== shortCode);
+		try {
+			urlStore.removeUrl("", shortCode);
+		} catch (e) {
+			/* ignore */
+		}
+		return { previousMyUrls };
+	},
+	onError: (err: unknown, _shortCode: string, context: any) => {
+		if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
+		console.error("deleteUrlMutation error:", err);
+	},
+	onSettled: () => {
+		queryClient.invalidateQueries({ queryKey: ["userUrls"] });
+		queryClient.invalidateQueries({ queryKey: ["publicUrls"] });
+	},
+});
+
+const confirmDeleteUrl = async () => {
+	if (!urlToDelete.value) return;
+	const shortCode = urlToDelete.value;
+	try {
+		await deleteUrlMutation.mutateAsync(shortCode);
 		if (paginatedUrls.value.length === 0 && currentPage.value > 1) {
 			currentPage.value--;
 		}
 		toast.success("URL eliminada", {
 			description: "La URL ha sido eliminada correctamente",
 		});
+	} catch (error: any) {
+		const message =
+			error?.response?.data?.message || "Error al eliminar la URL";
+		toast.error("Error al eliminar", { description: message });
+	} finally {
+		showDeleteUrlDialog.value = false;
+		urlToDelete.value = null;
 	}
-	showDeleteUrlDialog.value = false;
-	urlToDelete.value = null;
 };
 
 const confirmClearUrls = () => {
@@ -557,69 +673,124 @@ const downloadQR = () => {
 	}
 };
 
-const loadUrls = async () => {
-	if (!urlStore.shouldFetchPublicList() && shortUrls.value.length > 0) {
-		return;
-	}
-	isLoading.value = true;
-	try {
-		const response = await getUrlsRequest();
-		if (response && Array.isArray(response)) {
-			shortUrls.value = response.sort(
-				(a, b) =>
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-			);
-			urlStore.updatePublicListFetchTime();
-			toast.success("URLs cargadas", {
-				description: "Lista de URLs actualizada correctamente",
-			});
-		} else {
-			shortUrls.value = [];
-			toast.warning("Sin URLs", {
-				description: "No se encontraron URLs disponibles",
-			});
-		}
-	} catch (error: any) {
-		console.error("Error loading URLs:", error);
-		const errorMessage =
-			error?.response?.data?.message || "Error al cargar las URLs";
-		toast.error("Error al cargar", {
-			description: errorMessage,
-		});
-		shortUrls.value = [];
-	} finally {
-		isLoading.value = false;
-	}
-};
+// Integración con Vue Query para lista pública
+const PUBLIC_TTL = 5 * 60 * 1000;
 
-onMounted(() => {
-	if (!isMyList.value) {
-		loadUrls();
-	} else if (urlStore.savedUrls.length > 0) {
-		loadUrls();
-	}
+const cachedPublic = urlStore.loadPublicCache
+	? urlStore.loadPublicCache()
+	: null;
+if (cachedPublic && cachedPublic.length > 0) {
+	shortUrls.value = cachedPublic.sort(
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+	);
+}
+
+const publicQuery = useQuery({
+	queryKey: ["publicUrls"],
+	queryFn: async ({ signal }: any) => {
+		const res = await getPublicUrlsRequest(signal);
+		return res;
+	},
+	enabled: computed(() => !isMyList.value),
+	staleTime: PUBLIC_TTL,
+	gcTime: PUBLIC_TTL * 2,
+	refetchOnWindowFocus: false,
+	initialData: cachedPublic ?? undefined,
 });
 
+watch(
+	publicQuery.data,
+	(data: any) => {
+		if (data) {
+			if (Array.isArray(data)) {
+				shortUrls.value = [...data].sort(
+					(a, b) =>
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				);
+				urlStore.savePublicCache?.(shortUrls.value);
+				urlStore.updatePublicListFetchTime();
+			} else {
+				shortUrls.value = [];
+			}
+		}
+	},
+	{ immediate: true },
+);
+
+watch(publicQuery.error, (err: any) => {
+	if (err) console.error("Error fetching public urls:", err);
+});
+
+// Query para las URLs del usuario autenticado (my URLs)
+const userKey = computed(() => ["userUrls", authStore.userId]);
+
+const userQuery = useQuery({
+	queryKey: userKey,
+	queryFn: async ({ signal }: any) => {
+		// backend devuelve { urls: UrlInfoResponse[], urlLimit }
+		const res = await getUrlsRequest(signal);
+		return res;
+	},
+	enabled: computed(() => isMyList.value && authStore.isAuthenticated),
+	staleTime: PUBLIC_TTL,
+	gcTime: PUBLIC_TTL * 2,
+	refetchOnWindowFocus: false,
+});
+
+watch(
+	userQuery.data,
+	(data: any) => {
+		if (data) {
+			if (data && typeof data === "object" && "urls" in data) {
+				const { urls, urlLimit } = data;
+				urlStore.setUrlLimit(urlLimit);
+				if (Array.isArray(urls)) {
+					myUrls.value = [...urls].sort(
+						(a, b) =>
+							new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+					);
+				} else {
+					myUrls.value = [];
+				}
+			} else {
+				myUrls.value = [];
+			}
+		}
+	},
+	{ immediate: true },
+);
+
+watch(userQuery.error, (err: any) => {
+	if (err) console.error("Error fetching user urls:", err);
+});
+
+// onMounted: Vue Query maneja las cargas automáticas para public/user URLs a través de `enabled`.
+onMounted(() => {
+	// No es necesario forzar fetch: useQuery maneja inicialización.
+});
+
+function formatDate(dateStr: string) {
+	if (!dateStr) return "";
+	const d = new Date(dateStr);
+	return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+}
+
 watch(isMyList, (value) => {
-	if (!value && shortUrls.value.length === 0) {
-		loadUrls();
-	}
-	if (value && urlStore.savedUrls.length > 0 && shortUrls.value.length === 0) {
-		loadUrls();
+	if (!value) {
+		// switched to public list: refetch public query if needed
+		if (shortUrls.value.length === 0) {
+			publicQuery.refetch();
+		}
+	} else {
+		// switched to my list: refetch user query if authenticated
+		if (authStore.isAuthenticated && myUrls.value.length === 0) {
+			userQuery.refetch();
+		}
 	}
 });
 </script>
 
 <style scoped>
-.url-item {
-  animation: fadeIn 0.2s ease both;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 .scroll-container {
   scrollbar-gutter: stable;
 }

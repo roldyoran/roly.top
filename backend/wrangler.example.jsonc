@@ -3,6 +3,20 @@
   "name": "shorturl",
   "main": "src/index.ts",
   "compatibility_date": "2026-03-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    // Directorio de estáticos del frontend, relativo a este wrangler.jsonc
+    "directory": "../frontend/dist",
+    // Nombre del binding: cómo se accede en el Worker (env.ASSETS)
+    "binding": "ASSETS"
+    // IMPORTANTE: NO usar "not_found_handling": "single-page-application".
+    // Ese modo sirve index.html para CUALQUIER path que no sea un asset estático
+    // (incluso /:shortCode), ANTES de invocar al Worker. Eso rompe el redirect
+    // porque el browser hace una navegación top-level con Sec-Fetch-Mode: navigate
+    // y el binding intercepta la request.
+    // Con este setting ausente, el Worker se invoca para todo lo que no sea asset,
+    // y el routing de Hono (incluyendo /:shortCode) maneja la respuesta.
+  },
   "d1_databases": [
     {
       // Nombre del binding: cómo se accede en el Worker (env.DB)

@@ -31,3 +31,9 @@ export class ValidationError extends AppError {
 		super(message, "VALIDATION_ERROR");
 	}
 }
+
+export class UrlLimitReachedError extends AppError {
+	constructor(message = "Límite de 2 URLs alcanzado") {
+		super(message, "URL_LIMIT_REACHED");
+	}
+}

@@ -4,7 +4,7 @@
 
 > **Español**: [Documentación en español](./docs/README.es.md)
 
-> **Note**: This repository is primarily focused on the **backend** (URL shortener API). The frontend is a simple Vue 3 application used to test the API with a nice UI, but it's not the main focus of this project.
+> **Note**: This repository includes a **backend** (URL shortener API with authentication) and a **frontend** (Vue 3 SPA with Google OAuth login). The backend uses **Better Auth** for authentication with Google OAuth and role-based access control.
 
 ---
 
@@ -13,16 +13,17 @@
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [Authentication](#authentication)
 - [Local Development](#local-development)
 - [Monorepo Layout](#monorepo-layout)
 - [API Usage](#api-usage)
-- [Frontend Integration](#frontend-integration)
 - [Routing & Redirect Behavior](#routing--redirect-behavior)
 - [Error Format](#error-format)
 - [Tests](#tests)
 - [Deploy to Cloudflare Workers](#deploy-to-cloudflare-workers)
 - [Useful Commands](#useful-commands)
 - [Frontend (Vue 3)](#frontend-vue-3)
+- [Architecture](#architecture)
 
 ---
 
@@ -31,6 +32,7 @@
 - [Bun](https://bun.sh) ≥ 1.0
 - [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) ≥ 4.0 (included as devDependency)
 - A Cloudflare account with a D1 database created
+- A Google Cloud project with OAuth 2.0 credentials
 
 ---
 
@@ -49,21 +51,44 @@ bun install
 
 ## Configuration
 
-### 1. Environment variables (local)
+### 1. Backend environment variables
 
-Create a `.env` file in the project root:
+Create `backend/.env`:
 
 ```env
+# Cloudflare D1
+DEV_MODE=true
 SERVICE_ADMIN_API_KEY=your_secret_api_key
+
+# Better Auth
+BETTER_AUTH_SECRET=your_32char_secret_here
+BETTER_AUTH_URL=http://localhost:8787
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Optional: comma-separated frontend origins for production
+# TRUSTED_ORIGINS=https://your-domain.com,https://www.your-domain.com
 ```
 
-For the frontend (optional, see `frontend/.env.example`):
+### 2. Frontend environment variables
+
+Create `frontend/.env`:
 
 ```env
-VITE_API_BASE_URL=http://127.0.0.1:8787
+# Leave empty to use Vite proxy in dev (same-origin, cookies work)
+VITE_API_KEY=your_service_admin_api_key
 ```
 
-### 2. Wrangler — D1 binding
+> **Important**: Do NOT set `VITE_API_BASE_URL` in development. The Vite proxy handles routing to the backend.
+
+### 3. Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create OAuth 2.0 credentials
+3. Add `http://localhost:8787/api/auth/callback/google` as authorized redirect URI
+4. Copy Client ID and Client Secret to `backend/.env`
+
+### 4. Wrangler — D1 binding
 
 Edit `backend/wrangler.jsonc` and replace the `database_id` with your D1 database ID:
 
@@ -79,7 +104,7 @@ Edit `backend/wrangler.jsonc` and replace the `database_id` with your D1 databas
 }
 ```
 
-### 3. Database migrations
+### 5. Database migrations
 
 ```bash
 # Apply migrations to local D1 (development)
@@ -89,25 +114,63 @@ bun run db:migrate:local
 bun run db:migrate:remote
 ```
 
-### 4. Custom domain
+---
 
-Point your domain (e.g. `roldy.cua`) at this Worker via the Cloudflare dashboard:
-**Workers & Pages → shorturl → Settings → Triggers → Custom Domains**. The `SERVICE_ADMIN_API_KEY` must match what's set in your remote worker's env vars.
+## Authentication
+
+The project uses **Better Auth** with Google OAuth for authentication and the **Admin plugin** for role-based access control.
+
+### How it works
+
+1. User clicks "Sign In" in the frontend
+2. Frontend calls `POST /api/auth/sign-in/social` → backend redirects to Google
+3. Google authenticates → redirects back to `GET /api/auth/callback/google`
+4. Backend creates/updates user in `users` table, sets session cookie
+5. Frontend reads session via `GET /api/auth/get-session`
+
+### Roles
+
+| Role | Permissions |
+|------|-------------|
+| `user` | Create own URLs, view own URLs |
+| `admin` | All user permissions + public URL listing + admin endpoints |
+
+### Making a user admin
+
+After a user signs in with Google for the first time:
+
+```bash
+curl -X POST http://localhost:8787/v1/admin/setup/make-admin \
+  -H "Authorization: Bearer your_service_admin_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+Then the user must **sign out and sign in again** to get the updated role in their session.
+
+### Admin plugin endpoints
+
+Managed by Better Auth at `/api/auth/admin/*`:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/admin/create-user` | Create a new user |
+| POST | `/api/auth/admin/set-role` | Change user role |
+| GET | `/api/auth/admin/list-users` | List all users |
+| POST | `/api/auth/admin/ban-user` | Ban a user |
+| POST | `/api/auth/admin/unban-user` | Unban a user |
 
 ---
 
 ## Local Development
 
 ```bash
-# From the repo root — runs both frontend and backend in one command:
-bun dev
-
-# Or run them separately:
-bun run dev:back     # backend on http://127.0.0.1:8787
-bun run dev:front    # frontend on http://localhost:5173
+# From the repo root — runs both frontend and backend:
+bun run dev:back       # backend on http://localhost:8787
+bun run dev:front      # frontend on http://localhost:5173
 ```
 
-> **Tip:** the backend serves the **built** frontend (from `frontend/dist/`) via the Workers Assets binding, not the Vite dev server. If you want to test UI changes, either run `bun run dev:front` in another terminal and have the SPA hit `http://127.0.0.1:8787/v1/...` (with `VITE_API_BASE_URL` pointing there), or rebuild with `bun run build:front` and restart the backend.
+The Vite dev server proxies `/api/*` and `/v1/*` requests to the backend, maintaining same-origin for cookies.
 
 ---
 
@@ -115,33 +178,55 @@ bun run dev:front    # frontend on http://localhost:5173
 
 ```
 shorturl/
-├── backend/                  # Hono + Cloudflare Workers (API + redirect + assets host)
-│   ├── src/                  # Application source
+├── backend/                  # Hono + Cloudflare Workers + Better Auth
+│   ├── src/
+│   │   ├── auth/             # Better Auth configuration
+│   │   ├── domain/           # Entities and repository ports
+│   │   ├── application/      # Use cases
+│   │   ├── infrastructure/   # Repository implementations
+│   │   ├── presentation/     # HTTP routes (v1, redirect)
+│   │   ├── db/               # Drizzle schema (urls + auth tables)
+│   │   └── utils/            # CORS, context, schemas
 │   ├── tests/                # Unit tests (bun:test)
 │   ├── drizzle/              # SQL migrations
-│   ├── wrangler.jsonc        # Worker config (D1, Assets, env)
-│   └── worker-configuration.d.ts  # Auto-generated, do not edit
+│   └── wrangler.jsonc        # Worker config (D1, Assets, env)
 ├── frontend/                 # Vue 3 + Vite SPA
-│   ├── src/                  # Application source
-│   └── dist/                 # Built static assets (consumed by backend)
+│   ├── src/
+│   │   ├── api/              # Axios client, API functions
+│   │   ├── lib/              # Better Auth client
+│   │   ├── stores/           # Pinia stores (auth, urls)
+│   │   ├── composables/      # useAuth, useUrlShortener
+│   │   ├── components/       # UI components
+│   │   └── views/            # Page views
+│   └── dist/                 # Built static assets
 ├── docs/                     # Translations & extra docs
-├── package.json              # Root scripts (workspaces)
-└── README.md
+└── package.json              # Root scripts (workspaces)
 ```
 
 ---
 
 ## API Usage
 
-All endpoints are mounted under `/v1` except the redirect, which lives at the root: `GET /:shortCode`.
-
 ### shortCode rules
 
 - 1 to 9 characters
 - Lowercase alphanumeric only: `[a-z0-9]+`
 - Auto-generated if not provided on create
+- Generated with `crypto.getRandomValues()` (cryptographically secure)
 
-### Create a short URL
+### Public endpoints (no auth)
+
+#### List public URLs (admin users only)
+
+```bash
+curl http://localhost:8787/v1/urls/public
+```
+
+Returns URLs created by users with `role: "admin"`.
+
+### Authenticated endpoints (require session cookie)
+
+#### Create a short URL
 
 ```bash
 curl -X POST http://localhost:8787/v1/urls \
@@ -155,19 +240,49 @@ curl -X POST http://localhost:8787/v1/urls \
   "originalUrl": "https://www.epicgames.com",
   "shortCode": "c04jzv",
   "createdAt": "2026-03-03T19:02:53.404Z",
-  "visits": 0
+  "visits": 0,
+  "userId": "user_id_here"
 }
 ```
 
-### Create a URL with custom shortCode
+#### List my URLs
 
 ```bash
-curl -X POST http://localhost:8787/v1/urls \
-  -H "Content-Type: application/json" \
-  -d '{"originalUrl": "https://hono.dev", "shortCode": "hono"}'
+curl http://localhost:8787/v1/urls
 ```
 
-### Redirect to original URL
+#### Get a URL by shortCode
+
+```bash
+curl http://localhost:8787/v1/urls/c04jzv
+```
+
+### Admin endpoints (require API key)
+
+#### Delete a URL
+
+```bash
+curl -X DELETE http://localhost:8787/v1/admin/urls/c04jzv \
+  -H "Authorization: Bearer your_service_admin_api_key"
+```
+
+#### Delete all URLs
+
+```bash
+curl -X DELETE http://localhost:8787/v1/admin/urls \
+  -H "Authorization: Bearer your_service_admin_api_key"
+```
+
+#### Make user admin
+
+```bash
+curl -X POST http://localhost:8787/v1/admin/setup/make-admin \
+  -H "Authorization: Bearer your_service_admin_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+### Redirect
 
 ```bash
 curl -i http://localhost:8787/c04jzv
@@ -175,128 +290,42 @@ curl -i http://localhost:8787/c04jzv
 
 Responds with `302 Location: https://www.epicgames.com` and increments the visit counter.
 
-If the `shortCode` doesn't exist in D1 or fails the format validation, responds with `302 Location: /` (loads the SPA).
-
-### List all URLs
-
-```bash
-curl http://localhost:8787/v1/urls
-```
-
-### Get a URL by shortCode
-
-```bash
-curl http://localhost:8787/v1/urls/c04jzv
-```
-
-### Delete a URL (requires API key)
-
-```bash
-curl -X DELETE http://localhost:8787/v1/admin/urls/c04jzv \
-  -H "Authorization: Bearer your_secret_api_key"
-```
-
-### Delete all URLs (requires API key)
-
-```bash
-curl -X DELETE http://localhost:8787/v1/admin/urls \
-  -H "Authorization: Bearer your_secret_api_key"
-```
-
----
-
-## Frontend Integration
-
-The backend serves the **built** frontend (from `frontend/dist/`) via the [Cloudflare Workers Assets](https://developers.cloudflare.com/workers/static-assets/) binding.
-
-**`backend/wrangler.jsonc`:**
-
-```jsonc
-{
-  "assets": {
-    "directory": "../frontend/dist",
-    "binding": "ASSETS"
-  }
-}
-```
-
-> **Important:** do **not** set `not_found_handling: "single-page-application"`. That mode serves `index.html` for any non-asset path, which breaks the `GET /:shortCode` redirect because the binding intercepts the request before the Worker can handle it.
-
-The SPA hits the API via `VITE_API_BASE_URL` (defaults to `https://roldy.cua` in `frontend/src/api/http.ts`, overridable via `frontend/.env`). If the env var is not set, the SPA falls back to the production domain so it works the same when deployed to a custom domain or to `*.workers.dev`.
-
 ---
 
 ## Routing & Redirect Behavior
 
-The Hono app registers routes in this order (see `backend/src/index.ts`):
+The Hono app registers routes in this order:
 
-1. `GET /v1/...` — REST API (mounted first to avoid collisions).
-2. `GET /:shortCode` — redirect route, registered after `/v1` so shortCodes can't shadow API paths.
-
-### `GET /:shortCode` flow
-
-```
-Request → Hono matches /:shortCode
-  → zValidator("param", shortCodeSchema, redirectValidationHook)
-      → on Zod fail: 302 Location: /     (loads SPA, never 400 JSON)
-  → RedirectUrlUseCase.execute(shortCode)
-      → null in D1 → 302 Location: /
-      → found       → 302 Location: <originalUrl>  (increments visits)
-```
-
-This means **any non-API path returns HTML** (the SPA) or a 302 to it, never a 404 JSON — which is the whole point of avoiding a catch-all `/*` route.
+1. `/api/auth/*` — Better Auth handler (Google OAuth, sessions, admin)
+2. `/v1/*` — REST API (URLs, admin)
+3. `/:shortCode` — redirect route (registered last to avoid collisions)
 
 ---
 
 ## Error Format
 
-All API errors follow this shape (see `backend/src/infrastructure/http/error-handler.ts`):
+All API errors follow this shape:
 
 ```json
 {
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Malformed JSON in request body",
+    "message": "La URL debe comenzar con http:// o https://",
     "statusCode": 400
   }
 }
 ```
 
-| `code`                       | `statusCode` | When                                                                |
-|------------------------------|--------------|---------------------------------------------------------------------|
-| `VALIDATION_ERROR`           | 400          | Zod validation failed, or `HTTPException` with status 400 (e.g. malformed JSON) |
-| `UNAUTHORIZED`               | 401          | Missing/invalid `Authorization` header on admin routes              |
-| `NOT_FOUND`                  | 404          | Resource not found (route)                                          |
-| `SHORT_CODE_ALREADY_EXISTS`  | 409          | `POST /v1/urls` with a `shortCode` already in use                   |
-| `URL_NOT_FOUND`              | 404          | `DELETE /v1/admin/urls/:shortCode` with unknown shortCode           |
-| `INTERNAL_SERVER_ERROR`      | 500          | Unhandled error (the original message is **not** leaked to the client) |
-
-`HTTPException` from Hono (e.g. `Malformed JSON in request body` thrown by the body parser) is reformatted into the same shape — it no longer surfaces as a raw 500.
-
 ---
 
 ## Tests
-
-Unit tests use [Bun's built-in test runner](https://bun.sh/docs/cli/test).
 
 ```bash
 bun test                  # all tests
 bun run test:watch        # watch mode
 bun run test:coverage     # with coverage report
 bun run test:bail         # abort on first failure
-bun run test:unit         # only tests/unit/
-bun run test:app          # only application/ usecase tests
-bun run test:utils        # only utils/ tests
-```
-
-Test files mirror `src/` structure:
-
-```
-tests/unit/
-├── application/url/         # use case tests (mocked repo)
-├── infrastructure/http/     # error handler tests (mocked Hono Context)
-└── utils/                   # schemas, AppError
 ```
 
 ---
@@ -304,15 +333,24 @@ tests/unit/
 ## Deploy to Cloudflare Workers
 
 ```bash
-bun deploy
+bun run build:front       # build frontend
+bun run deploy            # deploy backend + frontend assets
 ```
-
-This runs `build:front` (Vite build → `frontend/dist/`) and then `wrangler deploy --minify` on the backend. The `assets` block in `wrangler.jsonc` makes wrangler upload `frontend/dist/` alongside the Worker so both ship as one.
 
 Before deploying, make sure you've set:
 
 - `database_id` in `wrangler.jsonc` (production D1)
-- `SERVICE_ADMIN_API_KEY` as a secret (`bunx wrangler secret put SERVICE_ADMIN_API_KEY`)
+- `BETTER_AUTH_SECRET` as a secret
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` as secrets
+- `SERVICE_ADMIN_API_KEY` as a secret
+- `TRUSTED_ORIGINS` with your production domain
+
+```bash
+bunx wrangler secret put BETTER_AUTH_SECRET
+bunx wrangler secret put GOOGLE_CLIENT_ID
+bunx wrangler secret put GOOGLE_CLIENT_SECRET
+bunx wrangler secret put SERVICE_ADMIN_API_KEY
+```
 
 ---
 
@@ -321,63 +359,85 @@ Before deploying, make sure you've set:
 ### Monorepo (root)
 
 ```bash
-bun install            # install all workspace deps
-bun dev                # run backend (frontend served from dist)
-bun run dev:front      # run Vite dev server for the SPA
-bun run dev:back       # run wrangler dev for the Worker
-bun run build          # build frontend + backend
-bun run build:front    # build only the frontend
-bun run build:back     # build only the backend
-bun run check:front    # Biome check on frontend
-bun run format:front   # Biome format on frontend
-bun run lint:front     # Biome lint on frontend
+bun install              # install all workspace deps
+bun run dev:back         # run wrangler dev
+bun run dev:front        # run Vite dev server
+bun run build:front      # build frontend
+bun run build:back       # build backend
+bun run check            # Biome check on frontend
+bun run format           # Biome format
+bun run lint             # Biome lint
 ```
 
 ### Backend
 
 ```bash
-bun --cwd backend test                # unit tests
-bun --cwd backend dev                 # wrangler dev
-bun --cwd backend deploy              # wrangler deploy --minify
-bun --cwd backend cf-typegen          # regenerate worker-configuration.d.ts
-bun --cwd backend run db:generate     # generate SQL migration from schema
-bun --cwd backend run db:migrate:local   # apply migrations to local D1
-bun --cwd backend run db:migrate:remote  # apply migrations to remote D1
-bun --cwd backend run db:studio       # open Drizzle Studio
-bun --cwd backend run format          # Biome format on backend
+bun --cwd backend test                  # unit tests
+bun --cwd backend dev                   # wrangler dev
+bun --cwd backend deploy                # wrangler deploy --minify
+bun --cwd backend run db:generate       # generate SQL migration
+bun --cwd backend run db:migrate:local  # apply to local D1
+bun --cwd backend run db:migrate:remote # apply to remote D1
 ```
-
-> **`cf-typegen`** reads `wrangler.jsonc` and writes `worker-configuration.d.ts` (an `interface CloudflareBindings` with the inferred types of every binding: `DB: D1Database`, `ASSETS: Fetcher`, etc.). **Re-run it** every time you add/rename a binding.
 
 ---
 
 ## Frontend (Vue 3)
 
-The project includes a simple Vue 3 frontend to test the API with a user-friendly interface.
+### Features
 
-### Frontend Features
-
-- **Shorten URLs**: Create short URLs directly from the UI
-- **URL Management**: View, copy, and delete your shortened URLs
+- **Google OAuth Login**: Sign in with Google account
+- **Shorten URLs**: Create short URLs (requires authentication)
+- **URL Management**: View, copy, and delete your URLs
 - **QR Code Generation**: Generate QR codes for shortened URLs
-- **Public URL List**: Browse publicly shortened URLs
-- **Dark/Light Theme**: Toggle between dark and light modes
-- **Responsive Design**: Works on desktop and mobile devices
+- **Public URL List**: Browse URLs created by admin users
+- **Dark/Light Theme**: Toggle between modes
+- **Responsive Design**: Works on desktop and mobile
 
-### Running the Frontend
+### Tech Stack
 
-```bash
-cd frontend
-bun dev
-```
-
-The frontend runs on `http://localhost:5173` (Vite default). Point it at your local backend with `VITE_API_BASE_URL=http://127.0.0.1:8787` in `frontend/.env`.
-
-### Frontend Tech Stack
-
-- Vue 3 (Composition API)
+- Vue 3 (Composition API + `<script setup>`)
+- TypeScript
 - Vite
 - Pinia (state management)
+- Better Auth (authentication client)
 - Shadcn-VUE (UI components)
 - Tailwind CSS
-- TypeScript
+- Axios (HTTP client)
+- Lucide Vue Next (icons)
+
+---
+
+## Architecture
+
+### Backend (Hexagonal Architecture)
+
+```
+domain/          → Entities, repository ports (no external deps)
+application/     → Use cases (orchestrate business logic)
+infrastructure/  → Repository implementations (Drizzle + D1)
+presentation/    → HTTP routes (Hono handlers)
+auth/            → Better Auth configuration
+db/              → Drizzle schema (urls + auth tables)
+```
+
+**Dependency rule**: outer layers depend on inner layers, never the reverse.
+
+### Frontend
+
+```
+lib/             → Better Auth client configuration
+stores/          → Pinia stores (authStore, urlStore)
+composables/     → Reusable logic (useAuth, useUrlShortener)
+api/             → Axios instance, API functions
+components/      → Vue components (features, layout, ui)
+views/           → Page-level components
+```
+
+### Key design decisions
+
+1. **Vite proxy**: In dev, frontend requests go through Vite proxy (same-origin) so cookies work without CORS issues
+2. **Session-based auth**: Better Auth manages sessions via httpOnly cookies (not tokens)
+3. **Role-based access**: Admin plugin provides `user`/`admin` roles with different permissions
+4. **Public URLs**: Only URLs created by admin users are shown in the public list
+5. **Repository injection**: `UrlRepository` is injected via Hono context middleware (not instantiated per route)

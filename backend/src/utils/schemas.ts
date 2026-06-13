@@ -23,8 +23,12 @@ const shortCodeField = z
 
 // Schema para el body del POST /urls
 export const createUrlSchema = z.object({
-	originalUrl: z.string().url("Debe ser una URL válida"),
-	// shortCode es opcional: si no se provee, se genera automáticamente
+	originalUrl: z
+		.string()
+		.url("Debe ser una URL válida")
+		.refine((val) => val.startsWith("http://") || val.startsWith("https://"), {
+			message: "La URL debe comenzar con http:// o https://",
+		}),
 	shortCode: shortCodeField.optional(),
 });
 

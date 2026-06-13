@@ -1,7 +1,7 @@
 <script lang="ts" setup>
+import { useForwardPropsEmits } from "reka-ui";
 import type { DrawerRootEmits, DrawerRootProps } from "vaul-vue";
 import { DrawerRoot } from "vaul-vue";
-import { useForwardPropsEmits } from "reka-ui";
 
 const props = withDefaults(defineProps<DrawerRootProps>(), {
 	shouldScaleBackground: true,

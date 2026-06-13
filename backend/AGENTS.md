@@ -7,8 +7,9 @@ Guía de arquitectura y estructura del proyecto para agentes de IA y desarrollad
 ## ¿Qué hace este proyecto?
 
 API REST de acortador de URLs construida con **Hono** sobre **Cloudflare Workers**.
-Permite crear URLs cortas con un `shortCode` de máximo 9 caracteres alfanuméricos en minúsculas (auto-generado o personalizado), listar todas las URLs, buscar por código corto, redirigir a la URL original (incrementando el contador de visitas) y administrar registros mediante endpoints protegidos por API key.
+Permite crear URLs cortas con un `shortCode` de máximo 9 caracteres alfanuméricos en minúsculas (auto-generado o personalizado), listar todas las URLs, buscar por código corto, redirigir a la URL original (incrementando el contador de visitas) y administrar registros mediante endpoints protegidos por autenticación.
 La base de datos es **Cloudflare D1** (SQLite serverless), gestionada con **Drizzle ORM**.
+Autenticación con **Better Auth** (Google OAuth + sesiones cookie).
 
 ---
 
@@ -20,6 +21,7 @@ La base de datos es **Cloudflare D1** (SQLite serverless), gestionada con **Driz
 | Framework HTTP     | Hono v4                           |
 | Base de datos      | Cloudflare D1 (SQLite)            |
 | ORM                | Drizzle ORM                       |
+| Autenticación      | Better Auth (Google OAuth)        |
 | Validación         | Zod + @hono/zod-validator         |
 | Lenguaje           | TypeScript (ESNext, Bundler)      |
 | Gestor de paquetes | Bun                               |
@@ -41,38 +43,47 @@ src/
 │       └── url.repository.port.ts  ← Puerto (interfaz del repositorio)
 │
 ├── application/                     ← Casos de uso
-│   └── url/
-│       ├── create-url.usecase.ts            ← Crear URL + ShortCodeAlreadyExistsError
-│       ├── get-all-urls.usecase.ts
-│       ├── get-url-by-shortcode.usecase.ts
-│       ├── redirect-url.usecase.ts          ← Redirigir + incrementar visitas
-│       ├── delete-url.usecase.ts            ← Eliminar por shortCode + UrlNotFoundError
-│       └── delete-all-urls.usecase.ts       ← Eliminar todas las URLs
+│   ├── url/
+│   │   ├── create-url.usecase.ts            ← Crear URL + ShortCodeAlreadyExistsError
+│   │   ├── get-all-urls.usecase.ts
+│   │   ├── get-public-urls.usecase.ts       ← Filtrar URLs por usuario admin
+│   │   ├── get-url-by-shortcode.usecase.ts
+│   │   ├── redirect-url.usecase.ts          ← Redirigir + incrementar visitas
+│   │   ├── delete-url.usecase.ts            ← Eliminar por shortCode + UrlNotFoundError
+│   │   └── delete-all-urls.usecase.ts       ← Eliminar todas las URLs
+│   └── admin/
+│       └── set-admin-role.usecase.ts        ← Asignar rol admin por email
 │
 ├── infrastructure/                  ← Adaptadores secundarios
 │   ├── persistence/
 │   │   └── url.repository.impl.ts  ← Implementación Drizzle + D1
 │   └── http/
-│       └── error-handler.ts        ← onError global + errorResponse() + validationHook + mapeo code→status
+│       ├── error-handler.ts        ← onError global + errorResponse() + validationHook + mapeo code→status
+│       └── cors-middleware.ts       ← CORS unificado con echo de origin
 │
 ├── presentation/                    ← Adaptadores primarios (HTTP)
 │   └── http/
 │       ├── redirect/               ← Redirección directa por shortCode
 │       │   └── index.ts            ← GET /:shortCode → redirect 302
 │       └── v1/                     ← Versión 1 de la API REST
-│           ├── index.ts            ← Router agregador de v1
-│           ├── url.routes.ts       ← Rutas públicas de URLs
-│           └── admin.routes.ts     ← Rutas protegidas por API key
+│           ├── index.ts            ← Router agregador de v1 + middleware sesión + urlRepo
+│           ├── url.routes.ts       ← Rutas públicas + autenticadas
+│           ├── admin.routes.ts     ← Rutas protegidas (make-admin, delete URLs)
+│           └── user.routes.ts      ← Rutas de usuario (perfil, sesión)
+│
+├── auth/
+│   └── index.ts                    ← Better Auth config (admin plugin, cookies, trustedOrigins)
 │
 ├── db/
 │   ├── index.ts                    ← createDb(d1Binding) → instancia Drizzle
-│   └── schema.ts                   ← Definición de tabla `urls`
+│   ├── schema.ts                   ← Definición de tabla `urls` (con userId)
+│   └── auth-schema.ts              ← Better Auth tables (users, sessions, accounts, verifications)
 │
 ├── utils/
-│   ├── context.ts                  ← Tipo Bindings + checkEnvMiddleware
-│   └── schemas.ts                   ← Esquemas Zod (shortCodeSchema, createUrlSchema)
+│   ├── context.ts                  ← Tipo Bindings + Variables (urlRepo) + checkEnvMiddleware
+│   └── schemas.ts                  ← Esquemas Zod (shortCodeSchema, createUrlSchema)
 │
-└── index.ts                         ← Bootstrap: app Hono + middlewares + rutas + onError
+└── index.ts                         ← Bootstrap: app Hono + CORS unificado + rutas + onError
 
 tests/
 ├── tsconfig.json                    ← Extiende tsconfig raíz, añade bun-types
@@ -116,10 +127,12 @@ Orquestan la lógica de negocio recibiendo el puerto como dependencia (inyecció
 
 - **`CreateUrlUseCase`**: primero verifica si `originalUrl` ya existe (devuelve la existente si es así). Si se provee `shortCode`, verifica que no esté en uso — lanza `ShortCodeAlreadyExistsError` si ya existe. Si no, genera uno automáticamente.
 - **`GetAllUrlsUseCase`**: retorna todas las URLs.
+- **`GetPublicUrlsUseCase`**: retorna URLs filtradas por usuario admin (requiere `userId` del usuario autenticado).
 - **`GetUrlByShortCodeUseCase`**: busca por código corto, retorna `null` si no existe.
 - **`RedirectUrlUseCase`**: busca la URL por `shortCode`; si existe, llama a `incrementVisits` y retorna la entidad actualizada. Retorna `null` si no existe.
 - **`DeleteUrlUseCase`**: elimina por `shortCode` — lanza `UrlNotFoundError` si no existe.
 - **`DeleteAllUrlsUseCase`**: elimina todos los registros de la tabla.
+- **`SetAdminRoleUseCase`**: asigna rol `admin` a usuario por email usando Better Auth admin plugin.
 
 ### `infrastructure/` — Adaptadores secundarios
 - **`UrlRepository`**: implementa `UrlRepositoryPort` usando Drizzle ORM sobre D1. Contiene `generateShortCode()` para crear códigos aleatorios de 9 chars `[a-z0-9]`. Implementa `incrementVisits` con un `UPDATE ... SET visits = visits + 1 ... RETURNING` atómico.
@@ -132,13 +145,17 @@ Orquestan la lógica de negocio recibiendo el puerto como dependencia (inyecció
 
 ### `presentation/` — Adaptadores primarios
 - **`redirect/index.ts`**: router de redirección montado en `/` (raíz). `GET /:shortCode` valida el param con `shortCodeSchema`, ejecuta `RedirectUrlUseCase` y responde con `302` a `originalUrl`. Lanza `NotFoundError` si el código no existe.
-- **`v1/index.ts`**: router agregador de la versión 1. Monta `urlRoutes` en `/urls` y `adminRoutes` en `/admin`.
-- **`v1/url.routes.ts`**: rutas públicas montadas en `/v1/urls`. Aplica `validationHook` en todos los `zValidator`.
-- **`v1/admin.routes.ts`**: rutas protegidas montadas en `/v1/admin`. Middleware de autenticación que valida `Authorization: Bearer <SERVICE_ADMIN_API_KEY>` — lanza `UnauthorizedError` si falla.
+- **`v1/index.ts`**: router agregador de la versión 1. Incluye middleware de sesión Better Auth y middleware `injectUrlRepo`. Monta `urlRoutes`, `adminRoutes` y `userRoutes`.
+- **`v1/url.routes.ts`**: rutas públicas y autenticadas. `GET /public` (solo admins), `GET /` (auth), `POST /` (auth), `GET /:shortCode`.
+- **`v1/admin.routes.ts`**: rutas protegidas por Better Auth admin plugin. `POST /setup/make-admin` (SERVICE_ADMIN_API_KEY), `DELETE /urls/:shortCode`, `DELETE /urls`.
+- **`v1/user.routes.ts`**: rutas de usuario con Better Auth sessions.
+
+### `auth/` — Better Auth
+- **`index.ts`**: configuración de Better Auth con admin plugin, Google OAuth, cookies (secure conditional on DEV_MODE), trustedOrigins desde env var.
 
 ### `utils/` — Utilidades transversales
-- **`context.ts`**: tipo `Bindings` y middleware `checkEnvMiddleware`.
-- **`schemas.ts`**: `shortCodeSchema` y `createUrlSchema`.
+- **`context.ts`**: tipo `Bindings`, tipo `Variables` (con `urlRepo`), middleware `checkEnvMiddleware` y middleware `injectUrlRepo`.
+- **`schemas.ts`**: `shortCodeSchema`, `createUrlSchema` (con validación http/https).
 
 **Formato estándar de errores:**
 ```json
@@ -154,7 +171,7 @@ Orquestan la lógica de negocio recibiendo el puerto como dependencia (inyecció
 Para cambiar el formato de todos los errores de la API, modificar únicamente `ApiErrorResponse` y `errorResponse()` en `src/infrastructure/http/error-handler.ts`.
 
 ### `index.ts` — Entry point
-Bootstrap: instancia Hono, registra `checkEnvMiddleware`, `cors`, el router `/v1`, el router de redirección `/` y `app.onError(onError)`. El router de redirección se monta **después** de `/v1` para evitar colisiones.
+Bootstrap: instancia Hono, registra `checkEnvMiddleware`, `corsMiddleware` (unificado), Better Auth handler (`/api/auth/*`), el router `/v1`, el router de redirección `/` y `app.onError(onError)`. El router de redirección se monta **después** de `/v1` para evitar colisiones.
 
 ---
 
@@ -166,30 +183,36 @@ Bootstrap: instancia Hono, registra `checkEnvMiddleware`, `cors`, el router `/v1
 |--------|----------------|-----------------------------------------------------------------|
 | GET    | `/:shortCode`  | Redirige (302) a la URL original e incrementa el contador de visitas |
 
-### Rutas públicas v1
+### Rutas v1
 
-| Método | Ruta                  | Descripción                                              |
-|--------|-----------------------|----------------------------------------------------------|
-| GET    | `/v1/urls`            | Lista todas las URLs almacenadas                         |
-| POST   | `/v1/urls`            | Crea una URL corta (shortCode opcional)                  |
-| GET    | `/v1/urls/:shortCode` | Obtiene una URL por su código corto                      |
+| Método | Ruta                        | Auth       | Descripción                                     |
+|--------|-----------------------------|------------|-------------------------------------------------|
+| GET    | `/v1/urls/public`           | Admin      | Lista URLs del usuario admin autenticado        |
+| GET    | `/v1/urls`                  | User       | Lista todas las URLs del usuario                |
+| POST   | `/v1/urls`                  | User       | Crea una URL corta (shortCode opcional)         |
+| GET    | `/v1/urls/:shortCode`       | User       | Obtiene una URL por su código corto             |
 
-**POST `/v1/urls` — body:**
-```json
-{ "originalUrl": "https://...", "shortCode": "abc12" }
-```
-- `shortCode` es opcional. Si se omite, se genera automáticamente.
-- Si `originalUrl` ya existe en la BD, devuelve la entrada existente (no crea duplicados).
-- Responde `409` si el `shortCode` personalizado ya está en uso.
+### Rutas de administración
 
-### Rutas de administración (requieren auth)
+| Método | Ruta                         | Auth              | Descripción                         |
+|--------|------------------------------|-------------------|-------------------------------------|
+| POST   | `/v1/admin/setup/make-admin` | SERVICE_ADMIN_KEY | Asigna rol admin a usuario por email |
+| DELETE | `/v1/admin/urls/:shortCode`  | Better Auth Admin | Elimina una URL por su código corto |
+| DELETE | `/v1/admin/urls`             | Better Auth Admin | Elimina todas las URLs              |
 
-| Método | Ruta                         | Descripción                         |
-|--------|------------------------------|-------------------------------------|
-| DELETE | `/v1/admin/urls/:shortCode`  | Elimina una URL por su código corto |
-| DELETE | `/v1/admin/urls`             | Elimina todas las URLs              |
+### Better Auth (bajo /api/auth/*)
 
-**Autenticación:** header `Authorization: Bearer <SERVICE_ADMIN_API_KEY>`. Sin él o con key incorrecta devuelve `401`.
+| Método | Ruta                          | Descripción                    |
+|--------|-------------------------------|--------------------------------|
+| POST   | `/api/auth/sign-in/social`    | Iniciar sesión con Google      |
+| GET    | `/api/auth/callback/google`   | Callback de Google OAuth       |
+| POST   | `/api/auth/sign-out`          | Cerrar sesión                  |
+| GET    | `/api/auth/get-session`       | Obtener sesión actual          |
+
+**Autenticación:**
+- Rutas `/v1/urls/*`: requieren sesión Better Auth (cookie `better-auth.session_token`)
+- Rutas `/v1/admin/*`: requieren Better Auth admin plugin (role = "admin")
+- `POST /v1/admin/setup/make-admin`: requiere header `Authorization: Bearer <SERVICE_ADMIN_API_KEY>`
 
 ---
 
@@ -205,7 +228,8 @@ HTTP GET /c04jzv
   ← UrlEntity actualizada
   ← 302 Location: https://www.epicgames.com | 404
 
-HTTP POST /v1/urls  { originalUrl, shortCode? }
+HTTP POST /v1/urls  { originalUrl, shortCode? }  (requiere sesión)
+  → v1/index.ts                   (session middleware → injectUrlRepo)
   → v1/url.routes.ts              (valida body con Zod + validationHook)
   → CreateUrlUseCase.execute()
       → UrlRepository.findByOriginalUrl()   → devuelve existente si ya existe
@@ -215,13 +239,16 @@ HTTP POST /v1/urls  { originalUrl, shortCode? }
   ← UrlEntity
   ← JSON 200 (existente) | 201 (nueva) | 400 | 409
 
-HTTP DELETE /v1/admin/urls/ggl
+HTTP GET /v1/urls/public  (requiere sesión admin)
+  → v1/index.ts                   (session middleware → admin check → injectUrlRepo)
+  → GetPublicUrlsUseCase.execute(userId)
+      → UrlRepository.findAll()    → filtradas por userId
+  ← JSON 200 con URLs del admin
+
+HTTP POST /v1/admin/setup/make-admin  (requiere SERVICE_ADMIN_API_KEY)
   → adminRoutes middleware       (verifica Authorization header)
-  → v1/admin.routes.ts           (valida param con Zod + validationHook)
-  → DeleteUrlUseCase.execute("ggl")
-  → UrlRepository.deleteByShortCode("ggl")
-  → Drizzle → D1 SQLite
-  ← UrlEntity | UrlNotFoundError
+  → SetAdminRoleUseCase.execute(email)
+      → betterAuth.api.updateUser()
   ← JSON 200 | 401 | 404
 ```
 
@@ -264,8 +291,16 @@ bun test usecase          # filtrar por nombre de archivo
 | `tsconfig.json`     | Target ESNext, alias `@/*` → `src/*`, types Workers + Node. Solo incluye `src/` |
 | `bunfig.toml`       | Configuración del test runner de Bun (timeout, retry, coverageDir) |
 | `biome.json`        | Formatter/linter                                                  |
-| `.env`              | Variables locales (IDs de D1, API keys, tokens)                   |
+| `.env`              | Variables locales (D1, API keys, BETTER_AUTH_SECRET, Google OAuth) |
 | `drizzle/`          | Migraciones SQL generadas por drizzle-kit                         |
+
+**Variables de entorno requeridas (.env):**
+- `SERVICE_ADMIN_API_KEY` — API key para operaciones admin (make-admin)
+- `BETTER_AUTH_SECRET` — Secreto para Better Auth (generar con `openssl rand -base64 32`)
+- `GOOGLE_CLIENT_ID` — Client ID de Google OAuth
+- `GOOGLE_CLIENT_SECRET` — Client Secret de Google OAuth
+- `TRUSTED_ORIGINS` — Orígenes permitidos (separados por coma, ej: `http://localhost:5173,http://localhost:8787`)
+- `DEV_MODE` — Modo desarrollo (afecta cookie secure flag)
 
 ---
 
@@ -297,9 +332,9 @@ bun format                 # Formatea el código con Biome
 
 - **Nuevas entidades de dominio**: crear en `src/domain/<entidad>/`.
 - **Nuevos casos de uso**: crear en `src/application/<entidad>/`, inyectar el puerto en el constructor. Los errores del caso de uso deben extender `AppError` de `src/domain/app-error.ts`. **Nunca** incluir `statusCode` en los errores de dominio — el mapeo a HTTP es responsabilidad de infraestructura.
-- **Nueva tabla**: añadir en `src/db/schema.ts`, luego `bun run db:generate` y `bun run db:migrate:local`.
-- **Nuevas rutas públicas**: crear archivo en `src/presentation/http/v1/` y registrarlo en `src/presentation/http/v1/index.ts` con `v1Router.route()`.
-- **Nuevas rutas protegidas**: añadirlas a `src/presentation/http/v1/admin.routes.ts` o crear un nuevo router de admin si corresponde a otra entidad.
+- **Nueva tabla**: añadir en `src/db/schema.ts` (urls) o `src/db/auth-schema.ts` (auth), luego `bun run db:generate` y `bun run db:migrate:local`.
+- **Nuevas rutas autenticadas**: añadir a `src/presentation/http/v1/url.routes.ts` — el middleware de sesión ya está en el router padre.
+- **Nuevas rutas admin**: añadir a `src/presentation/http/v1/admin.routes.ts` — requieren Better Auth admin plugin (role check).
 - **Nueva versión de API**: crear carpeta `src/presentation/http/v2/` con su propio `index.ts` y montarla en `src/index.ts` con `app.route("/v2", v2Router)`.
 - **Validaciones Zod**: definir en `src/utils/schemas.ts` y aplicar con `zValidator(target, schema, validationHook)`. Siempre pasar `validationHook` como tercer argumento.
 - **Manejo de errores en rutas**: las rutas no usan `try/catch`. Hacer `throw` de un `AppError`; el handler global `onError` lo captura y formatea.
@@ -309,3 +344,6 @@ bun format                 # Formatea el código con Biome
 - **Nunca** importar Drizzle, D1 o Hono desde `domain/` ni `application/`.
 - **Nunca** importar desde `infrastructure/` o `presentation/` hacia `application/` o `domain/` — las capas inferiores no pueden depender de las superiores.
 - El alias `@/` apunta a `src/` (definido en `tsconfig.json` `paths`).
+- **Better Auth**: la configuración está en `src/auth/index.ts`. El admin plugin se usa en rutas admin. Las sesiones se manejan via cookie `better-auth.session_token`.
+- **Cookies**: el flag `secure` se condiciona a `DEV_MODE`. El dominio se configura automáticamente por el browser.
+- **CORS**: usar `corsMiddleware` de `src/utils/cors-middleware.ts`. Configurar `TRUSTED_ORIGINS` en `.env`.

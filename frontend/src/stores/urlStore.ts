@@ -1,145 +1,111 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
-import type { SavedUrlItem, UserSession } from "@/api/types";
+import { computed, ref } from "vue";
+import type { SavedUrlItem, UrlInfoResponse } from "@/api/types";
 
-export type { SavedUrlItem, UserSession };
+export type { SavedUrlItem };
 
 // Store de URLs
 export const useUrlStore = defineStore("urlStore", () => {
 	// Estado reactivo
 	const savedUrls = ref<SavedUrlItem[]>([]);
-	const userSession = ref<UserSession>({
-		remainingAttempts: 3,
-		isAdmin: false,
-		sessionId: generateSessionId(),
-		lastReset: new Date().toISOString(),
-	});
 
 	// Estado de la aplicación
 	const isLoading = ref(false);
 	const currentTab = ref<"shorten" | "info" | "myurls" | "list">("shorten");
+	const urlLimit = ref(2);
+	const currentUserId = ref<string | null>(null);
 
-	// Cache para evitar llamadas excesivas a la API
+	// Cache para evitar llamadas excesivas a la API de lista pública
 	const lastPublicListFetch = ref<string | null>(null);
 	const lastUserUrlCreated = ref<string | null>(null);
-	const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutos
+	const CACHE_DURATION_MS = 5 * 60 * 1000;
+
+	// Persisted public list cache
+	const PUBLIC_LIST_KEY = "publicList_v1";
+	const PUBLIC_LIST_TTL_MS = CACHE_DURATION_MS;
+
+	function loadPublicCache(): UrlInfoResponse[] | null {
+		try {
+			const raw = localStorage.getItem(PUBLIC_LIST_KEY);
+			if (!raw) return null;
+			const parsed = JSON.parse(raw);
+			if (!parsed?.fetchedAt || !parsed?.data) return null;
+			if (
+				Date.now() - new Date(parsed.fetchedAt).getTime() >
+				PUBLIC_LIST_TTL_MS
+			)
+				return null;
+			// actualizar estado en memoria
+			lastPublicListFetch.value = parsed.fetchedAt;
+			return parsed.data as UrlInfoResponse[];
+		} catch (e) {
+			console.error("Error loading public list cache:", e);
+			return null;
+		}
+	}
+
+	function savePublicCache(data: UrlInfoResponse[]) {
+		try {
+			const payload = { fetchedAt: new Date().toISOString(), data };
+			localStorage.setItem(PUBLIC_LIST_KEY, JSON.stringify(payload));
+			lastPublicListFetch.value = payload.fetchedAt;
+		} catch (e) {
+			console.error("Error saving public list cache:", e);
+		}
+	}
+
+	function clearPublicCache() {
+		localStorage.removeItem(PUBLIC_LIST_KEY);
+		lastPublicListFetch.value = null;
+	}
 
 	// Getters computados
-	const hasRemainingAttempts = computed(
-		() => userSession.value.remainingAttempts > 0,
-	);
 	const urlCount = computed(() => savedUrls.value.length);
-	const canUseService = computed(
-		() => userSession.value.isAdmin || hasRemainingAttempts.value,
-	);
+	const canUseService = computed(() => urlCount.value < urlLimit.value);
 
 	// Funciones de utilidad
-	function generateSessionId(): string {
-		return Date.now().toString(36) + Math.random().toString(36).substr(2);
+	function getUrlStorageKey(userId: string): string {
+		return `savedUrls_${userId}`;
 	}
 
-	function shouldResetAttempts(): boolean {
-		const lastReset = new Date(userSession.value.lastReset);
-		const now = new Date();
-		const hoursSinceReset =
-			(now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
-		return hoursSinceReset >= 24; // Reset cada 24 horas
+	function setUrlLimit(limit: number) {
+		urlLimit.value = limit;
 	}
 
-	// Acciones del store
-	function loadUserSession() {
+	// Funciones para URLs guardadas (por usuario en localStorage)
+	function loadSavedUrls(userId?: string) {
+		const uid = userId || currentUserId.value;
+		if (!uid) {
+			savedUrls.value = [];
+			return;
+		}
+
+		currentUserId.value = uid;
+
 		try {
-			const stored = localStorage.getItem("userSession");
+			const key = getUrlStorageKey(uid);
+			const stored = localStorage.getItem(key);
 			if (stored) {
-				const parsedSession = JSON.parse(stored) as UserSession;
-
-				// Verificar si necesita reset por tiempo
-				if (shouldResetAttempts()) {
-					resetAttempts();
-				} else {
-					userSession.value = {
-						...parsedSession,
-						sessionId: parsedSession.sessionId || generateSessionId(),
-					};
-				}
-			} else {
-				// Nueva sesión
-				saveUserSession();
-			}
-		} catch (error) {
-			console.error("Error loading user session:", error);
-			resetUserSession();
-		}
-	}
-
-	function saveUserSession() {
-		try {
-			localStorage.setItem("userSession", JSON.stringify(userSession.value));
-		} catch (error) {
-			console.error("Error saving user session:", error);
-		}
-	}
-
-	function resetUserSession() {
-		userSession.value = {
-			remainingAttempts: 3,
-			isAdmin: false,
-			sessionId: generateSessionId(),
-			lastReset: new Date().toISOString(),
-		};
-		saveUserSession();
-	}
-
-	function resetAttempts() {
-		userSession.value.remainingAttempts = 3;
-		userSession.value.lastReset = new Date().toISOString();
-		saveUserSession();
-	}
-
-	function decrementAttempts() {
-		if (userSession.value.isAdmin) return true;
-
-		if (userSession.value.remainingAttempts > 0) {
-			userSession.value.remainingAttempts--;
-			saveUserSession();
-			return true;
-		}
-		return false;
-	}
-
-	function setAdminStatus(isAdmin: boolean, apiKey?: string) {
-		// Verificar si tiene la API key correcta (opcional)
-		if (isAdmin && apiKey) {
-			const envApiKey = import.meta.env.VITE_API_KEY;
-			if (envApiKey && apiKey === envApiKey) {
-				userSession.value.isAdmin = true;
-				userSession.value.remainingAttempts = 999; // Unlimited para admins
-			} else {
-				userSession.value.isAdmin = false;
-			}
-		} else {
-			userSession.value.isAdmin = isAdmin;
-			if (isAdmin) {
-				userSession.value.remainingAttempts = 999;
-			}
-		}
-		saveUserSession();
-	}
-
-	// Funciones para URLs guardadas
-	function loadSavedUrls() {
-		try {
-			const stored = localStorage.getItem("savedUrls");
-			if (stored) {
-				const parsedUrls: SavedUrlItem[] = JSON.parse(stored);
-				// Remover duplicados y ordenar por fecha
-				savedUrls.value = removeDuplicateUrls(parsedUrls).sort(
+				const parsed: SavedUrlItem[] = JSON.parse(stored);
+				savedUrls.value = parsed.sort(
 					(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 				);
+			} else {
+				savedUrls.value = [];
 			}
 		} catch (error) {
 			console.error("Error loading saved URLs:", error);
 			savedUrls.value = [];
+		}
+	}
+
+	function saveSavedUrls() {
+		if (!currentUserId.value) return;
+		try {
+			const key = getUrlStorageKey(currentUserId.value);
+			localStorage.setItem(key, JSON.stringify(savedUrls.value));
+		} catch (error) {
+			console.error("Error saving URLs:", error);
 		}
 	}
 
@@ -150,20 +116,13 @@ export const useUrlStore = defineStore("urlStore", () => {
 			date: new Date().toISOString(),
 		};
 
-		// Agregar al inicio del array
 		savedUrls.value.unshift(newUrl);
 
-		// Mantener solo las últimas 50 URLs
 		if (savedUrls.value.length > 50) {
 			savedUrls.value = savedUrls.value.slice(0, 50);
 		}
 
-		// Remover duplicados
 		savedUrls.value = removeDuplicateUrls(savedUrls.value);
-
-		// Actualizar fecha de última URL creada por el usuario
-		lastUserUrlCreated.value = new Date().toISOString();
-		loadPublicListCache();
 
 		saveSavedUrls();
 	}
@@ -180,12 +139,13 @@ export const useUrlStore = defineStore("urlStore", () => {
 		saveSavedUrls();
 	}
 
-	function saveSavedUrls() {
-		try {
-			localStorage.setItem("savedUrls", JSON.stringify(savedUrls.value));
-		} catch (error) {
-			console.error("Error saving URLs:", error);
+	function clearUserUrls(userId?: string) {
+		const uid = userId || currentUserId.value;
+		if (uid) {
+			localStorage.removeItem(getUrlStorageKey(uid));
 		}
+		savedUrls.value = [];
+		currentUserId.value = null;
 	}
 
 	function removeDuplicateUrls(urlList: SavedUrlItem[]): SavedUrlItem[] {
@@ -198,35 +158,8 @@ export const useUrlStore = defineStore("urlStore", () => {
 	}
 
 	// Funciones para el cache de la lista pública
-	function loadPublicListCache() {
-		try {
-			const stored = localStorage.getItem("publicListCache");
-			if (stored) {
-				const cache = JSON.parse(stored);
-				lastPublicListFetch.value = cache.lastFetch;
-				lastUserUrlCreated.value = cache.lastUserUrlCreated;
-			}
-		} catch (error) {
-			console.error("Error loading public list cache:", error);
-		}
-	}
-
-	function savePublicListCache() {
-		try {
-			localStorage.setItem(
-				"publicListCache",
-				JSON.stringify({
-					lastFetch: lastPublicListFetch.value,
-					lastUserUrlCreated: lastUserUrlCreated.value,
-				}),
-			);
-		} catch (error) {
-			console.error("Error saving public list cache:", error);
-		}
-	}
-
 	function shouldFetchPublicList(): boolean {
-		const now = new Date().getTime();
+		const now = Date.now();
 
 		if (!lastPublicListFetch.value) {
 			return true;
@@ -238,8 +171,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 			? now - new Date(lastUserUrlCreated.value).getTime()
 			: 0;
 
-		// Fetch si han pasado más de 5 min desde la última llamada
-		// O si el usuario creó una URL hace menos de 5 min (para mostrar la nueva URL)
 		return (
 			timeSinceLastFetch >= CACHE_DURATION_MS ||
 			timeSinceLastUserUrl < CACHE_DURATION_MS
@@ -248,7 +179,6 @@ export const useUrlStore = defineStore("urlStore", () => {
 
 	function updatePublicListFetchTime() {
 		lastPublicListFetch.value = new Date().toISOString();
-		savePublicListCache();
 	}
 
 	// Funciones de navegación
@@ -257,47 +187,44 @@ export const useUrlStore = defineStore("urlStore", () => {
 	}
 
 	// Función de inicialización
-	function initialize() {
-		loadUserSession();
-		loadSavedUrls();
-		loadPublicListCache();
+	function initialize(userId?: string) {
+		loadSavedUrls(userId);
 	}
 
-	// Funciones para debugging (solo desarrollo)
+	function setUrlLimitFromRole(role?: string) {
+		urlLimit.value = role === "admin" ? 999 : 2;
+	}
+
+	// Funciones para debugging
 	function getDebugInfo() {
 		return {
-			session: userSession.value,
 			urlCount: savedUrls.value.length,
+			urlLimit: urlLimit.value,
 			canUse: canUseService.value,
-			shouldReset: shouldResetAttempts(),
+			userId: currentUserId.value,
 		};
 	}
 
 	return {
 		// Estado
 		savedUrls,
-		userSession,
 		isLoading,
 		currentTab,
+		currentUserId,
 
 		// Getters
-		hasRemainingAttempts,
 		urlCount,
+		urlLimit,
 		canUseService,
-
-		// Acciones - Sesión de usuario
-		loadUserSession,
-		saveUserSession,
-		resetUserSession,
-		resetAttempts,
-		decrementAttempts,
-		setAdminStatus,
 
 		// Acciones - URLs
 		loadSavedUrls,
 		addUrl,
 		removeUrl,
 		clearAllUrls,
+		clearUserUrls,
+		setUrlLimit,
+		setUrlLimitFromRole,
 
 		// Acciones - Navegación
 		setCurrentTab,
@@ -305,11 +232,14 @@ export const useUrlStore = defineStore("urlStore", () => {
 		// Acciones - Cache de lista pública
 		shouldFetchPublicList,
 		updatePublicListFetchTime,
+		loadPublicCache,
+		savePublicCache,
+		clearPublicCache,
 
 		// Inicialización
 		initialize,
 
-		// Debug (solo desarrollo)
+		// Debug
 		getDebugInfo,
 	};
 });
