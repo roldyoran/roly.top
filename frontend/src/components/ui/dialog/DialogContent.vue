@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@vueuse/core";
+import { reactiveOmit } from "@/lib/utils";
 import { X } from "lucide-vue-next";
 import type { DialogContentEmits, DialogContentProps } from "reka-ui";
 import {

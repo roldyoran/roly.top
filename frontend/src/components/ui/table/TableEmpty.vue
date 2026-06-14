@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@vueuse/core";
+import { reactiveOmit } from "@/lib/utils";
 import type { HTMLAttributes } from "vue";
 import { cn } from "@/lib/utils";
 import TableCell from "./TableCell.vue";

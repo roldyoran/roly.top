@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { reactiveOmit } from "@vueuse/core";
+import { reactiveOmit } from "@/lib/utils";
 import type { DrawerDescriptionProps } from "vaul-vue";
 import { DrawerDescription } from "vaul-vue";
 import type { HTMLAttributes } from "vue";
