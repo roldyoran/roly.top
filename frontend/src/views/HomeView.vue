@@ -118,8 +118,8 @@
 
         <motion.div
           class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-foreground/70 mb-8"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }"
         >
           <CloudflareWorkers class="w-4 h-4" />
@@ -128,8 +128,8 @@
 
         <motion.h1
           class="font-display font-800 text-center leading-[0.9] mb-4 text-foreground text-[clamp(40px,6vw,80px)] tracking-[-0.04em]"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }"
         >
           Acorta tu URL<br><span class="text-primary" style="text-shadow: 0 0 40px oklch(0.7 0.18 130 / 0.45), 0 0 80px oklch(0.7 0.18 130 / 0.22);">al instante.</span>
@@ -137,8 +137,8 @@
 
         <motion.p
           class="text-[15px] text-muted-foreground text-center max-w-[400px] mb-[52px] leading-relaxed"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }"
         >
             Simple · Rápido · Gratis · Construido sobre infraestructura Edge
@@ -147,8 +147,8 @@
         <!-- Terminal Shortener Card -->
         <motion.div
           class="shortener-card w-full max-w-[640px]"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.38 }"
         >
           <div class="sc-titlebar">
