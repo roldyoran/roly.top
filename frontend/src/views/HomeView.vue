@@ -364,7 +364,7 @@ import {
 import Google from "@/assets/google.vue";
 import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
 import { AnimatePresence, motion } from "motion-v";
-import { computed, nextTick, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, nextTick, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { z } from "zod";
@@ -373,8 +373,6 @@ import {
 	getPublicStatsRequest,
 	getUrlsRequest,
 } from "@/api/http";
-import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
-import UrlInfoForm from "@/components/features/url-info/UrlInfoForm.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
 import { Switch } from "@/components/ui/switch";
 import ThemeToggle from "@/components/layout/ThemeToggle.vue";
@@ -382,6 +380,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/composables/useAuth";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useSeo } from "@/composables/useSeo";
+
+const QrGenerator = defineAsyncComponent(() => import("@/components/features/qr-generator/QrGenerator.vue"));
+const UrlInfoForm = defineAsyncComponent(() => import("@/components/features/url-info/UrlInfoForm.vue"));
 import { useUrlShortener } from "@/composables/useUrlShortener";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
