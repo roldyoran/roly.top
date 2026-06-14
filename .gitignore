@@ -38,3 +38,5 @@ lerna-debug.log*
 
 
 backend/wrangler.jsonc
+
+.unlighthouse
