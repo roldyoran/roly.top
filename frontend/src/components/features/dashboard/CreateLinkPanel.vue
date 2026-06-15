@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div class="mb-6">
-      <h2 class="font-display text-lg font-800 tracking-tight">Crear Nuevo Enlace</h2>
+      <h3 class="font-display text-lg font-800 tracking-tight">Crear Nuevo Enlace</h3>
       <p class="text-xs font-mono text-muted-foreground mt-0.5">Acorta una URL y guárdala en tu cuenta</p>
     </div>
 

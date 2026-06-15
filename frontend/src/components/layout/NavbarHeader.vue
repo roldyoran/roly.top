@@ -65,17 +65,18 @@
             variant="ghost"
             size="sm"
             class="w-9 h-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+            aria-label="Cerrar sesión"
             @click="handleSignOut"
           >
-            <LogOut class="w-4 h-4" />
+            <LogOut class="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
 
         <!-- Menú móvil -->
         <Drawer>
           <DrawerTrigger as-child>
-            <Button variant="ghost" size="sm" class="sm:hidden w-9 h-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted">
-              <Menu class="w-4 h-4" />
+            <Button variant="ghost" size="sm" class="sm:hidden w-9 h-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted" aria-label="Abrir menú">
+              <Menu class="w-4 h-4" aria-hidden="true" />
             </Button>
           </DrawerTrigger>
           <DrawerContent>
@@ -111,8 +112,8 @@
                   <p class="font-medium text-sm truncate">{{ authStore.userName }}</p>
                   <p class="text-xs text-muted-foreground truncate">{{ authStore.userEmail }}</p>
                 </div>
-                <Button variant="ghost" size="sm" @click="handleSignOut">
-                  <LogOut class="w-4 h-4" />
+                <Button variant="ghost" size="sm" @click="handleSignOut" aria-label="Cerrar sesión">
+                  <LogOut class="w-4 h-4" aria-hidden="true" />
                 </Button>
               </div>
 

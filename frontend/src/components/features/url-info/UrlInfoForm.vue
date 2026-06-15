@@ -65,8 +65,8 @@
 
               <Tooltip>
                 <TooltipTrigger :asChild="true">
-                  <Button @click="copyOriginalUrl()" variant="outline" size="sm">
-                    <Copy class="w-4 h-4" />
+                  <Button @click="copyOriginalUrl()" variant="outline" size="sm" aria-label="Copiar URL original">
+                    <Copy class="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Copiar URL original</TooltipContent>

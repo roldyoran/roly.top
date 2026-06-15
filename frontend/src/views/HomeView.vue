@@ -66,15 +66,16 @@
             variant="ghost"
             size="sm"
             class="w-9 h-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+            aria-label="Cerrar sesión"
             @click="handleSignOut"
           >
-            <LogOut class="w-4 h-4" />
+            <LogOut class="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
 
         <!-- Mobile menu -->
-        <Button variant="ghost" size="sm" class="sm:hidden w-9 h-9 p-0 text-muted-foreground" @click="mobileMenuOpen = !mobileMenuOpen">
-          <Menu class="w-4 h-4" />
+        <Button variant="ghost" size="sm" class="sm:hidden w-9 h-9 p-0 text-muted-foreground" aria-label="Abrir menú" @click="mobileMenuOpen = !mobileMenuOpen">
+          <Menu class="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
     </header>
@@ -232,8 +233,8 @@
                   <p class="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">{{ originalUrl }}</p>
                 </div>
                 <Button size="sm" class="bg-primary text-primary-foreground font-display font-700" @click="copyShortUrl">Copiar</Button>
-                <Button variant="ghost" size="sm" class="w-7 h-7 p-0 text-muted-foreground" @click="dismissResult">
-                  <X class="w-3.5 h-3.5" />
+                <Button variant="ghost" size="sm" class="w-7 h-7 p-0 text-muted-foreground" aria-label="Cerrar resultado" @click="dismissResult">
+                  <X class="w-3.5 h-3.5" aria-hidden="true" />
                 </Button>
               </div>
             </template>

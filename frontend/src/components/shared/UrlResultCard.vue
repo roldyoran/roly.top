@@ -10,8 +10,8 @@
           <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
           <span class="font-mono text-[10px] tracking-wider text-primary">URL ACORTADA EXITOSAMENTE</span>
         </div>
-        <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="$emit('close')">
-          <X class="w-4 h-4" />
+        <Button variant="ghost" size="sm" class="h-6 w-6 p-0" aria-label="Cerrar" @click="$emit('close')">
+          <X class="w-4 h-4" aria-hidden="true" />
         </Button>
       </div>
 
