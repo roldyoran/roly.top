@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div>
-      <h2 class="font-display text-2xl font-800 tracking-tight">Configuración</h2>
+      <h3 class="font-display text-2xl font-800 tracking-tight">Configuración</h3>
       <p class="text-base font-mono text-muted-foreground mt-0.5">Administra tu cuenta y preferencias</p>
     </div>
 

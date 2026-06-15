@@ -62,7 +62,7 @@
 
         <div v-else-if="isMyList && !authStore.isAuthenticated" class="text-center py-12">
           <Database class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 class="text-lg font-semibold mb-2">Inicia sesión para ver tus URLs</h3>
+          <h2 class="text-lg font-semibold mb-2">Inicia sesión para ver tus URLs</h2>
           <p class="text-muted-foreground mb-4">Accede a tu cuenta para gestionar tus URLs acortadas</p>
           <Button @click="authStore.signIn" class="gap-2">
             <Google class="w-4 h-4" />
@@ -72,7 +72,7 @@
 
         <div v-else-if="isMyList && normalizedMyUrls.length === 0" class="text-center py-12">
           <Database class="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 class="text-lg font-semibold mb-2">No hay URLs guardadas</h3>
+          <h2 class="text-lg font-semibold mb-2">No hay URLs guardadas</h2>
           <p class="text-muted-foreground">Las URLs acortadas aparecerán aquí automáticamente</p>
         </div>
 
@@ -133,8 +133,8 @@
                 <div class="flex items-center gap-0.5 sm:gap-1">
                   <Tooltip>
                     <TooltipTrigger :asChild="true">
-                      <Button @click="copyFullUrl(url.shortCode)" variant="ghost" size="sm" class="h-6 w-6 sm:h-7 sm:w-7 p-0">
-                        <Copy class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <Button @click="copyFullUrl(url.shortCode)" variant="ghost" size="sm" class="h-6 w-6 sm:h-7 sm:w-7 p-0" aria-label="Copiar URL">
+                        <Copy class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Copiar URL</TooltipContent>
@@ -142,8 +142,8 @@
 
                   <Tooltip>
                     <TooltipTrigger :asChild="true">
-                      <Button @click="generateQR(url.shortCode)" variant="ghost" size="sm" class="h-6 w-6 sm:h-7 sm:w-7 p-0">
-                        <QrCode class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <Button @click="generateQR(url.shortCode)" variant="ghost" size="sm" class="h-6 w-6 sm:h-7 sm:w-7 p-0" aria-label="Generar código QR">
+                        <QrCode class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Generar QR</TooltipContent>
@@ -156,8 +156,9 @@
                         variant="ghost"
                         size="sm"
                         class="h-6 w-6 sm:h-7 sm:w-7 p-0"
+                        aria-label="Abrir en nueva pestaña"
                       >
-                        <ExternalLink class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <ExternalLink class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Abrir en nueva pestaña</TooltipContent>
@@ -170,8 +171,9 @@
                         variant="ghost"
                         size="sm"
                         class="h-6 w-6 sm:h-7 sm:w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        aria-label="Eliminar URL"
                       >
-                        <Trash class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <Trash class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Eliminar</TooltipContent>
@@ -202,8 +204,9 @@
               :disabled="currentPage === 1"
               variant="outline"
               size="sm"
+              aria-label="Página anterior"
             >
-              <ChevronLeft class="w-4 h-4" />
+              <ChevronLeft class="w-4 h-4" aria-hidden="true" />
             </Button>
 
             <div class="flex gap-1">
@@ -224,8 +227,9 @@
               :disabled="currentPage === totalPages"
               variant="outline"
               size="sm"
+              aria-label="Página siguiente"
             >
-              <ChevronRight class="w-4 h-4" />
+              <ChevronRight class="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

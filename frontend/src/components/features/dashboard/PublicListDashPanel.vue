@@ -1,7 +1,7 @@
 <template>
 	<div class="flex flex-col gap-3">
 		<div>
-			<h2 class="font-display text-lg font-800 tracking-tight">Enlaces Públicos</h2>
+			<h3 class="font-display text-lg font-800 tracking-tight">Enlaces Públicos</h3>
 			<p class="text-[10px] font-mono text-muted-foreground mt-0.5">Explora los enlaces acortados públicos</p>
 		</div>
 
@@ -56,25 +56,28 @@
 								variant="ghost"
 								size="sm"
 								class="size-7 p-0 text-muted-foreground hover:text-foreground"
+								aria-label="Copiar URL"
 								@click="copyUrl(url.shortCode)"
 							>
-								<Copy class="size-3.5" />
+								<Copy class="size-3.5" aria-hidden="true" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								class="size-7 p-0 text-muted-foreground hover:text-foreground"
+								aria-label="Generar código QR"
 								@click="openQr(url.shortCode)"
 							>
-								<QrCode class="size-3.5" />
+								<QrCode class="size-3.5" aria-hidden="true" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								class="size-7 p-0 text-muted-foreground hover:text-foreground"
+								aria-label="Abrir en nueva pestaña"
 								@click="openExternal(url.shortCode)"
 							>
-								<ExternalLink class="size-3.5" />
+								<ExternalLink class="size-3.5" aria-hidden="true" />
 							</Button>
 						</div>
 					</div>

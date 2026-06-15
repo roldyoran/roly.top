@@ -3,9 +3,9 @@
 		<!-- HEADER -->
 		<div class="flex items-center justify-between flex-wrap gap-3">
 			<div>
-				<h2 class="font-display text-lg font-800 tracking-tight">
+				<h3 class="font-display text-lg font-800 tracking-tight">
 					Mis Enlaces
-				</h2>
+				</h3>
 				<p class="text-xs font-mono text-muted-foreground mt-0.5">
 					Administra todos tus enlaces acortados
 				</p>
@@ -148,6 +148,7 @@
 									variant="outline"
 									size="sm"
 									class="h-auto px-2.5 py-1.5 text-[11px] font-mono font-600 border-border/60"
+									aria-label="Copiar"
 									@click="copyUrl(url.shortCode)"
 								>
 									<Copy class="size-3" data-icon="inline-start" />
@@ -157,6 +158,7 @@
 									variant="outline"
 									size="sm"
 									class="h-auto px-2.5 py-1.5 text-[11px] font-mono font-600 text-destructive border-border/60 hover:bg-destructive/5 hover:border-destructive/30"
+									aria-label="Eliminar"
 									@click="confirmDelete(url.shortCode)"
 								>
 									<Trash2 class="size-3" data-icon="inline-start" />

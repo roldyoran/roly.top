@@ -12,6 +12,7 @@
           >
             <button
               class="absolute top-4 right-4 w-7 h-7 rounded-[7px] border border-border bg-muted flex items-center justify-center text-muted-foreground hover:bg-overlay hover:text-foreground transition-colors"
+              aria-label="Cerrar"
               @click="$emit('close')"
             >
               <X class="w-4 h-4" />

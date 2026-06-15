@@ -227,7 +227,7 @@ body {
 	--secondary: #e2e2e6;
 	--secondary-foreground: #52525b;
 	--muted: #d8d8dc;
-	--muted-foreground: #a1a1aa;
+	--muted-foreground: #71717a;
 	--accent: #f0f0f0;
 	--accent-foreground: #52525b;
 	--destructive: #ef4444;
@@ -270,7 +270,7 @@ body {
 	/* Text hierarchy (light) */
 	--text-primary: #09090b;
 	--text-secondary: #52525b;
-	--text-muted: #a1a1aa;
+	--text-muted: #71717a;
 	--text-disabled: #d4d4d8;
 	/* Border variants (light) */
 	--border-subtle: rgba(0, 0, 0, 0.08);

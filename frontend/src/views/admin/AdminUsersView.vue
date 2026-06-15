@@ -136,8 +136,9 @@
 											variant="ghost"
 											size="sm"
 											class="h-7 w-7 p-0 rounded-lg"
+											aria-label="Acciones"
 										>
-											<MoreHorizontal class="h-4 w-4" />
+											<MoreHorizontal class="h-4 w-4" aria-hidden="true" />
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end" class="rounded-xl w-44">
@@ -201,8 +202,9 @@
 									variant="ghost"
 									size="sm"
 									class="h-8 w-8 p-0 rounded-lg"
+									aria-label="Acciones"
 								>
-									<MoreHorizontal class="h-4 w-4" />
+									<MoreHorizontal class="h-4 w-4" aria-hidden="true" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" class="rounded-xl w-44">
