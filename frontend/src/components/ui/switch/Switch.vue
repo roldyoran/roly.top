@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@vueuse/core";
+import { reactiveOmit } from "@/lib/utils";
 import type { SwitchRootEmits, SwitchRootProps } from "reka-ui";
 import { SwitchRoot, SwitchThumb, useForwardPropsEmits } from "reka-ui";
 import type { HTMLAttributes } from "vue";

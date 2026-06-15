@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@vueuse/core";
+import { reactiveOmit } from "@/lib/utils";
 import { Check } from "lucide-vue-next";
 import type { SelectItemProps } from "reka-ui";
 import {

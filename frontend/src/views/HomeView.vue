@@ -118,8 +118,8 @@
 
         <motion.div
           class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-foreground/70 mb-8"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }"
         >
           <CloudflareWorkers class="w-4 h-4" />
@@ -128,8 +128,8 @@
 
         <motion.h1
           class="font-display font-800 text-center leading-[0.9] mb-4 text-foreground text-[clamp(40px,6vw,80px)] tracking-[-0.04em]"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }"
         >
           Acorta tu URL<br><span class="text-primary" style="text-shadow: 0 0 40px oklch(0.7 0.18 130 / 0.45), 0 0 80px oklch(0.7 0.18 130 / 0.22);">al instante.</span>
@@ -137,8 +137,8 @@
 
         <motion.p
           class="text-[15px] text-muted-foreground text-center max-w-[400px] mb-[52px] leading-relaxed"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }"
         >
             Simple · Rápido · Gratis · Construido sobre infraestructura Edge
@@ -147,8 +147,8 @@
         <!-- Terminal Shortener Card -->
         <motion.div
           class="shortener-card w-full max-w-[640px]"
-          :initial="{ opacity: 0, y: 20, filter: 'blur(8px)' }"
-          :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+          :initial="{ opacity: 0, y: 20 }"
+          :animate="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.38 }"
         >
           <div class="sc-titlebar">
@@ -364,7 +364,7 @@ import {
 import Google from "@/assets/google.vue";
 import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
 import { AnimatePresence, motion } from "motion-v";
-import { computed, nextTick, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, nextTick, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { z } from "zod";
@@ -373,8 +373,6 @@ import {
 	getPublicStatsRequest,
 	getUrlsRequest,
 } from "@/api/http";
-import QrGenerator from "@/components/features/qr-generator/QrGenerator.vue";
-import UrlInfoForm from "@/components/features/url-info/UrlInfoForm.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
 import { Switch } from "@/components/ui/switch";
 import ThemeToggle from "@/components/layout/ThemeToggle.vue";
@@ -382,6 +380,9 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/composables/useAuth";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useSeo } from "@/composables/useSeo";
+
+const QrGenerator = defineAsyncComponent(() => import("@/components/features/qr-generator/QrGenerator.vue"));
+const UrlInfoForm = defineAsyncComponent(() => import("@/components/features/url-info/UrlInfoForm.vue"));
 import { useUrlShortener } from "@/composables/useUrlShortener";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
