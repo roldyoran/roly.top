@@ -37,29 +37,29 @@
 					<Link class="w-7 h-7 text-muted-foreground/50" />
 				</div>
 				<p class="text-sm font-medium text-muted-foreground">No se encontraron URLs</p>
-				<p class="text-xs text-muted-foreground/60 mt-1">Las URLs acortadas aparecerán aquí</p>
+				<p class="text-xs text-muted-foreground mt-1">Las URLs acortadas aparecerán aquí</p>
 			</div>
 
 			<div v-else class="hidden md:block">
 				<Table class="admin-table">
 					<TableHeader>
 						<TableRow class="hover:bg-transparent border-b bg-muted/20">
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 pl-5">
 								Short Code
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-40">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-40">
 								Propietario
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11">
 								URL Original
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-20">
 								Visitas
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-28">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-28">
 								Creada
 							</TableHead>
-							<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-24">
+							<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 pr-5 w-24">
 								Acciones
 							</TableHead>
 						</TableRow>
@@ -93,7 +93,7 @@
 								</div>
 							</TableCell>
 							<TableCell class="py-3.5 w-28">
-								<span class="text-xs text-muted-foreground/60 font-medium">{{ formatDate(url.createdAt) }}</span>
+								<span class="text-xs text-muted-foreground font-medium">{{ formatDate(url.createdAt) }}</span>
 							</TableCell>
 							<TableCell class="text-right py-3.5 pr-5 w-24">
 								<div class="flex items-center justify-end gap-1">
@@ -146,7 +146,7 @@
 							<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
 								/{{ url.shortCode }}
 							</code>
-							<span class="text-xs text-muted-foreground/60 ml-3 truncate">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
+							<span class="text-xs text-muted-foreground ml-3 truncate">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
 						</div>
 						<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }} visitas</span>
 					</div>
