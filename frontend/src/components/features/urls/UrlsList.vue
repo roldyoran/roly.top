@@ -4,7 +4,7 @@
       <CardHeader>
         <div v-if="isMyList" class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <CardTitle class="flex items-center gap-3">
+            <CardTitle as="h2" class="flex items-center gap-3">
               <Database class="w-6 h-6" />
               Mis URLs
             </CardTitle>
@@ -22,7 +22,7 @@
 
         <div v-else class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <CardTitle class="flex items-center gap-3">
+            <CardTitle as="h2" class="flex items-center gap-3">
               <Globe class="w-6 h-6" />
               Lista Pública de URLs
             </CardTitle>
@@ -187,7 +187,7 @@
             </span>
 
             <div class="flex justify-end mt-1">
-              <span class="font-mono text-xs text-muted-foreground/60">
+              <span class="font-mono text-xs text-muted-foreground">
                 {{ formatDate(url.createdAt) }}
               </span>
             </div>

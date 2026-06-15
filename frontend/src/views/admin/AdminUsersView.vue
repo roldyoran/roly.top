@@ -42,29 +42,29 @@
 					<Users class="w-7 h-7 text-muted-foreground/50" />
 				</div>
 				<p class="text-sm font-medium text-muted-foreground">No se encontraron usuarios</p>
-				<p class="text-xs text-muted-foreground/60 mt-1">Los usuarios registrados aparecerán aquí</p>
+				<p class="text-xs text-muted-foreground mt-1">Los usuarios registrados aparecerán aquí</p>
 			</div>
 
 			<div v-else class="hidden md:block">
 				<Table class="admin-table">
 					<TableHeader>
 						<TableRow class="hover:bg-transparent border-b bg-muted/20">
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pl-5">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 pl-5">
 								Usuario
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-20">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-20">
 								Rol
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-16">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-16">
 								URLs
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-16">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-16">
 								Límite
 							</TableHead>
-							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 w-24">
+							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-24">
 								Estado
 							</TableHead>
-							<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60 h-11 pr-5 w-16">
+							<TableHead class="text-right text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 pr-5 w-16">
 								Acciones
 							</TableHead>
 						</TableRow>
@@ -97,7 +97,7 @@
 									</div>
 									<div class="min-w-0">
 										<p class="font-medium text-sm truncate leading-tight">{{ user.name }}</p>
-										<p class="text-[11px] text-muted-foreground/60 truncate leading-tight mt-0.5">{{ user.email }}</p>
+										<p class="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">{{ user.email }}</p>
 									</div>
 								</div>
 							</TableCell>
@@ -194,7 +194,7 @@
 						</div>
 						<div class="min-w-0 flex-1">
 							<p class="font-medium text-sm truncate leading-tight">{{ user.name }}</p>
-							<p class="text-[11px] text-muted-foreground/60 truncate leading-tight mt-0.5">{{ user.email }}</p>
+							<p class="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">{{ user.email }}</p>
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger as-child>
@@ -240,7 +240,7 @@
 							<span class="text-xs font-medium tabular-nums">{{ user.urlCount }} URLs</span>
 						</div>
 						<span class="text-xs text-muted-foreground/50">·</span>
-						<span class="text-xs text-muted-foreground/60">Límite: {{ user.urlLimit }}</span>
+						<span class="text-xs text-muted-foreground">Límite: {{ user.urlLimit }}</span>
 						<span class="text-xs text-muted-foreground/50">·</span>
 						<div class="flex items-center gap-1">
 							<div class="w-1.5 h-1.5 rounded-full" :class="user.banned ? 'bg-destructive' : 'bg-emerald-500'" />
