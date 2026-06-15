@@ -2,7 +2,7 @@
   <div>
     <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
       <div>
-        <h2 class="font-display text-lg font-800 tracking-tight">Gestión de URLs</h2>
+        <h3 class="font-display text-lg font-800 tracking-tight">Gestión de URLs</h3>
         <p class="text-xs text-muted-foreground mt-0.5">Administra todas las URLs acortadas del sistema</p>
       </div>
       <Badge variant="secondary" class="font-mono">{{ totalUrls }} URLs</Badge>
@@ -90,8 +90,8 @@
               </div>
               <div class="flex items-center gap-1.5 flex-shrink-0 ml-2">
                 <Badge variant="outline" class="font-mono text-[10px]">{{ url.visits }} visitas</Badge>
-                <Button variant="ghost" size="sm" class="size-7 p-0 text-destructive hover:text-destructive" @click="openDelete(url)">
-                  <Trash2 class="size-3" />
+                <Button variant="ghost" size="sm" class="size-7 p-0 text-destructive hover:text-destructive" aria-label="Eliminar URL" @click="openDelete(url)">
+                  <Trash2 class="size-3" aria-hidden="true" />
                 </Button>
               </div>
             </div>

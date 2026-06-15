@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="font-display text-lg font-800 tracking-tight mb-5">Analíticas</h2>
+    <h3 class="font-display text-lg font-800 tracking-tight mb-5">Analíticas</h3>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
       <Card v-if="isLoading">

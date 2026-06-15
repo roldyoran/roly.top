@@ -103,9 +103,10 @@
 												variant="ghost"
 												size="sm"
 												class="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+												aria-label="Copiar URL"
 												@click="copyUrl(url.shortCode)"
 											>
-												<Copy class="h-3.5 w-3.5" />
+												<Copy class="h-3.5 w-3.5" aria-hidden="true" />
 											</Button>
 										</TooltipTrigger>
 										<TooltipContent>Copiar URL</TooltipContent>
@@ -116,9 +117,10 @@
 												variant="ghost"
 												size="sm"
 												class="h-7 w-7 p-0 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+												aria-label="Eliminar URL"
 												@click="confirmDelete(url)"
 											>
-												<Trash2 class="h-3.5 w-3.5" />
+												<Trash2 class="h-3.5 w-3.5" aria-hidden="true" />
 											</Button>
 										</TooltipTrigger>
 										<TooltipContent>Eliminar</TooltipContent>
@@ -156,17 +158,19 @@
 								variant="ghost"
 								size="sm"
 								class="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary"
+								aria-label="Copiar URL"
 								@click="copyUrl(url.shortCode)"
 							>
-								<Copy class="h-4 w-4" />
+								<Copy class="h-4 w-4" aria-hidden="true" />
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
 								class="h-8 w-8 p-0 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+								aria-label="Eliminar URL"
 								@click="confirmDelete(url)"
 							>
-								<Trash2 class="h-4 w-4" />
+								<Trash2 class="h-4 w-4" aria-hidden="true" />
 							</Button>
 						</div>
 					</div>

@@ -2,7 +2,7 @@
   <div>
     <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
       <div>
-        <h2 class="font-display text-lg font-800 tracking-tight">Gestión de Usuarios</h2>
+        <h3 class="font-display text-lg font-800 tracking-tight">Gestión de Usuarios</h3>
         <p class="text-xs font-mono text-muted-foreground mt-0.5">Administra los usuarios del sistema</p>
       </div>
       <Badge variant="secondary" class="font-mono">{{ totalUsers }} usuarios</Badge>
@@ -74,8 +74,8 @@
               <TableCell class="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="sm" class="size-7 p-0">
-                    <MoreVertical class="size-3.5" />
+                    <Button variant="ghost" size="sm" class="size-7 p-0" aria-label="Acciones">
+                    <MoreVertical class="size-3.5" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" class="w-44">
@@ -132,8 +132,8 @@
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                  <Button variant="ghost" size="sm" class="size-7 p-0">
-                    <MoreVertical class="size-3.5" />
+                  <Button variant="ghost" size="sm" class="size-7 p-0" aria-label="Acciones">
+                    <MoreVertical class="size-3.5" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-44">
