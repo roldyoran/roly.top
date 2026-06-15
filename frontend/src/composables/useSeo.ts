@@ -8,6 +8,7 @@ interface SeoOptions {
 	ogTitle?: MaybeRef<string>;
 	ogDescription?: MaybeRef<string>;
 	ogImage?: MaybeRef<string>;
+	twitterSite?: MaybeRef<string>;
 	canonical?: MaybeRef<string>;
 	robots?: MaybeRef<string>;
 	jsonLd?: MaybeRef<Record<string, unknown>>;
@@ -16,7 +17,8 @@ interface SeoOptions {
 const SITE_NAME = "roly.top";
 const DEFAULT_DESCRIPTION =
 	"Acorta tus URLs de forma rápida y gratuita. Genera códigos QR, obtén estadísticas y gestiona tus enlaces cortos con roly.top.";
-const DEFAULT_OG_IMAGE = "/shorturl.svg";
+const DEFAULT_OG_IMAGE = "/og-image.png";
+const DEFAULT_TWITTER_SITE = "@rolytop";
 
 export function useSeo(options: SeoOptions = {}) {
 	const route = useRoute();
@@ -47,6 +49,16 @@ export function useSeo(options: SeoOptions = {}) {
 		() => unref(options.robots) || "index, follow",
 	);
 
+	const resolvedOgImage = computed(() => {
+		const img = unref(options.ogImage);
+		if (img?.startsWith("http")) return img;
+		return `${baseUrl.value}${img || DEFAULT_OG_IMAGE}`;
+	});
+
+	const resolvedTwitterSite = computed(
+		() => unref(options.twitterSite) || DEFAULT_TWITTER_SITE,
+	);
+
 	useHead({
 		title: resolvedTitle,
 		meta: [
@@ -57,6 +69,10 @@ export function useSeo(options: SeoOptions = {}) {
 			{
 				name: "robots",
 				content: resolvedRobots,
+			},
+			{
+				property: "og:type",
+				content: "website",
 			},
 			{
 				property: "og:title",
@@ -74,11 +90,23 @@ export function useSeo(options: SeoOptions = {}) {
 			},
 			{
 				property: "og:image",
-				content: computed(() => {
-					const img = unref(options.ogImage);
-					if (img?.startsWith("http")) return img;
-					return `${baseUrl.value}${img || DEFAULT_OG_IMAGE}`;
-				}),
+				content: resolvedOgImage,
+			},
+			{
+				property: "og:site_name",
+				content: SITE_NAME,
+			},
+			{
+				property: "og:locale",
+				content: "es_ES",
+			},
+			{
+				name: "twitter:card",
+				content: "summary_large_image",
+			},
+			{
+				name: "twitter:site",
+				content: resolvedTwitterSite,
 			},
 			{
 				name: "twitter:title",
@@ -89,6 +117,10 @@ export function useSeo(options: SeoOptions = {}) {
 				content: computed(
 					() => unref(options.ogDescription) || resolvedDescription.value,
 				),
+			},
+			{
+				name: "twitter:image",
+				content: resolvedOgImage,
 			},
 		],
 		link: [
