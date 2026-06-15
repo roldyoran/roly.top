@@ -87,11 +87,11 @@
 					{{ url.originalUrl }}
 				</span>
 
-				<div class="flex justify-end mt-1">
-					<span class="font-mono text-[10px] text-muted-foreground/60">
-						{{ formatDate(url.createdAt) }}
-					</span>
-				</div>
+			<div class="flex justify-end mt-1">
+				<span class="font-mono text-[10px] text-muted-foreground">
+					{{ formatDate(url.createdAt) }}
+				</span>
+			</div>
 			</div>
 		</div>
 
