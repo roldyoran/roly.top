@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@vueuse/core";
+import { reactiveOmit } from "@/lib/utils";
 import { ChevronUp } from "lucide-vue-next";
 import type { SelectScrollUpButtonProps } from "reka-ui";
 import { SelectScrollUpButton, useForwardProps } from "reka-ui";

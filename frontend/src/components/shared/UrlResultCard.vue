@@ -79,14 +79,12 @@ const cardVariants = {
 		opacity: 0,
 		y: 16,
 		scale: 0.98,
-		filter: "blur(6px)",
 		boxShadow: "0 0 0 rgba(0,0,0,0)",
 	},
 	visible: {
 		opacity: 1,
 		y: 0,
 		scale: 1,
-		filter: "blur(0px)",
 		boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
 		transition: {
 			duration: 0.5,

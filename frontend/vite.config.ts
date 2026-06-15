@@ -11,6 +11,17 @@ export default defineConfig({
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},
+	build: {
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					"vendor-vue": ["vue", "vue-router", "pinia"],
+					"vendor-query": ["@tanstack/vue-query"],
+					"vendor-ui": ["reka-ui", "class-variance-authority", "clsx", "tailwind-merge"],
+				},
+			},
+		},
+	},
 	server: {
 		proxy: {
 			"/api": {

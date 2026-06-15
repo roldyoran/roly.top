@@ -18,15 +18,33 @@
 import { defineAsyncComponent, ref } from "vue";
 import DashboardLayout from "@/components/layout/DashboardLayout.vue";
 
-const OverviewPanel = defineAsyncComponent(() => import("@/components/features/dashboard/OverviewPanel.vue"));
-const MyLinksPanel = defineAsyncComponent(() => import("@/components/features/dashboard/MyLinksPanel.vue"));
-const AnalyticsPanel = defineAsyncComponent(() => import("@/components/features/dashboard/AnalyticsPanel.vue"));
-const CreateLinkPanel = defineAsyncComponent(() => import("@/components/features/dashboard/CreateLinkPanel.vue"));
-const QRDashPanel = defineAsyncComponent(() => import("@/components/features/dashboard/QRDashPanel.vue"));
-const PublicListDashPanel = defineAsyncComponent(() => import("@/components/features/dashboard/PublicListDashPanel.vue"));
-const SettingsPanel = defineAsyncComponent(() => import("@/components/features/dashboard/SettingsPanel.vue"));
-const AdminUsersPanel = defineAsyncComponent(() => import("@/components/features/dashboard/AdminUsersPanel.vue"));
-const AdminUrlsPanel = defineAsyncComponent(() => import("@/components/features/dashboard/AdminUrlsPanel.vue"));
+const OverviewPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/OverviewPanel.vue"),
+);
+const MyLinksPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/MyLinksPanel.vue"),
+);
+const AnalyticsPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/AnalyticsPanel.vue"),
+);
+const CreateLinkPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/CreateLinkPanel.vue"),
+);
+const QRDashPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/QRDashPanel.vue"),
+);
+const PublicListDashPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/PublicListDashPanel.vue"),
+);
+const SettingsPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/SettingsPanel.vue"),
+);
+const AdminUsersPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/AdminUsersPanel.vue"),
+);
+const AdminUrlsPanel = defineAsyncComponent(
+	() => import("@/components/features/dashboard/AdminUrlsPanel.vue"),
+);
 
 const activePanel = ref("overview");
 </script>
