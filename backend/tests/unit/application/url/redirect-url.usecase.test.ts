@@ -17,8 +17,9 @@ describe("RedirectUrlUseCase", () => {
 
 	it("debe retornar la URL actualizada cuando el shortCode existe", async () => {
 		const urlWithVisit = { ...urlFixture, visits: 1 };
-		repo.findByShortCode = mock(() => Promise.resolve(urlFixture));
-		repo.incrementVisits = mock(() => Promise.resolve(urlWithVisit));
+		repo.findByShortCodeAndIncrementVisits = mock(() =>
+			Promise.resolve(urlWithVisit),
+		);
 
 		const result = await useCase.execute("hono");
 
@@ -26,30 +27,25 @@ describe("RedirectUrlUseCase", () => {
 	});
 
 	it("debe retornar null cuando el shortCode no existe", async () => {
-		repo.findByShortCode = mock(() => Promise.resolve(null));
+		repo.findByShortCodeAndIncrementVisits = mock(() =>
+			Promise.resolve(null),
+		);
 
 		const result = await useCase.execute("noexiste");
 
 		expect(result).toBeNull();
 	});
 
-	it("no debe llamar a incrementVisits si el shortCode no existe", async () => {
-		repo.findByShortCode = mock(() => Promise.resolve(null));
-		repo.incrementVisits = mock(() => Promise.resolve(null));
-
-		await useCase.execute("noexiste");
-
-		expect(repo.incrementVisits).not.toHaveBeenCalled();
-	});
-
-	it("debe llamar a findByShortCode e incrementVisits con el shortCode correcto", async () => {
+	it("debe llamar a findByShortCodeAndIncrementVisits con el shortCode correcto", async () => {
 		const urlWithVisit = { ...urlFixture, visits: 1 };
-		repo.findByShortCode = mock(() => Promise.resolve(urlFixture));
-		repo.incrementVisits = mock(() => Promise.resolve(urlWithVisit));
+		repo.findByShortCodeAndIncrementVisits = mock(() =>
+			Promise.resolve(urlWithVisit),
+		);
 
 		await useCase.execute("hono");
 
-		expect(repo.findByShortCode).toHaveBeenCalledWith("hono");
-		expect(repo.incrementVisits).toHaveBeenCalledWith("hono");
+		expect(repo.findByShortCodeAndIncrementVisits).toHaveBeenCalledWith(
+			"hono",
+		);
 	});
 });

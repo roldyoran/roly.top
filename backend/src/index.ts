@@ -24,6 +24,18 @@ const app = new Hono<{ Bindings: Bindings; Variables: { auth: Auth } }>();
 // Middleware para verificar la presencia de variables de entorno y emitir warnings
 app.use("*", checkEnvMiddleware);
 
+app.use("*", async (c, next) => {
+	c.header(
+		"Strict-Transport-Security",
+		"max-age=31536000; includeSubDomains; preload",
+	);
+	c.header("X-Content-Type-Options", "nosniff");
+	c.header("X-Frame-Options", "DENY");
+	c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+	c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+	await next();
+});
+
 // Middleware para configurar CORS global
 app.use("*", corsMiddleware());
 
@@ -32,6 +44,8 @@ app.use("*", async (c, next) => {
 	c.set("auth", getAuth(c.env));
 	await next();
 });
+
+app.get("/health", (c) => c.json({ status: "ok" }));
 
 // Better Auth handler: monta todas las rutas de auth en /api/auth/*
 app.on(["POST", "GET"], "/api/auth/*", (c) => {

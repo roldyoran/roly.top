@@ -75,6 +75,20 @@ export class UrlRepository implements UrlRepositoryPort {
 			.all();
 	}
 
+	async findByUserIds(userIds: string[]): Promise<UrlEntity[]> {
+		if (userIds.length === 0) return [];
+		return this.db
+			.select()
+			.from(urlsTable)
+			.where(
+				sql`${urlsTable.userId} IN (${sql.join(
+					userIds.map((id) => sql`${id}`),
+					sql`, `,
+				)})`,
+			)
+			.all();
+	}
+
 	async countByUserId(userId: string): Promise<number> {
 		const result = await this.db
 			.select({ value: count() })
@@ -155,6 +169,17 @@ export class UrlRepository implements UrlRepositoryPort {
 	}
 
 	async incrementVisits(shortCode: string): Promise<UrlEntity | null> {
+		const [updated] = await this.db
+			.update(urlsTable)
+			.set({ visits: sql`${urlsTable.visits} + 1` })
+			.where(eq(urlsTable.shortCode, shortCode))
+			.returning();
+		return updated ?? null;
+	}
+
+	async findByShortCodeAndIncrementVisits(
+		shortCode: string,
+	): Promise<UrlEntity | null> {
 		const [updated] = await this.db
 			.update(urlsTable)
 			.set({ visits: sql`${urlsTable.visits} + 1` })

@@ -111,24 +111,16 @@ urlRoutes.post(
 		const urlRepo = c.get("urlRepo");
 		const userRepo = c.get("userRepo");
 
-		// Primero verificar si la URL ya existe para este usuario — si existe, devolverla
-		const existing = await urlRepo.findByOriginalUrl(originalUrl, user.id);
-		if (existing) {
-			return c.json(existing, 200);
-		}
-
-		// Verificar límite de URLs solo cuando se creará una nueva
 		const ADMIN_URL_LIMIT = 999;
 		const dbUser = await userRepo.findLimitAndRoleById(user.id);
 
 		const limit =
 			dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2);
-		const count = await urlRepo.countByUserId(user.id);
-		if (count >= limit) {
+		const urlCount = await urlRepo.countByUserId(user.id);
+		if (urlCount >= limit) {
 			throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
 		}
 
-		// Usar el caso de uso que valida existencia de shortCode personalizado
 		const useCase = new CreateUrlUseCase(urlRepo);
 		const created = await useCase.execute({
 			originalUrl,

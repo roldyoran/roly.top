@@ -35,7 +35,7 @@ describe("GetPublicUrlsUseCase", () => {
 			const result = await useCase.execute();
 
 			expect(result).toEqual([]);
-			expect(repo.findAll).not.toHaveBeenCalled();
+			expect(repo.findByUserIds).not.toHaveBeenCalled();
 		});
 	});
 
@@ -45,12 +45,7 @@ describe("GetPublicUrlsUseCase", () => {
 				{ ...urlFixture, userId: "admin-1" },
 				{ ...urlFixture, id: 2, shortCode: "bun", userId: "admin-2" },
 			];
-			const nonAdminUrls: UrlEntity[] = [
-				{ ...urlFixture, id: 3, shortCode: "user1", userId: "user-99" },
-			];
-			repo.findAll = mock(() =>
-				Promise.resolve([...adminUrls, ...nonAdminUrls]),
-			);
+			repo.findByUserIds = mock(() => Promise.resolve(adminUrls));
 			adminProvider = createMockAdminProvider(["admin-1", "admin-2"]);
 			useCase = new GetPublicUrlsUseCase(repo, adminProvider);
 
@@ -61,12 +56,7 @@ describe("GetPublicUrlsUseCase", () => {
 		});
 
 		it("debe retornar un array vacío si ninguna URL pertenece a un admin", async () => {
-			repo.findAll = mock(() =>
-				Promise.resolve([
-					{ ...urlFixture, userId: "user-99" },
-					{ ...urlFixture, id: 2, shortCode: "x", userId: "user-100" },
-				]),
-			);
+			repo.findByUserIds = mock(() => Promise.resolve([]));
 			adminProvider = createMockAdminProvider(["admin-1"]);
 			useCase = new GetPublicUrlsUseCase(repo, adminProvider);
 
@@ -76,7 +66,7 @@ describe("GetPublicUrlsUseCase", () => {
 		});
 
 		it("debe incluir URLs con userId null si el admin tiene un ID vacío coincidente", async () => {
-			repo.findAll = mock(() =>
+			repo.findByUserIds = mock(() =>
 				Promise.resolve([{ ...urlFixture, userId: null }]),
 			);
 			adminProvider = createMockAdminProvider([""]);
@@ -87,13 +77,14 @@ describe("GetPublicUrlsUseCase", () => {
 			expect(result).toEqual([{ ...urlFixture, userId: null }]);
 		});
 
-		it("debe delegar la llamada findAll al repositorio", async () => {
+		it("debe delegar la llamada findByUserIds al repositorio", async () => {
 			adminProvider = createMockAdminProvider(["admin-1"]);
 			useCase = new GetPublicUrlsUseCase(repo, adminProvider);
 
 			await useCase.execute();
 
-			expect(repo.findAll).toHaveBeenCalledTimes(1);
+			expect(repo.findByUserIds).toHaveBeenCalledTimes(1);
+			expect(repo.findByUserIds).toHaveBeenCalledWith(["admin-1"]);
 		});
 	});
 });

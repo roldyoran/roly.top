@@ -234,27 +234,27 @@ export class AdminRepository implements AdminRepositoryPort {
 	}
 
 	async getStats(): Promise<AdminStats> {
-		const [totalUsersResult] = await this.db
-			.select({ value: count() })
-			.from(users);
-
-		const [totalUrlsResult] = await this.db
-			.select({ value: count() })
-			.from(urlsTable);
-
-		const [totalVisitsResult] = await this.db
-			.select({ value: sql<number>`COALESCE(SUM(${urlsTable.visits}), 0)` })
-			.from(urlsTable);
-
-		const [adminUsersResult] = await this.db
-			.select({ value: count() })
-			.from(users)
-			.where(eq(users.role, "admin"));
-
-		const [bannedUsersResult] = await this.db
-			.select({ value: count() })
-			.from(users)
-			.where(eq(users.banned, true));
+		const [
+			[totalUsersResult],
+			[totalUrlsResult],
+			[totalVisitsResult],
+			[adminUsersResult],
+			[bannedUsersResult],
+		] = await Promise.all([
+			this.db.select({ value: count() }).from(users),
+			this.db.select({ value: count() }).from(urlsTable),
+			this.db
+				.select({ value: sql<number>`COALESCE(SUM(${urlsTable.visits}), 0)` })
+				.from(urlsTable),
+			this.db
+				.select({ value: count() })
+				.from(users)
+				.where(eq(users.role, "admin")),
+			this.db
+				.select({ value: count() })
+				.from(users)
+				.where(eq(users.banned, true)),
+		]);
 
 		return {
 			totalUsers: totalUsersResult?.value ?? 0,
