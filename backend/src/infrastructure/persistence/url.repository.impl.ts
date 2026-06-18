@@ -22,15 +22,6 @@ function generateShortCode(length = 9): string {
 
 // Adaptador secundario: implementación del puerto usando Drizzle + Cloudflare D1
 export class UrlRepository implements UrlRepositoryPort {
-	private static instance: UrlRepository | null = null;
-
-	static getInstance(db: DrizzleDB): UrlRepository {
-		if (!this.instance) {
-			this.instance = new UrlRepository(db);
-		}
-		return this.instance;
-	}
-
 	constructor(private readonly db: DrizzleDB) {}
 
 	async findAll(): Promise<UrlEntity[]> {

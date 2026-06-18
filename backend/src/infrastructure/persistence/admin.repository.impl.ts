@@ -11,15 +11,6 @@ import type {
 } from "@/domain/admin/admin.entity";
 
 export class AdminRepository implements AdminRepositoryPort {
-	private static instance: AdminRepository | null = null;
-
-	static getInstance(db: DrizzleDB): AdminRepository {
-		if (!this.instance) {
-			this.instance = new AdminRepository(db);
-		}
-		return this.instance;
-	}
-
 	constructor(private readonly db: DrizzleDB) {}
 
 	async findAllUsers(params: {

@@ -49,7 +49,7 @@ adminRoutes.use("/*", async (c, next) => {
 // Helper: crea AdminRepository desde el env
 function getAdminRepo(c: { env: Bindings }) {
 	const db = createDb(c.env.DB);
-	return AdminRepository.getInstance(db);
+	return new AdminRepository(db);
 }
 
 // ── Stats ────────────────────────────────────────────────────────────────────

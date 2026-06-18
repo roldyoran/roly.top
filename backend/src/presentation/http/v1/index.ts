@@ -56,8 +56,8 @@ v1Router.use("*", async (c, next) => {
 // Inyecta urlRepo en el contexto para todas las rutas v1
 v1Router.use("*", async (c, next) => {
 	const db = createDb(c.env.DB);
-	c.set("urlRepo", UrlRepository.getInstance(db));
-	c.set("userRepo", UserRepository.getInstance(db));
+	c.set("urlRepo", new UrlRepository(db));
+	c.set("userRepo", new UserRepository(db));
 	await next();
 });
 

@@ -9,15 +9,6 @@ import type { AdminRoleProvider } from "@/application/admin/set-admin-role.useca
 import { NotFoundError } from "@/domain/app-error";
 
 export class UserRepository implements UserRepositoryPort, AdminRoleProvider {
-	private static instance: UserRepository | null = null;
-
-	static getInstance(db: DrizzleDB): UserRepository {
-		if (!this.instance) {
-			this.instance = new UserRepository(db);
-		}
-		return this.instance;
-	}
-
 	constructor(private readonly db: DrizzleDB) {}
 
 	async findLimitAndRoleById(userId: string): Promise<UserLimitAndRole | null> {
