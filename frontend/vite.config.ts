@@ -17,7 +17,12 @@ export default defineConfig({
 				manualChunks: {
 					"vendor-vue": ["vue", "vue-router", "pinia"],
 					"vendor-query": ["@tanstack/vue-query"],
-					"vendor-ui": ["reka-ui", "class-variance-authority", "clsx", "tailwind-merge"],
+					"vendor-ui": [
+						"reka-ui",
+						"class-variance-authority",
+						"clsx",
+						"tailwind-merge",
+					],
 				},
 			},
 		},
