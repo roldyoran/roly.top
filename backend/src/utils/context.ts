@@ -22,6 +22,7 @@ export type Bindings = {
 export type Variables = {
 	urlRepo: UrlRepositoryPort;
 	userRepo: UserRepositoryPort;
+	requestId: string;
 };
 
 const ENV_KEYS: (keyof Bindings)[] = [

@@ -229,8 +229,10 @@ export class AdminRepository implements AdminRepositoryPort {
 	}
 
 	async deleteUser(userId: string): Promise<void> {
-		await this.db.delete(urlsTable).where(eq(urlsTable.userId, userId));
-		await this.db.delete(users).where(eq(users.id, userId));
+		await this.db.transaction(async (tx) => {
+			await tx.delete(urlsTable).where(eq(urlsTable.userId, userId));
+			await tx.delete(users).where(eq(users.id, userId));
+		});
 	}
 
 	async getStats(): Promise<AdminStats> {

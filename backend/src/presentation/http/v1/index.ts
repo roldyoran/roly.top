@@ -21,7 +21,15 @@ const v1Router = new Hono<{
 	Variables: Variables & SessionVariables;
 }>();
 
-// Middleware de observabilidad: mide tiempos y logs básicos
+// Genera un request ID único para trazabilidad
+v1Router.use("*", async (c, next) => {
+	const requestId = crypto.randomUUID();
+	c.set("requestId", requestId);
+	c.header("X-Request-ID", requestId);
+	await next();
+});
+
+// Middleware de observabilidad: logs estructurados JSON
 v1Router.use("*", async (c, next) => {
 	const start = Date.now();
 	await next();
@@ -30,9 +38,18 @@ v1Router.use("*", async (c, next) => {
 	const method = c.req.method;
 	const path = c.req.path;
 	const etagHeader = c.res.headers.get("ETag") || null;
-	const is304 = status === 304;
+	const requestId = c.get("requestId");
 	console.log(
-		`[v1] ${method} ${path} -> ${status} ${duration}ms${etagHeader ? ` ETag:${etagHeader}` : ""}${is304 ? " (304 Not Modified)" : ""}`,
+		JSON.stringify({
+			level: "info",
+			msg: "request",
+			method,
+			path,
+			status,
+			duration,
+			...(etagHeader ? { etag: etagHeader } : {}),
+			requestId,
+		}),
 	);
 });
 
@@ -46,6 +63,13 @@ v1Router.use("*", async (c, next) => {
 
 // Middleware de sesión compartido para todas las rutas v1
 v1Router.use("*", async (c, next) => {
+	const path = c.req.path;
+	if (path === "/urls/public/stats" || path === "/urls/public") {
+		c.set("user", null);
+		c.set("session", null);
+		await next();
+		return;
+	}
 	const auth = c.get("auth");
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
 	c.set("user", session?.user ?? null);
