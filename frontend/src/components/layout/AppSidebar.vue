@@ -114,7 +114,7 @@ const defaultItemClass =
 						<SidebarMenuButton
 							:is-active="currentPanel === item.id"
 							:class="currentPanel === item.id ? activeItemClass : defaultItemClass"
-							tooltip="item.label"
+							:tooltip="item.label"
 							@click="switchPanel(item.id)"
 						>
 							<component :is="item.icon" />
@@ -143,7 +143,7 @@ const defaultItemClass =
 						<SidebarMenuButton
 							:is-active="currentPanel === item.id"
 							:class="currentPanel === item.id ? activeItemClass : defaultItemClass"
-							tooltip="item.label"
+							:tooltip="item.label"
 							@click="switchPanel(item.id)"
 						>
 							<component :is="item.icon" />
@@ -164,7 +164,7 @@ const defaultItemClass =
 						<SidebarMenuButton
 							:is-active="currentPanel === item.id"
 							:class="currentPanel === item.id ? activeItemClass : defaultItemClass"
-							tooltip="item.label"
+							:tooltip="item.label"
 							@click="switchPanel(item.id)"
 						>
 							<component :is="item.icon" />
@@ -188,7 +188,7 @@ const defaultItemClass =
 						<SidebarMenuButton
 							:is-active="currentPanel === item.id"
 							:class="currentPanel === item.id ? activeItemClass : defaultItemClass"
-							tooltip="item.label"
+							:tooltip="item.label"
 							@click="switchPanel(item.id)"
 						>
 							<component :is="item.icon" />
