@@ -62,8 +62,8 @@
 
 <script setup lang="ts">
 import { Link, X } from "lucide-vue-next";
-import Google from "@/assets/google.vue";
 import { useRouter } from "vue-router";
+import Google from "@/assets/google.vue";
 import { useAuthStore } from "@/stores/authStore";
 
 defineProps<{

@@ -161,8 +161,9 @@ const handleSubmit = async (event: Event) => {
 				description: "Se ha encontrado la información de la URL",
 			});
 		}
-	} catch (err: any) {
-		const status = err?.response?.status;
+	} catch (err: unknown) {
+		const status = (err as { response?: { status?: number } })?.response
+			?.status;
 		if (status === 404 || status === 400) {
 			const searchedCode = shortCode.value.trim();
 			error.value = `No existe una URL con el código "${searchedCode}"`;

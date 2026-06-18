@@ -99,6 +99,7 @@ import { nextTick, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import { getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
+import defaultLogo from "@/assets/vue.svg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -111,7 +112,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import defaultLogo from "@/assets/vue.svg";
 
 const qrUrl = ref("");
 const selectedUrl = ref("");

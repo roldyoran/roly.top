@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@/lib/utils";
 import { Circle } from "lucide-vue-next";
 import type {
 	DropdownMenuRadioItemEmits,
@@ -11,7 +10,7 @@ import {
 	useForwardPropsEmits,
 } from "reka-ui";
 import type { HTMLAttributes } from "vue";
-import { cn } from "@/lib/utils";
+import { cn, reactiveOmit } from "@/lib/utils";
 
 const props = defineProps<
 	DropdownMenuRadioItemProps & { class?: HTMLAttributes["class"] }
