@@ -18,11 +18,16 @@ backend/.wrangler
 
 # env
 .env
+.env.local
 .env.production
 .dev.vars
 backend/.env
+backend/.env.local
 backend/.env.production
 backend/.dev.vars
+frontend/.env
+frontend/.env.local
+frontend/.env.production
 
 # logs
 logs/
