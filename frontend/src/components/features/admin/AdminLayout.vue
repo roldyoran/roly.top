@@ -111,8 +111,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const sidebarOpen = ref(false);
 
 const navItems = [
-	{ to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-	{ to: "/admin/users", label: "Usuarios", icon: Users },
-	{ to: "/admin/urls", label: "URLs", icon: Link },
+	{ to: "/app/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+	{ to: "/app/admin/users", label: "Usuarios", icon: Users },
+	{ to: "/app/admin/urls", label: "URLs", icon: Link },
 ];
 </script>

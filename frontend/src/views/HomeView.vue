@@ -38,7 +38,7 @@
 
         <div v-if="authStore.isAuthenticated" class="hidden sm:flex items-center gap-2">
           <!-- Explicit Dashboard button for discoverability -->
-          <router-link to="/dashboard" class="inline-flex">
+          <router-link to="/app/dashboard" class="inline-flex">
             <Button variant="outline" size="sm" class="flex items-center gap-2 px-3 h-8">
               <LayoutDashboard class="w-4 h-4" />
               <span class="font-mono text-[10px] tracking-wider">Dashboard</span>
@@ -46,7 +46,7 @@
           </router-link>
 
           <router-link
-            to="/dashboard"
+            to="/app/dashboard"
             class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/60 hover:bg-muted transition-colors"
           >
             <img
@@ -94,7 +94,7 @@
       </Button>
       <router-link
         v-if="authStore.isAuthenticated"
-        to="/dashboard"
+        to="/app/dashboard"
         class="flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 bg-primary/5 text-primary text-sm"
         @click="mobileMenuOpen = false"
       >
@@ -365,7 +365,14 @@ import {
 import Google from "@/assets/google.vue";
 import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
 import { AnimatePresence, motion } from "motion-v";
-import { computed, defineAsyncComponent, nextTick, onMounted, reactive, ref } from "vue";
+import {
+	computed,
+	defineAsyncComponent,
+	nextTick,
+	onMounted,
+	reactive,
+	ref,
+} from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import { z } from "zod";
@@ -382,8 +389,12 @@ import { useAuth } from "@/composables/useAuth";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useSeo } from "@/composables/useSeo";
 
-const QrGenerator = defineAsyncComponent(() => import("@/components/features/qr-generator/QrGenerator.vue"));
-const UrlInfoForm = defineAsyncComponent(() => import("@/components/features/url-info/UrlInfoForm.vue"));
+const QrGenerator = defineAsyncComponent(
+	() => import("@/components/features/qr-generator/QrGenerator.vue"),
+);
+const UrlInfoForm = defineAsyncComponent(
+	() => import("@/components/features/url-info/UrlInfoForm.vue"),
+);
 import { useUrlShortener } from "@/composables/useUrlShortener";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";

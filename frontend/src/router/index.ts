@@ -15,13 +15,19 @@ const router = createRouter({
 			component: () => import("@/views/BannedView.vue"),
 		},
 		{
-			path: "/admin",
+			path: "/app/dashboard",
+			name: "dashboard",
+			component: () => import("@/views/DashboardView.vue"),
+			meta: { requiresAuth: true },
+		},
+		{
+			path: "/app/admin",
 			component: () => import("@/components/features/admin/AdminLayout.vue"),
 			meta: { requiresAuth: true, requiresAdmin: true },
 			children: [
 				{
 					path: "",
-					redirect: "/admin/dashboard",
+					redirect: "/app/admin/dashboard",
 				},
 				{
 					path: "dashboard",
@@ -39,12 +45,6 @@ const router = createRouter({
 					component: () => import("@/views/admin/AdminUrlsView.vue"),
 				},
 			],
-		},
-		{
-			path: "/dashboard",
-			name: "dashboard",
-			component: () => import("@/views/DashboardView.vue"),
-			meta: { requiresAuth: true },
 		},
 	],
 });

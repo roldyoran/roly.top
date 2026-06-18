@@ -224,11 +224,11 @@ frontend/
 |------|--------|------------|------|-------|
 | `/` | `home` | `HomeView.vue` | No | Landing público |
 | `/auth/error` | `auth-error` | `BannedView.vue` | No | Error de autenticación/baneo |
-| `/dashboard` | `dashboard` | `DashboardView.vue` | Sí | Dashboard de usuario |
-| `/admin` | — | `AdminLayout.vue` | Sí + Admin | Redirige a `/admin/dashboard` |
-| `/admin/dashboard` | `admin-dashboard` | `AdminDashboardView.vue` | Sí + Admin | |
-| `/admin/users` | `admin-users` | `AdminUsersView.vue` | Sí + Admin | |
-| `/admin/urls` | `admin-urls` | `AdminUrlsView.vue` | Sí + Admin | |
+| `/app/dashboard` | `dashboard` | `DashboardView.vue` | Sí | Dashboard de usuario |
+| `/app/admin` | — | `AdminLayout.vue` | Sí + Admin | Redirige a `/app/admin/dashboard` |
+| `/app/admin/dashboard` | `admin-dashboard` | `AdminDashboardView.vue` | Sí + Admin | |
+| `/app/admin/users` | `admin-users` | `AdminUsersView.vue` | Sí + Admin | |
+| `/app/admin/urls` | `admin-urls` | `AdminUrlsView.vue` | Sí + Admin | |
 
 ### Navigation Guard (`router.beforeEach`)
 1. Si la ruta requiere auth/admin, verifica `authStore.isInitialized`

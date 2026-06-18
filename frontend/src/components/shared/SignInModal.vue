@@ -87,7 +87,7 @@ async function handleGoogleSignIn() {
 
 function handleDemo() {
 	// For demo, just navigate to dashboard
-	router.push("/dashboard");
+	router.push("/app/dashboard");
 }
 </script>
 

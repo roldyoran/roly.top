@@ -41,7 +41,7 @@
         <!-- Usuario autenticado -->
         <div v-if="authStore.isAuthenticated" class="hidden sm:flex items-center gap-2">
           <router-link
-            to="/dashboard"
+            to="/app/dashboard"
             class="flex items-center gap-1.5 px-3 h-8 rounded-full border border-border bg-card/60 hover:bg-muted transition-colors"
           >
             <LayoutDashboard class="w-3.5 h-3.5 text-primary" />
@@ -119,7 +119,7 @@
 
               <router-link
                 v-if="authStore.isAuthenticated"
-                to="/dashboard"
+                to="/app/dashboard"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card/60 hover:bg-muted transition-colors"
               >
                 <LayoutDashboard class="w-3.5 h-3.5 text-primary" />
@@ -128,7 +128,7 @@
 
               <router-link
                 v-if="authStore.isAdmin"
-                to="/admin"
+                to="/app/admin"
                 class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/50 bg-primary/10 hover:bg-primary/20 transition-colors"
               >
                 <Shield class="w-3.5 h-3.5 text-primary" />
@@ -147,7 +147,7 @@
 
         <div v-if="authStore.isAdmin" class="hidden sm:flex items-center gap-1.5">
           <router-link
-            to="/admin"
+            to="/app/admin"
             class="flex items-center gap-1.5 px-3 h-8 rounded-full border border-primary/50 bg-primary/10 hover:bg-primary/20 transition-colors"
           >
             <Shield class="w-3.5 h-3.5 text-primary" />
