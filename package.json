@@ -16,7 +16,8 @@
     "check:front": "bun --cwd frontend check",
     "check": "bun --cwd frontend check",
     "format:front": "bun --cwd frontend format",
-    "lint:front": "bun --cwd frontend lint"
+    "lint:front": "bun --cwd frontend lint",
+    "lint": "bun --cwd frontend lint"
   },
   "devDependencies": {
     "playwright": "^1.61.0",
