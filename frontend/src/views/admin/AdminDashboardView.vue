@@ -113,7 +113,9 @@
 import { keepPreviousData, useQuery } from "@tanstack/vue-query";
 import { Eye, Link, Shield, Users } from "lucide-vue-next";
 import { computed, onMounted, watch } from "vue";
-import { getAdminStats } from "@/api/admin";
+import {
+	getAdminStats,
+} from "@/api/admin";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/stores/adminStore";
@@ -123,21 +125,21 @@ const adminStore = useAdminStore();
 // Stats query
 const statsQuery = useQuery({
 	queryKey: ["adminStats"],
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		return await getAdminStats(signal);
 	},
 	refetchOnWindowFocus: false,
 });
 
 watch(statsQuery.data, (v) => {
-	if (v) adminStore.stats = v as any;
+	if (v) adminStore.stats = v;
 });
 
 // Admin urls (first 5)
 const adminUrlsKey = ["adminUrls", 1, 5, undefined];
 const adminUrlsQuery = useQuery({
 	queryKey: adminUrlsKey,
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		const page = 1,
 			pageSize = 5,
 			search = undefined;
@@ -149,14 +151,14 @@ const adminUrlsQuery = useQuery({
 });
 
 watch(adminUrlsQuery.data, (v) => {
-	if (v) adminStore.urls = v as any;
+	if (v) adminStore.urls = v;
 });
 
 // Admin users (first 5)
 const adminUsersKey = ["adminUsers", 1, 5, undefined];
 const adminUsersQuery = useQuery({
 	queryKey: adminUsersKey,
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		const page = 1,
 			pageSize = 5,
 			search = undefined;
@@ -168,7 +170,7 @@ const adminUsersQuery = useQuery({
 });
 
 watch(adminUsersQuery.data, (v) => {
-	if (v) adminStore.users = v as any;
+	if (v) adminStore.users = v;
 });
 
 const statCards = computed(() => [

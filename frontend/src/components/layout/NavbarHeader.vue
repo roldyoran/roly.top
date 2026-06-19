@@ -176,9 +176,9 @@ import {
 	Shield,
 	User,
 } from "lucide-vue-next";
-import Google from "@/assets/google.vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
+import Google from "@/assets/google.vue";
 import { Button } from "@/components/ui/button";
 import {
 	Drawer,

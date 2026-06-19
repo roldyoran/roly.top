@@ -529,7 +529,7 @@ const deleteUrlMutation = useMutation<
 	void,
 	unknown,
 	string,
-	{ previousMyUrls: any[] }
+	{ previousMyUrls: UrlInfoResponse[] }
 >({
 	mutationFn: async (shortCode: string) => {
 		return await deleteUrlRequest(shortCode);
@@ -548,7 +548,11 @@ const deleteUrlMutation = useMutation<
 		}
 		return { previousMyUrls };
 	},
-	onError: (err: unknown, _shortCode: string, context: any) => {
+	onError: (
+		err: unknown,
+		_shortCode: string,
+		context: { previousMyUrls: UrlInfoResponse[] } | undefined,
+	) => {
 		if (context?.previousMyUrls) myUrls.value = context.previousMyUrls;
 		console.error("deleteUrlMutation error:", err);
 	},
@@ -569,9 +573,10 @@ const confirmDeleteUrl = async () => {
 		toast.success("URL eliminada", {
 			description: "La URL ha sido eliminada correctamente",
 		});
-	} catch (error: any) {
+	} catch (error: unknown) {
 		const message =
-			error?.response?.data?.message || "Error al eliminar la URL";
+			(error as { response?: { data?: { message?: string } } })?.response?.data
+				?.message || "Error al eliminar la URL";
 		toast.error("Error al eliminar", { description: message });
 	} finally {
 		showDeleteUrlDialog.value = false;
@@ -690,7 +695,7 @@ if (cachedPublic && cachedPublic.length > 0) {
 
 const publicQuery = useQuery({
 	queryKey: ["publicUrls"],
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		const res = await getPublicUrlsRequest(signal);
 		return res;
 	},
@@ -703,7 +708,7 @@ const publicQuery = useQuery({
 
 watch(
 	publicQuery.data,
-	(data: any) => {
+	(data) => {
 		if (data) {
 			if (Array.isArray(data)) {
 				shortUrls.value = [...data].sort(
@@ -720,7 +725,7 @@ watch(
 	{ immediate: true },
 );
 
-watch(publicQuery.error, (err: any) => {
+watch(publicQuery.error, (err) => {
 	if (err) console.error("Error fetching public urls:", err);
 });
 
@@ -729,7 +734,7 @@ const userKey = computed(() => ["userUrls", authStore.userId]);
 
 const userQuery = useQuery({
 	queryKey: userKey,
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		// backend devuelve { urls: UrlInfoResponse[], urlLimit }
 		const res = await getUrlsRequest(signal);
 		return res;
@@ -742,7 +747,7 @@ const userQuery = useQuery({
 
 watch(
 	userQuery.data,
-	(data: any) => {
+	(data) => {
 		if (data) {
 			if (data && typeof data === "object" && "urls" in data) {
 				const { urls, urlLimit } = data;
@@ -763,7 +768,7 @@ watch(
 	{ immediate: true },
 );
 
-watch(userQuery.error, (err: any) => {
+watch(userQuery.error, (err) => {
 	if (err) console.error("Error fetching user urls:", err);
 });
 

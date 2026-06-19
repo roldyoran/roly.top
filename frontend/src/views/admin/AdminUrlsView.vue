@@ -240,7 +240,7 @@ import {
 import { Copy, Link, Search, Trash2 } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import type { AdminUrl, AdminUser } from "@/api/admin";
+import type { AdminUrl, AdminUser, PaginatedResult } from "@/api/admin";
 import { deleteAdminUrl, getAdminUrls, getUsersByIds } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
 import { Button } from "@/components/ui/button";
@@ -312,7 +312,9 @@ function onSearch() {
 				ownerNames.value[u.id] = u.name;
 			});
 		} catch (err) {
-			idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+			for (const id of idsToFetch) {
+				ownerNames.value[id] = "Unknown";
+			}
 			console.error("[AdminUrls] loadOwners error", err);
 		}
 	}, 300);
@@ -335,7 +337,9 @@ function goToPage(page: number) {
 				ownerNames.value[u.id] = u.name;
 			});
 		} catch (err) {
-			idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+			for (const id of idsToFetch) {
+				ownerNames.value[id] = "Unknown";
+			}
 			console.error("[AdminUrls] loadOwners error", err);
 		}
 	});
@@ -369,7 +373,9 @@ async function handleDeleteConfirm() {
 					ownerNames.value[u.id] = u.name;
 				});
 			} catch (err) {
-				idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+				idsToFetch.forEach((id) => {
+					ownerNames.value[id] = "Unknown";
+				});
 				console.error("[AdminUrls] loadOwners error", err);
 			}
 		}
@@ -394,7 +400,7 @@ const adminQuery = useQuery({
 		adminParams.value.pageSize,
 		adminParams.value.search,
 	]),
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		const { page, pageSize, search } = adminParams.value;
 		const res = await getAdminUrls(page, pageSize, search, signal);
 		return res;
@@ -403,13 +409,13 @@ const adminQuery = useQuery({
 	refetchOnWindowFocus: false,
 });
 
-watch(adminQuery.data, (data: any) => {
+watch(adminQuery.data, (data) => {
 	if (data) {
 		adminStore.urls = data;
 	}
 });
 
-watch(adminQuery.error, (err: any) => {
+watch(adminQuery.error, (err) => {
 	if (err) console.error("Error fetching admin urls:", err);
 });
 
@@ -422,7 +428,7 @@ const deleteAdminUrlMutation = useMutation<
 	void,
 	unknown,
 	string,
-	{ previous: any }
+	{ previous: PaginatedResult<AdminUrl> | null }
 >({
 	mutationFn: async (shortCode: string) => {
 		return await deleteAdminUrl(shortCode);
@@ -434,12 +440,12 @@ const deleteAdminUrlMutation = useMutation<
 			: null;
 		if (adminStore.urls?.data) {
 			adminStore.urls.data = adminStore.urls.data.filter(
-				(u: any) => u.shortCode !== shortCode,
+				(u) => u.shortCode !== shortCode,
 			);
 		}
 		return { previous };
 	},
-	onError: (err: unknown, _shortCode: string, context: any) => {
+	onError: (err: unknown, _shortCode: string, context) => {
 		if (context?.previous) adminStore.urls = context.previous;
 		console.error("deleteAdminUrlMutation error:", err);
 	},
@@ -460,7 +466,9 @@ onMounted(async () => {
 				ownerNames.value[u.id] = u.name;
 			});
 		} catch (err) {
-			idsToFetch.forEach((id) => (ownerNames.value[id] = "Unknown"));
+			for (const id of idsToFetch) {
+				ownerNames.value[id] = "Unknown";
+			}
 			console.error("[AdminUrls] loadOwners error", err);
 		}
 	}
