@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { corsMiddleware } from "@/utils/cors-middleware";
 import { checkEnvMiddleware, type Bindings } from "@/utils/context";
 import { createAuth, type Auth } from "@/auth";
+import { createDb } from "@/db";
 import { v1Router } from "@/presentation/http/v1";
 import { redirectRoutes } from "@/presentation/http/redirect";
 import { onError } from "@/infrastructure/http/error-handler";
@@ -46,6 +47,41 @@ app.use("*", async (c, next) => {
 });
 
 app.get("/health", (c) => c.json({ status: "ok" }));
+
+// Temporary diagnostic endpoint — remove after debugging
+app.get("/debug", async (c) => {
+	const result: Record<string, unknown> = { timestamp: new Date().toISOString() };
+	try {
+		const db = createDb(c.env.DB);
+		result.db = "ok";
+		try {
+			const { UrlRepository } = await import("@/infrastructure/persistence/url.repository.impl");
+			const repo = new UrlRepository(db);
+			const urls = await repo.findAll();
+			result.findAll = `ok (${urls.length} urls)`;
+		} catch (e) {
+			result.urlRepo = `error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+		try {
+			const { UserRepository } = await import("@/infrastructure/persistence/user.repository.impl");
+			const userRepo = new UserRepository(db);
+			const admins = await userRepo.getAdminUserIds();
+			result.userRepo = `ok (${admins.length} admins)`;
+		} catch (e) {
+			result.userRepo = `error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+		try {
+			const auth = c.get("auth");
+			const session = await auth.api.getSession({ headers: c.req.raw.headers });
+			result.auth = `ok (session: ${!!session})`;
+		} catch (e) {
+			result.auth = `error: ${e instanceof Error ? e.message : String(e)}`;
+		}
+	} catch (e) {
+		result.db = `error: ${e instanceof Error ? e.message : String(e)}`;
+	}
+	return c.json(result);
+});
 
 // Better Auth handler: monta todas las rutas de auth en /api/auth/*
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
