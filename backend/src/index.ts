@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { corsMiddleware } from "@/utils/cors-middleware";
 import { checkEnvMiddleware, type Bindings } from "@/utils/context";
 import { createAuth, type Auth } from "@/auth";
-import { createDb } from "@/db";
 import { v1Router } from "@/presentation/http/v1";
 import { redirectRoutes } from "@/presentation/http/redirect";
 import { onError } from "@/infrastructure/http/error-handler";
@@ -42,61 +41,11 @@ app.use("*", corsMiddleware());
 
 // Inyectar auth en el contexto para todas las rutas
 app.use("*", async (c, next) => {
-	try {
-		c.set("auth", getAuth(c.env));
-	} catch (_e) {
-		// Auth creation failed — routes that need auth will throw UnauthorizedError
-	}
+	c.set("auth", getAuth(c.env));
 	await next();
 });
 
 app.get("/health", (c) => c.json({ status: "ok" }));
-
-// Temporary diagnostic endpoint — remove after debugging
-app.get("/debug", async (c) => {
-	const result: Record<string, unknown> = {
-		timestamp: new Date().toISOString(),
-		BETTER_AUTH_URL: c.env.BETTER_AUTH_URL || "(empty)",
-		BETTER_AUTH_SECRET: c.env.BETTER_AUTH_SECRET ? "(set)" : "(empty)",
-		GOOGLE_CLIENT_ID: c.env.GOOGLE_CLIENT_ID ? "(set)" : "(empty)",
-		SERVICE_ADMIN_API_KEY: c.env.SERVICE_ADMIN_API_KEY ? "(set)" : "(empty)",
-		TRUSTED_ORIGINS: c.env.TRUSTED_ORIGINS || "(empty)",
-		DEV_MODE: c.env.DEV_MODE || "(empty)",
-	};
-	try {
-		const db = createDb(c.env.DB);
-		result.db = "ok";
-		try {
-			const { UrlRepository } = await import("@/infrastructure/persistence/url.repository.impl");
-			const repo = new UrlRepository(db);
-			const urls = await repo.findAll();
-			result.findAll = `ok (${urls.length} urls)`;
-		} catch (e) {
-			result.urlRepo = `error: ${e instanceof Error ? e.message : String(e)}`;
-		}
-		try {
-			const { UserRepository } = await import("@/infrastructure/persistence/user.repository.impl");
-			const userRepo = new UserRepository(db);
-			const admins = await userRepo.getAdminUserIds();
-			result.userRepo = `ok (${admins.length} admins)`;
-			if (admins.length > 0) {
-				try {
-					const { UrlRepository } = await import("@/infrastructure/persistence/url.repository.impl");
-					const repo = new UrlRepository(db);
-					const publicUrls = await repo.findByUserIds(admins);
-					result.findByUserIds = `ok (${publicUrls.length} urls)`;
-				} catch (e) {
-					result.findByUserIds = `error: ${e instanceof Error ? e.message : String(e)}`;
-				}
-			}
-		} catch (e) {
-			result.userRepo = `error: ${e instanceof Error ? e.message : String(e)}`;
-		}
-	} catch (e) {
-		result.db = `error: ${e instanceof Error ? e.message : String(e)}`;
-	}
-	return c.json(result);
-});
 
 // Better Auth handler: monta todas las rutas de auth en /api/auth/*
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
