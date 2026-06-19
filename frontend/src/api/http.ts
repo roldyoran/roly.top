@@ -121,11 +121,14 @@ export function getAxiosInstance(): AxiosInstance {
 			try {
 				if (config?.method && config.method.toLowerCase() === "get") {
 					cleanExpiredCache();
-					const key = `etag:${config.url}`;
-					const etag = localStorage.getItem(key);
-					if (etag) {
+					const url = config.url;
+					const etag = url ? localStorage.getItem(`etag:${url}`) : null;
+					const cached = url ? getCache(url) : null;
+					if (etag && cached) {
 						config.headers = config.headers || {};
 						config.headers["If-None-Match"] = etag;
+					} else if (url) {
+						localStorage.removeItem(`etag:${url}`);
 					}
 				}
 			} catch (_e) {
