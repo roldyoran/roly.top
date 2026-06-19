@@ -40,6 +40,8 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+stats.html
+frontend/stats.html
 
 
 backend/wrangler.jsonc
