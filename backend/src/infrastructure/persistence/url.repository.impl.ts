@@ -1,4 +1,4 @@
-import { eq, sql, count, and, isNull } from "drizzle-orm";
+import { eq, sql, count, and, isNull, inArray } from "drizzle-orm";
 import type { DrizzleDB } from "@/db";
 import { urlsTable } from "@/db/schema";
 import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
@@ -71,12 +71,7 @@ export class UrlRepository implements UrlRepositoryPort {
 		return this.db
 			.select()
 			.from(urlsTable)
-			.where(
-				sql`${urlsTable.userId} IN (${sql.join(
-					userIds.map((id) => sql`${id}`),
-					sql`, `,
-				)})`,
-			)
+			.where(inArray(urlsTable.userId, userIds))
 			.all();
 	}
 
