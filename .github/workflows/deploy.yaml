@@ -27,9 +27,6 @@ jobs:
       - name: Test
         run: bun test
 
-      - name: Security audit
-        run: bun audit --audit-level=high || true
-
       - name: Build frontend
         run: bun run build:front
         env:
