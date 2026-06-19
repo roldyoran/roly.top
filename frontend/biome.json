@@ -23,6 +23,30 @@
 					}
 				}
 			}
+		},
+		{
+			"includes": ["src/components/ui/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off",
+						"noDocumentCookie": "off"
+					},
+					"correctness": {
+						"noVueDuplicateKeys": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/style.css"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noDescendingSpecificity": "off"
+					}
+				}
+			}
 		}
 	],
 	"linter": {
