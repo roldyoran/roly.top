@@ -42,7 +42,11 @@ app.use("*", corsMiddleware());
 
 // Inyectar auth en el contexto para todas las rutas
 app.use("*", async (c, next) => {
-	c.set("auth", getAuth(c.env));
+	try {
+		c.set("auth", getAuth(c.env));
+	} catch (_e) {
+		// Auth creation failed — routes that need auth will throw UnauthorizedError
+	}
 	await next();
 });
 
@@ -50,8 +54,15 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 
 // Temporary diagnostic endpoint — remove after debugging
 app.get("/debug", async (c) => {
-	const result: Record<string, unknown> = { timestamp: new Date().toISOString() };
-	result.BETTER_AUTH_URL_env = c.env.BETTER_AUTH_URL;
+	const result: Record<string, unknown> = {
+		timestamp: new Date().toISOString(),
+		BETTER_AUTH_URL: c.env.BETTER_AUTH_URL || "(empty)",
+		BETTER_AUTH_SECRET: c.env.BETTER_AUTH_SECRET ? "(set)" : "(empty)",
+		GOOGLE_CLIENT_ID: c.env.GOOGLE_CLIENT_ID ? "(set)" : "(empty)",
+		SERVICE_ADMIN_API_KEY: c.env.SERVICE_ADMIN_API_KEY ? "(set)" : "(empty)",
+		TRUSTED_ORIGINS: c.env.TRUSTED_ORIGINS || "(empty)",
+		DEV_MODE: c.env.DEV_MODE || "(empty)",
+	};
 	try {
 		const db = createDb(c.env.DB);
 		result.db = "ok";
@@ -68,15 +79,18 @@ app.get("/debug", async (c) => {
 			const userRepo = new UserRepository(db);
 			const admins = await userRepo.getAdminUserIds();
 			result.userRepo = `ok (${admins.length} admins)`;
+			if (admins.length > 0) {
+				try {
+					const { UrlRepository } = await import("@/infrastructure/persistence/url.repository.impl");
+					const repo = new UrlRepository(db);
+					const publicUrls = await repo.findByUserIds(admins);
+					result.findByUserIds = `ok (${publicUrls.length} urls)`;
+				} catch (e) {
+					result.findByUserIds = `error: ${e instanceof Error ? e.message : String(e)}`;
+				}
+			}
 		} catch (e) {
 			result.userRepo = `error: ${e instanceof Error ? e.message : String(e)}`;
-		}
-		try {
-			const auth = c.get("auth");
-			const session = await auth.api.getSession({ headers: c.req.raw.headers });
-			result.auth = `ok (session: ${!!session})`;
-		} catch (e) {
-			result.auth = `error: ${e instanceof Error ? e.message : String(e)}`;
 		}
 	} catch (e) {
 		result.db = `error: ${e instanceof Error ? e.message : String(e)}`;
