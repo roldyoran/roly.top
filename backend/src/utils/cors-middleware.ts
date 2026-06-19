@@ -20,15 +20,28 @@ export const corsMiddleware = (options?: {
 		const defaultOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 
 		const envOrigins = c.env?.TRUSTED_ORIGINS
-			? c.env.TRUSTED_ORIGINS.split(",").map((o: string) => o.trim()).filter(Boolean)
+			? c.env.TRUSTED_ORIGINS.split(",")
+					.map((o: string) => o.trim())
+					.filter(Boolean)
 			: [];
 
 		const allOrigins = [...new Set([...envOrigins, ...defaultOrigins])];
 
 		const config = {
 			origin: options?.origin ?? allOrigins,
-			methods: options?.methods ?? ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-			allowedHeaders: options?.allowedHeaders ?? ["Content-Type", "x-api-key", "Authorization"],
+			methods: options?.methods ?? [
+				"GET",
+				"POST",
+				"PUT",
+				"DELETE",
+				"OPTIONS",
+				"PATCH",
+			],
+			allowedHeaders: options?.allowedHeaders ?? [
+				"Content-Type",
+				"x-api-key",
+				"Authorization",
+			],
 			maxAge: options?.maxAge ?? 86400,
 		};
 
