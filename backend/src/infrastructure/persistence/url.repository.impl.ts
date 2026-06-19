@@ -22,15 +22,6 @@ function generateShortCode(length = 9): string {
 
 // Adaptador secundario: implementación del puerto usando Drizzle + Cloudflare D1
 export class UrlRepository implements UrlRepositoryPort {
-	private static instance: UrlRepository | null = null;
-
-	static getInstance(db: DrizzleDB): UrlRepository {
-		if (!this.instance) {
-			this.instance = new UrlRepository(db);
-		}
-		return this.instance;
-	}
-
 	constructor(private readonly db: DrizzleDB) {}
 
 	async findAll(): Promise<UrlEntity[]> {
@@ -72,6 +63,20 @@ export class UrlRepository implements UrlRepositoryPort {
 			.select()
 			.from(urlsTable)
 			.where(eq(urlsTable.userId, userId))
+			.all();
+	}
+
+	async findByUserIds(userIds: string[]): Promise<UrlEntity[]> {
+		if (userIds.length === 0) return [];
+		return this.db
+			.select()
+			.from(urlsTable)
+			.where(
+				sql`${urlsTable.userId} IN (${sql.join(
+					userIds.map((id) => sql`${id}`),
+					sql`, `,
+				)})`,
+			)
 			.all();
 	}
 
@@ -155,6 +160,17 @@ export class UrlRepository implements UrlRepositoryPort {
 	}
 
 	async incrementVisits(shortCode: string): Promise<UrlEntity | null> {
+		const [updated] = await this.db
+			.update(urlsTable)
+			.set({ visits: sql`${urlsTable.visits} + 1` })
+			.where(eq(urlsTable.shortCode, shortCode))
+			.returning();
+		return updated ?? null;
+	}
+
+	async findByShortCodeAndIncrementVisits(
+		shortCode: string,
+	): Promise<UrlEntity | null> {
 		const [updated] = await this.db
 			.update(urlsTable)
 			.set({ visits: sql`${urlsTable.visits} + 1` })

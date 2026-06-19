@@ -16,11 +16,13 @@ export type Bindings = {
 	BETTER_AUTH_URL: string;
 	GOOGLE_CLIENT_ID: string;
 	GOOGLE_CLIENT_SECRET: string;
+	TRUSTED_ORIGINS?: string;
 };
 
 export type Variables = {
 	urlRepo: UrlRepositoryPort;
 	userRepo: UserRepositoryPort;
+	requestId: string;
 };
 
 const ENV_KEYS: (keyof Bindings)[] = [

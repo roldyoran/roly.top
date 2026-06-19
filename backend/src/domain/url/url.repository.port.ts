@@ -10,6 +10,7 @@ export interface UrlRepositoryPort {
 		userId?: string | null,
 	): Promise<UrlEntity | null>;
 	findByUserId(userId: string): Promise<UrlEntity[]>;
+	findByUserIds(userIds: string[]): Promise<UrlEntity[]>;
 	findByUserShortCode(
 		userId: string,
 		shortCode: string,
@@ -24,5 +25,8 @@ export interface UrlRepositoryPort {
 	): Promise<UrlEntity | null>;
 	deleteAll(): Promise<void>;
 	incrementVisits(shortCode: string): Promise<UrlEntity | null>;
+	findByShortCodeAndIncrementVisits(
+		shortCode: string,
+	): Promise<UrlEntity | null>;
 	assignAllToUser(userId: string): Promise<void>;
 }

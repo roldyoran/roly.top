@@ -1,7 +1,7 @@
 import type { ClassValue } from "clsx";
 import { clsx } from "clsx";
-import { computed, type ComputedRef } from "vue";
 import { twMerge } from "tailwind-merge";
+import { type ComputedRef, computed } from "vue";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -11,12 +11,12 @@ export function cn(...inputs: ClassValue[]) {
  * Drop-in replacement for `reactiveOmit` from `@vueuse/core`.
  * Omits specified keys from a reactive object.
  */
-export function reactiveOmit<T extends Record<string, any>, K extends string>(
-	obj: T,
-	...keys: K[]
-): ComputedRef<Omit<T, K>> {
+export function reactiveOmit<
+	T extends Record<string, unknown>,
+	K extends string,
+>(obj: T, ...keys: K[]): ComputedRef<Omit<T, K>> {
 	return computed(() => {
-		const result = { ...obj } as Record<string, any>;
+		const result = { ...obj } as Record<string, unknown>;
 		for (const key of keys) delete result[key];
 		return result as Omit<T, K>;
 	});

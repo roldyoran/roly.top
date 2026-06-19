@@ -11,15 +11,6 @@ import type {
 } from "@/domain/admin/admin.entity";
 
 export class AdminRepository implements AdminRepositoryPort {
-	private static instance: AdminRepository | null = null;
-
-	static getInstance(db: DrizzleDB): AdminRepository {
-		if (!this.instance) {
-			this.instance = new AdminRepository(db);
-		}
-		return this.instance;
-	}
-
 	constructor(private readonly db: DrizzleDB) {}
 
 	async findAllUsers(params: {
@@ -229,32 +220,34 @@ export class AdminRepository implements AdminRepositoryPort {
 	}
 
 	async deleteUser(userId: string): Promise<void> {
-		await this.db.delete(urlsTable).where(eq(urlsTable.userId, userId));
-		await this.db.delete(users).where(eq(users.id, userId));
+		await this.db.transaction(async (tx) => {
+			await tx.delete(urlsTable).where(eq(urlsTable.userId, userId));
+			await tx.delete(users).where(eq(users.id, userId));
+		});
 	}
 
 	async getStats(): Promise<AdminStats> {
-		const [totalUsersResult] = await this.db
-			.select({ value: count() })
-			.from(users);
-
-		const [totalUrlsResult] = await this.db
-			.select({ value: count() })
-			.from(urlsTable);
-
-		const [totalVisitsResult] = await this.db
-			.select({ value: sql<number>`COALESCE(SUM(${urlsTable.visits}), 0)` })
-			.from(urlsTable);
-
-		const [adminUsersResult] = await this.db
-			.select({ value: count() })
-			.from(users)
-			.where(eq(users.role, "admin"));
-
-		const [bannedUsersResult] = await this.db
-			.select({ value: count() })
-			.from(users)
-			.where(eq(users.banned, true));
+		const [
+			[totalUsersResult],
+			[totalUrlsResult],
+			[totalVisitsResult],
+			[adminUsersResult],
+			[bannedUsersResult],
+		] = await Promise.all([
+			this.db.select({ value: count() }).from(users),
+			this.db.select({ value: count() }).from(urlsTable),
+			this.db
+				.select({ value: sql<number>`COALESCE(SUM(${urlsTable.visits}), 0)` })
+				.from(urlsTable),
+			this.db
+				.select({ value: count() })
+				.from(users)
+				.where(eq(users.role, "admin")),
+			this.db
+				.select({ value: count() })
+				.from(users)
+				.where(eq(users.banned, true)),
+		]);
 
 		return {
 			totalUsers: totalUsersResult?.value ?? 0,

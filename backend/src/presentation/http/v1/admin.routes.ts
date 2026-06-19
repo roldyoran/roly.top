@@ -49,7 +49,7 @@ adminRoutes.use("/*", async (c, next) => {
 // Helper: crea AdminRepository desde el env
 function getAdminRepo(c: { env: Bindings }) {
 	const db = createDb(c.env.DB);
-	return AdminRepository.getInstance(db);
+	return new AdminRepository(db);
 }
 
 // ── Stats ────────────────────────────────────────────────────────────────────
@@ -223,7 +223,14 @@ adminRoutes.delete("/urls", async (c) => {
 adminRoutes.use("/setup/make-admin", async (c, next) => {
 	const authHeader = c.req.header("Authorization");
 	const apiKey = c.env.SERVICE_ADMIN_API_KEY;
-	if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
+	if (!authHeader) {
+		throw new UnauthorizedError();
+	}
+	const token = authHeader.replace("Bearer ", "");
+	const encoder = new TextEncoder();
+	const a = encoder.encode(token);
+	const b = encoder.encode(apiKey ?? "");
+	if (a.length !== b.length || !(await crypto.subtle.timingSafeEqual(a, b))) {
 		throw new UnauthorizedError();
 	}
 	await next();

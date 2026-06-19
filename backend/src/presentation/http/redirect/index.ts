@@ -19,7 +19,7 @@ redirectRoutes.get(
 	async (c) => {
 		const { shortCode } = c.req.valid("param");
 		const db = createDb(c.env.DB);
-		const repo = UrlRepository.getInstance(db);
+		const repo = new UrlRepository(db);
 		const useCase = new RedirectUrlUseCase(repo);
 		const url = await useCase.execute(shortCode);
 		if (!url) {

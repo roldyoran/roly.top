@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { reactiveOmit } from "@/lib/utils";
 import type { Component } from "vue";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { reactiveOmit } from "@/lib/utils";
 import type { SidebarMenuButtonProps } from "./SidebarMenuButtonChild.vue";
 import SidebarMenuButtonChild from "./SidebarMenuButtonChild.vue";
 import { useSidebar } from "./utils";

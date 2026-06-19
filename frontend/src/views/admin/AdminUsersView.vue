@@ -368,7 +368,7 @@ import {
 } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import type { AdminUser } from "@/api/admin";
+import type { AdminUser, PaginatedResult } from "@/api/admin";
 import {
 	banUser,
 	deleteUser,
@@ -434,7 +434,7 @@ const adminQuery = useQuery({
 		adminParams.value.pageSize,
 		adminParams.value.search,
 	]),
-	queryFn: async ({ signal }: any) => {
+	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		const { page, pageSize, search } = adminParams.value;
 		const res = await getAdminUsers(page, pageSize, search, signal);
 		return res;
@@ -443,13 +443,13 @@ const adminQuery = useQuery({
 	refetchOnWindowFocus: false,
 });
 
-watch(adminQuery.data, (data: any) => {
+watch(adminQuery.data, (data) => {
 	if (data) {
 		adminStore.users = data;
 	}
 });
 
-watch(adminQuery.error, (err: any) => {
+watch(adminQuery.error, (err) => {
 	if (err) console.error("Error fetching admin users:", err);
 });
 
@@ -462,7 +462,7 @@ const deleteUserMutation = useMutation<
 	void,
 	unknown,
 	string,
-	{ previous: any }
+	{ previous: PaginatedResult<AdminUser> | null }
 >({
 	mutationFn: async (userId: string) => {
 		return await deleteUser(userId);
@@ -472,15 +472,14 @@ const deleteUserMutation = useMutation<
 		const previous = adminStore.users
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
-		// Optimistically remove user from list
 		if (adminStore.users?.data) {
 			adminStore.users.data = adminStore.users.data.filter(
-				(u: any) => u.id !== userId,
+				(u) => u.id !== userId,
 			);
 		}
 		return { previous };
 	},
-	onError: (err: unknown, _userId: string, context: any) => {
+	onError: (err: unknown, _userId: string, context) => {
 		if (context?.previous) {
 			adminStore.users = context.previous;
 		}
@@ -495,7 +494,7 @@ const banMutation = useMutation<
 	void,
 	unknown,
 	{ userId: string; reason?: string },
-	{ previous: any }
+	{ previous: PaginatedResult<AdminUser> | null }
 >({
 	mutationFn: async ({
 		userId,
@@ -512,20 +511,25 @@ const banMutation = useMutation<
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
 		if (adminStore.users?.data) {
-			adminStore.users.data = adminStore.users.data.map((u: any) =>
+			adminStore.users.data = adminStore.users.data.map((u) =>
 				u.id === userId ? { ...u, banned: true } : u,
 			);
 		}
 		return { previous };
 	},
-	onError: (err: unknown, _vars: any, context: any) => {
+	onError: (err: unknown, _vars, context) => {
 		if (context?.previous) adminStore.users = context.previous;
 		console.error("banMutation error:", err);
 	},
 	onSettled: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
 });
 
-const unbanMutation = useMutation<void, unknown, string, { previous: any }>({
+const unbanMutation = useMutation<
+	void,
+	unknown,
+	string,
+	{ previous: PaginatedResult<AdminUser> | null }
+>({
 	mutationFn: async (userId: string) => {
 		return await unbanUser(userId);
 	},
@@ -535,13 +539,13 @@ const unbanMutation = useMutation<void, unknown, string, { previous: any }>({
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
 		if (adminStore.users?.data) {
-			adminStore.users.data = adminStore.users.data.map((u: any) =>
+			adminStore.users.data = adminStore.users.data.map((u) =>
 				u.id === userId ? { ...u, banned: false } : u,
 			);
 		}
 		return { previous };
 	},
-	onError: (err: unknown, _userId: string, context: any) => {
+	onError: (err: unknown, _userId: string, context) => {
 		if (context?.previous) adminStore.users = context.previous;
 		console.error("unbanMutation error:", err);
 	},
@@ -552,7 +556,7 @@ const updateLimitMutation = useMutation<
 	void,
 	unknown,
 	{ userId: string; limit: number },
-	{ previous: any }
+	{ previous: PaginatedResult<AdminUser> | null }
 >({
 	mutationFn: async ({ userId, limit }: { userId: string; limit: number }) => {
 		return await updateUserUrlLimit(userId, limit);
@@ -563,13 +567,13 @@ const updateLimitMutation = useMutation<
 			? JSON.parse(JSON.stringify(adminStore.users))
 			: null;
 		if (adminStore.users?.data) {
-			adminStore.users.data = adminStore.users.data.map((u: any) =>
+			adminStore.users.data = adminStore.users.data.map((u) =>
 				u.id === userId ? { ...u, urlLimit: limit } : u,
 			);
 		}
 		return { previous };
 	},
-	onError: (err: unknown, _vars: any, context: any) => {
+	onError: (err: unknown, _vars, context) => {
 		if (context?.previous) adminStore.users = context.previous;
 		console.error("updateLimitMutation error:", err);
 	},

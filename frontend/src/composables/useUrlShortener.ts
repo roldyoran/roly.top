@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { toast } from "vue-sonner";
 import { getAppBaseUrl, shortenUrlRequest } from "@/api/http";
-import type { UrlInfoResponse } from "@/api/types";
+import type { SavedUrlItem, UrlInfoResponse } from "@/api/types";
 import { useUrlStore } from "@/stores/urlStore";
 
 /**
@@ -16,7 +16,7 @@ export const useUrlShortener = () => {
 		UrlInfoResponse,
 		unknown,
 		{ originalUrl: string; customHash?: string },
-		{ previousSaved: any[]; tempShort?: string }
+		{ previousSaved: SavedUrlItem[]; tempShort?: string }
 	>({
 		mutationFn: async ({ originalUrl, customHash }) => {
 			return await shortenUrlRequest(originalUrl, customHash);
@@ -33,20 +33,23 @@ export const useUrlShortener = () => {
 		onError: (
 			_err: unknown,
 			_vars: { originalUrl: string; customHash?: string },
-			context: any,
+			context:
+				| { previousSaved: SavedUrlItem[]; tempShort?: string }
+				| undefined,
 		) => {
 			if (context?.previousSaved) {
-				// restore previous saved urls
 				urlStore.clearAllUrls();
-				context.previousSaved.forEach((u: any) =>
-					urlStore.addUrl(u.original, u.short),
-				);
+				for (const u of context.previousSaved) {
+					urlStore.addUrl(u.original, u.short);
+				}
 			}
 		},
 		onSuccess: (
 			data: UrlInfoResponse,
 			vars: { originalUrl: string; customHash?: string },
-			context: any,
+			context:
+				| { previousSaved: SavedUrlItem[]; tempShort?: string }
+				| undefined,
 		) => {
 			// replace temp entry with real shortCode
 			if (context?.tempShort) {
@@ -118,11 +121,15 @@ export const useUrlShortener = () => {
 				};
 			}
 			return { success: false };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("[shortenUrl] caught error:", error);
+			const errObj = error as {
+				response?: { data?: { error?: { message?: string } } };
+				message?: string;
+			};
 			const msg =
-				error?.response?.data?.error?.message ||
-				error?.message ||
+				errObj?.response?.data?.error?.message ||
+				errObj?.message ||
 				"Error al acortar la URL";
 			return { success: false, error: msg };
 		} finally {

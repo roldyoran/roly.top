@@ -14,6 +14,7 @@ export type MockedRepository = {
 		(originalUrl: string, userId?: string | null) => Promise<UrlEntity | null>
 	>;
 	findByUserId: Mock<(userId: string) => Promise<UrlEntity[]>>;
+	findByUserIds: Mock<(userIds: string[]) => Promise<UrlEntity[]>>;
 	findByUserShortCode: Mock<
 		(userId: string, shortCode: string) => Promise<UrlEntity | null>
 	>;
@@ -27,6 +28,9 @@ export type MockedRepository = {
 	>;
 	deleteAll: Mock<() => Promise<void>>;
 	incrementVisits: Mock<(shortCode: string) => Promise<UrlEntity | null>>;
+	findByShortCodeAndIncrementVisits: Mock<
+		(shortCode: string) => Promise<UrlEntity | null>
+	>;
 	assignAllToUser: Mock<(userId: string) => Promise<void>>;
 } & UrlRepositoryPort;
 
@@ -46,6 +50,9 @@ export function createMockRepository(): MockedRepository {
 		findByUserId: mock((_userId: string) =>
 			Promise.resolve([] as UrlEntity[]),
 		),
+		findByUserIds: mock((_userIds: string[]) =>
+			Promise.resolve([] as UrlEntity[]),
+		),
 		findByUserShortCode: mock((_userId: string, _shortCode: string) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
@@ -63,6 +70,9 @@ export function createMockRepository(): MockedRepository {
 		),
 		deleteAll: mock(() => Promise.resolve()),
 		incrementVisits: mock((_shortCode: string) =>
+			Promise.resolve(null as UrlEntity | null),
+		),
+		findByShortCodeAndIncrementVisits: mock((_shortCode: string) =>
 			Promise.resolve(null as UrlEntity | null),
 		),
 		assignAllToUser: mock((_userId: string) => Promise.resolve()),

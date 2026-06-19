@@ -6,10 +6,6 @@ export class RedirectUrlUseCase {
 	constructor(private readonly urlRepository: UrlRepositoryPort) {}
 
 	async execute(shortCode: string): Promise<UrlEntity | null> {
-		const url = await this.urlRepository.findByShortCode(shortCode);
-		if (!url) {
-			return null;
-		}
-		return this.urlRepository.incrementVisits(shortCode);
+		return this.urlRepository.findByShortCodeAndIncrementVisits(shortCode);
 	}
 }

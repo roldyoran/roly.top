@@ -25,6 +25,79 @@ export function getAppBaseUrl(): string {
 	return "";
 }
 
+const CACHE_TTL = 300_000;
+const CACHE_MAX = 50;
+const CACHE_PREFIX = "cache:";
+
+type CacheEntry = { data: unknown; timestamp: number };
+
+function getAllCacheKeys(): string[] {
+	const keys: string[] = [];
+	for (let i = 0; i < localStorage.length; i++) {
+		const key = localStorage.key(i);
+		if (key?.startsWith(CACHE_PREFIX)) keys.push(key);
+	}
+	return keys;
+}
+
+function cleanExpiredCache(): void {
+	const now = Date.now();
+	for (const key of getAllCacheKeys()) {
+		try {
+			const raw = localStorage.getItem(key);
+			if (!raw) continue;
+			const entry: CacheEntry = JSON.parse(raw);
+			if (now - entry.timestamp > CACHE_TTL) {
+				localStorage.removeItem(key);
+			}
+		} catch {
+			localStorage.removeItem(key);
+		}
+	}
+}
+
+function enforceMaxEntries(): void {
+	const keys = getAllCacheKeys();
+	if (keys.length <= CACHE_MAX) return;
+	const entries: { key: string; timestamp: number }[] = [];
+	for (const key of keys) {
+		try {
+			const raw = localStorage.getItem(key);
+			if (!raw) continue;
+			const entry: CacheEntry = JSON.parse(raw);
+			entries.push({ key, timestamp: entry.timestamp });
+		} catch {
+			localStorage.removeItem(key);
+		}
+	}
+	entries.sort((a, b) => a.timestamp - b.timestamp);
+	const toRemove = entries.slice(0, entries.length - CACHE_MAX);
+	for (const { key } of toRemove) {
+		localStorage.removeItem(key);
+	}
+}
+
+function setCache(key: string, data: unknown): void {
+	const entry: CacheEntry = { data, timestamp: Date.now() };
+	localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(entry));
+	enforceMaxEntries();
+}
+
+function getCache(key: string): CacheEntry | null {
+	try {
+		const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
+		if (!raw) return null;
+		const entry: CacheEntry = JSON.parse(raw);
+		if (Date.now() - entry.timestamp > CACHE_TTL) {
+			localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+			return null;
+		}
+		return entry;
+	} catch {
+		return null;
+	}
+}
+
 // Singleton axios instance
 let _axiosInstance: AxiosInstance | null = null;
 
@@ -43,11 +116,11 @@ export function getAxiosInstance(): AxiosInstance {
 		},
 	});
 
-	// Attach ETag headers on GET requests
 	_axiosInstance.interceptors.request.use(
 		(config: InternalAxiosRequestConfig) => {
 			try {
 				if (config?.method && config.method.toLowerCase() === "get") {
+					cleanExpiredCache();
 					const key = `etag:${config.url}`;
 					const etag = localStorage.getItem(key);
 					if (etag) {
@@ -74,11 +147,7 @@ export function getAxiosInstance(): AxiosInstance {
 					if (etag) {
 						localStorage.setItem(`etag:${response.config.url}`, String(etag));
 					}
-					// cache response body
-					localStorage.setItem(
-						`cache:${response.config.url}`,
-						JSON.stringify(response.data),
-					);
+					if (response.config.url) setCache(response.config.url, response.data);
 				}
 			} catch (_e) {
 				// ignore cache errors
@@ -86,13 +155,12 @@ export function getAxiosInstance(): AxiosInstance {
 			return response;
 		},
 		(error: AxiosError) => {
-			// If server responds 304 Not Modified, return cached payload
 			const status = error?.response?.status;
 			const config = error?.response?.config || error?.config;
 			if (status === 304 && config) {
 				try {
-					const cached = localStorage.getItem(`cache:${config.url}`);
-					const data = cached ? JSON.parse(cached) : null;
+					const entry = config.url ? getCache(config.url) : null;
+					const data = entry ? entry.data : null;
 					return Promise.resolve({
 						data,
 						status: 304,

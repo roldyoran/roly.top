@@ -25,8 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import { Button } from "@/components/ui/button";
 import Google from "@/assets/google.vue";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuthStore } from "@/stores/authStore";
 

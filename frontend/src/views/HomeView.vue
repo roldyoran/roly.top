@@ -362,8 +362,6 @@ import {
 	User,
 	X,
 } from "lucide-vue-next";
-import Google from "@/assets/google.vue";
-import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
 import { AnimatePresence, motion } from "motion-v";
 import {
 	computed,
@@ -381,10 +379,13 @@ import {
 	getPublicStatsRequest,
 	getUrlsRequest,
 } from "@/api/http";
+import type { UrlInfoResponse, UserUrlsResponse } from "@/api/types";
+import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
+import Google from "@/assets/google.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
-import { Switch } from "@/components/ui/switch";
 import ThemeToggle from "@/components/layout/ThemeToggle.vue";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/composables/useAuth";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useSeo } from "@/composables/useSeo";
@@ -395,6 +396,7 @@ const QrGenerator = defineAsyncComponent(
 const UrlInfoForm = defineAsyncComponent(
 	() => import("@/components/features/url-info/UrlInfoForm.vue"),
 );
+
 import { useUrlShortener } from "@/composables/useUrlShortener";
 import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
@@ -553,14 +555,14 @@ onMounted(async () => {
 		try {
 			const res = await getUrlsRequest();
 			if (res && typeof res === "object") {
-				// Establecer límite y actualizar la lista local en caso de que difiera
-				if ("urlLimit" in res) urlStore.setUrlLimit(res.urlLimit);
-				if (Array.isArray((res as any).urls)) {
-					// actualizar store local y caché si es necesario
-					const urls = (res as any).urls as any[];
-					// Reemplazamos savedUrls en el store con los del servidor
+				const response = res as UserUrlsResponse;
+				if ("urlLimit" in response) urlStore.setUrlLimit(response.urlLimit);
+				if (Array.isArray(response.urls)) {
+					const urls = response.urls;
 					urlStore.clearAllUrls();
-					urls.forEach((u: any) => urlStore.addUrl(u.originalUrl, u.shortCode));
+					urls.forEach((u: UrlInfoResponse) => {
+						urlStore.addUrl(u.originalUrl, u.shortCode);
+					});
 				}
 			}
 		} catch (e) {

@@ -17,16 +17,20 @@ export const corsMiddleware = (options?: {
 	maxAge?: number;
 }) => {
 	return async (c: Context, next: Next): Promise<Response | void> => {
-		// Configuración por defecto
-		const defaultOptions = {
-			origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-			allowedHeaders: ["Content-Type", "x-api-key", "Authorization"],
-			maxAge: 86400, // 24 horas
-		};
+		const defaultOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 
-		// Fusionar opciones personalizadas con las predeterminadas
-		const config = { ...defaultOptions, ...options };
+		const envOrigins = c.env?.TRUSTED_ORIGINS
+			? c.env.TRUSTED_ORIGINS.split(",").map((o: string) => o.trim()).filter(Boolean)
+			: [];
+
+		const allOrigins = [...new Set([...envOrigins, ...defaultOrigins])];
+
+		const config = {
+			origin: options?.origin ?? allOrigins,
+			methods: options?.methods ?? ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+			allowedHeaders: options?.allowedHeaders ?? ["Content-Type", "x-api-key", "Authorization"],
+			maxAge: options?.maxAge ?? 86400,
+		};
 
 		// Echo individual del origin (no unir con coma)
 		const requestOrigin = c.req.header("Origin");
