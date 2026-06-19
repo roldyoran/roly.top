@@ -58,9 +58,10 @@ export function createAuth(env?: CloudflareBindings) {
 		},
 		plugins: [admin()],
 		onAPIError: {
-			errorURL: env.DEV_MODE === "true"
-				? "http://localhost:5173/auth/error"
-				: "/auth/error",
+			errorURL:
+				env.DEV_MODE === "true"
+					? "http://localhost:5173/auth/error"
+					: "/auth/error",
 		},
 		advanced: {
 			defaultCookieAttributes: {
