@@ -14,6 +14,7 @@
     "build": "bun run build:front && bun run build:back",
     "deploy": "bun --cwd backend run deploy",
     "check:front": "bun --cwd frontend check",
+    "check": "bun --cwd frontend check",
     "format:front": "bun --cwd frontend format",
     "lint:front": "bun --cwd frontend lint"
   },
