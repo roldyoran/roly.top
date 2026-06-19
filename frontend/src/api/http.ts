@@ -147,7 +147,7 @@ export function getAxiosInstance(): AxiosInstance {
 					if (etag) {
 						localStorage.setItem(`etag:${response.config.url}`, String(etag));
 					}
-					setCache(response.config.url, response.data);
+					if (response.config.url) setCache(response.config.url, response.data);
 				}
 			} catch (_e) {
 				// ignore cache errors
@@ -159,7 +159,7 @@ export function getAxiosInstance(): AxiosInstance {
 			const config = error?.response?.config || error?.config;
 			if (status === 304 && config) {
 				try {
-					const entry = getCache(config.url);
+					const entry = config.url ? getCache(config.url) : null;
 					const data = entry ? entry.data : null;
 					return Promise.resolve({
 						data,

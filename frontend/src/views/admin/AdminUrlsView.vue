@@ -240,7 +240,7 @@ import {
 import { Copy, Link, Search, Trash2 } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import type { AdminUrl, AdminUser } from "@/api/admin";
+import type { AdminUrl, AdminUser, PaginatedResult } from "@/api/admin";
 import { deleteAdminUrl, getAdminUrls, getUsersByIds } from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
 import { Button } from "@/components/ui/button";

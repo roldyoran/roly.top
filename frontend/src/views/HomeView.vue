@@ -378,8 +378,8 @@ import {
 	getAppBaseUrl,
 	getPublicStatsRequest,
 	getUrlsRequest,
-	type UserUrlsResponse,
 } from "@/api/http";
+import type { UrlInfoResponse, UserUrlsResponse } from "@/api/types";
 import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
 import Google from "@/assets/google.vue";
 import UrlsList from "@/components/features/urls/UrlsList.vue";
@@ -560,7 +560,7 @@ onMounted(async () => {
 				if (Array.isArray(response.urls)) {
 					const urls = response.urls;
 					urlStore.clearAllUrls();
-					urls.forEach((u) => {
+					urls.forEach((u: UrlInfoResponse) => {
 						urlStore.addUrl(u.originalUrl, u.shortCode);
 					});
 				}

@@ -162,8 +162,10 @@ const handleSubmit = async (event: Event) => {
 			});
 		}
 	} catch (err: unknown) {
-		const status = (err as { response?: { status?: number } })?.response
-			?.status;
+		const axiosErr = err as {
+			response?: { status?: number; data?: { message?: string } };
+		};
+		const status = axiosErr?.response?.status;
 		if (status === 404 || status === 400) {
 			const searchedCode = shortCode.value.trim();
 			error.value = `No existe una URL con el código "${searchedCode}"`;
@@ -172,7 +174,7 @@ const handleSubmit = async (event: Event) => {
 			});
 		} else {
 			const errorMessage =
-				err?.response?.data?.message ||
+				axiosErr?.response?.data?.message ||
 				"Error al obtener información de la URL";
 			error.value = errorMessage;
 			toast.error("Error al obtener información", {

@@ -368,7 +368,7 @@ import {
 } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import type { AdminUser } from "@/api/admin";
+import type { AdminUser, PaginatedResult } from "@/api/admin";
 import {
 	banUser,
 	deleteUser,

@@ -114,11 +114,7 @@ import { keepPreviousData, useQuery } from "@tanstack/vue-query";
 import { Eye, Link, Shield, Users } from "lucide-vue-next";
 import { computed, onMounted, watch } from "vue";
 import {
-	type AdminStats,
-	type AdminUrl,
-	type AdminUser,
 	getAdminStats,
-	type PaginatedResult,
 } from "@/api/admin";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
