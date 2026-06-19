@@ -51,6 +51,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 // Temporary diagnostic endpoint — remove after debugging
 app.get("/debug", async (c) => {
 	const result: Record<string, unknown> = { timestamp: new Date().toISOString() };
+	result.BETTER_AUTH_URL_env = c.env.BETTER_AUTH_URL;
 	try {
 		const db = createDb(c.env.DB);
 		result.db = "ok";
