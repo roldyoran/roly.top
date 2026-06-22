@@ -35,7 +35,13 @@
 			<div class="rounded-2xl border bg-card overflow-hidden animate-fade-in-up" style="animation-delay: 300ms;">
 				<div class="px-4 sm:px-6 py-3 sm:py-4 border-b bg-muted/30">
 					<div class="flex items-center gap-2">
-						<Link class="w-4 h-4 text-primary" />
+						<svg class="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+							<rect width="24" height="24" rx="4" fill="#65a30d"/>
+							<g fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+								<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+							</g>
+						</svg>
 						<h2 class="font-display text-xs sm:text-sm font-semibold">URLs Recientes</h2>
 					</div>
 				</div>
@@ -59,7 +65,13 @@
 						</div>
 					</div>
 					<div v-else class="p-6 sm:p-8 text-center">
-						<Link class="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-muted-foreground/40" />
+						<svg class="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+							<rect width="24" height="24" rx="4" fill="#65a30d" opacity="0.25"/>
+							<g fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+								<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+							</g>
+						</svg>
 						<p class="text-[10px] sm:text-xs text-muted-foreground">No hay URLs</p>
 					</div>
 				</div>
