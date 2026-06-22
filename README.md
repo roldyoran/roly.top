@@ -1,146 +1,150 @@
+<p align="center">
+  <img src="./frontend/public/url-icon.svg" alt="roly.top logo" width="100" height="100">
+</p>
+
 <h1 align="center">roly.top</h1>
 
-<p align="center">Acortador de URLs profesional</p>
+<p align="center">Professional URL shortener</p>
 
 <p align="center">
-  <a href="https://roly.top">Sitio Web</a> ·
+  <a href="https://roly.top">Website</a> ·
   <a href="https://github.com/roldyoran/roly.top">GitHub</a> ·
   <a href="./docs/README.es.md">Documentación en español</a>
 </p>
 
 ---
 
-## Descripción
+## Description
 
-**roly.top** es una plataforma completa de acortamiento de URLs construida con arquitectura moderna y escalable. Permite crear enlaces cortos personalizados o auto-generados, generar códigos QR, obtener estadísticas de visitas y gestionar URLs mediante un panel de administración completo.
+**roly.top** is a complete URL shortening platform built with modern and scalable architecture. It allows you to create custom or auto-generated short links, generate QR codes, get visit statistics, and manage URLs through a complete admin panel.
 
-### Características Principales
+### Key Features
 
-- **Acortamiento de URLs** con códigos personalizados o auto-generados (máximo 9 caracteres)
-- **Códigos QR** personalizados con soporte de colores, degradados y logos
-- **Autenticación** completa con Google OAuth (Better Auth)
-- **Panel de administración** para gestión de usuarios y URLs
-- **Sistema de roles** con permisos diferenciados (user/admin)
-- **Sistema de baneo** de usuarios con razón y expiración
-- **Límites de URLs** por usuario (configurable por admin)
-- **Estadísticas** de visitas y métricas públicas
-- **API REST** completa con documentación integrada
-- **Diseño responsive** mobile-first con temas claro/oscuro
+- **URL shortening** with custom or auto-generated codes (max 9 characters)
+- **Custom QR codes** with color, gradient, and logo support
+- **Complete authentication** with Google OAuth (Better Auth)
+- **Admin panel** for user and URL management
+- **Role system** with differentiated permissions (user/admin)
+- **User ban system** with reason and expiration
+- **URL limits** per user (configurable by admin)
+- **Visit statistics** and public metrics
+- **Complete REST API** with integrated documentation
+- **Responsive design** mobile-first with light/dark themes
 
 ---
 
-## Tabla de Contenidos
+## Table of Contents
 
-- [Características del Stack](#características-del-stack)
-- [Prerrequisitos](#prerrequisitos)
-- [Instalación](#instalación)
-- [Configuración](#configuración)
-- [Desarrollo Local](#desarrollo-local)
-- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Stack Features](#stack-features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Local Development](#local-development)
+- [Project Structure](#project-structure)
 - [API](#api)
-- [Autenticación](#autenticación)
-- [Base de Datos](#base-de-datos)
+- [Authentication](#authentication)
+- [Database](#database)
 - [Tests](#tests)
-- [Despliegue](#despliegue)
-- [Comandos Útiles](#comandos-útiles)
-- [Arquitectura](#arquitectura)
+- [Deployment](#deployment)
+- [Useful Commands](#useful-commands)
+- [Architecture](#architecture)
 
 ---
 
-## Características del Stack
+## Stack Features
 
 ### Backend
 
-| Capa | Tecnología | Versión |
-|------|------------|---------|
+| Layer | Technology | Version |
+|-------|------------|---------|
 | Runtime | Cloudflare Workers | - |
-| Framework HTTP | Hono | ^4.12.3 |
-| Base de datos | Cloudflare D1 (SQLite) | - |
+| HTTP Framework | Hono | ^4.12.3 |
+| Database | Cloudflare D1 (SQLite) | - |
 | ORM | Drizzle ORM | ^0.45.1 |
-| Autenticación | Better Auth | ^1.6.15 |
-| Validación | Zod | ^4.3.6 |
-| Lenguaje | TypeScript | ^5.8.3 |
+| Authentication | Better Auth | ^1.6.15 |
+| Validation | Zod | ^4.3.6 |
+| Language | TypeScript | ^5.8.3 |
 | Testing | Bun test runner | - |
 
 ### Frontend
 
-| Capa | Tecnología | Versión |
-|------|------------|---------|
+| Layer | Technology | Version |
+|-------|------------|---------|
 | Framework | Vue 3 (Composition API) | ^3.5.24 |
 | Router | Vue Router | 4 |
-| Estado | Pinia | ^3.0.4 |
+| State | Pinia | ^3.0.4 |
 | UI | Shadcn-VUE + Radix Vue | - |
-| Estilos | Tailwind CSS | ^4.1.17 |
+| Styles | Tailwind CSS | ^4.1.17 |
 | HTTP Client | Axios | ^1.13.2 |
 | Build Tool | Vite | ^6.4.1 |
 | Linter | Biome | 2.4.5 |
 
 ---
 
-## Prerrequisitos
+## Prerequisites
 
 - [Bun](https://bun.sh) ≥ 1.0
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) ≥ 4.0 (incluido como devDependency)
-- Cuenta de Cloudflare con una base de datos D1 creada
-- Proyecto de Google Cloud con credenciales OAuth 2.0
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/) ≥ 4.0 (included as devDependency)
+- Cloudflare account with a D1 database created
+- Google Cloud project with OAuth 2.0 credentials
 
 ---
 
-## Instalación
+## Installation
 
 ```bash
-# 1. Clonar el repositorio
+# 1. Clone the repository
 git clone git@github.com:roldyoran/roly.top.git
 cd roly.top
 
-# 2. Instalar dependencias
+# 2. Install dependencies
 bun install
 ```
 
 ---
 
-## Configuración
+## Configuration
 
-### 1. Variables de entorno del backend
+### 1. Backend environment variables
 
-Crear `backend/.env`:
+Create `backend/.env`:
 
 ```env
 # Cloudflare D1
 DEV_MODE=true
-SERVICE_ADMIN_API_KEY=tu_api_key_secreta
+SERVICE_ADMIN_API_KEY=your_secret_api_key
 
 # Better Auth
-BETTER_AUTH_SECRET=tu_secreto_de_32_caracteres
+BETTER_AUTH_SECRET=your_32_character_secret
 BETTER_AUTH_URL=http://localhost:8787
-GOOGLE_CLIENT_ID=tu_google_client_id
-GOOGLE_CLIENT_SECRET=tu_google_client_secret
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-# Orígenes permitidos (producción)
+# Allowed origins (production)
 TRUSTED_ORIGINS=https://roly.top
 ```
 
-### 2. Variables de entorno del frontend
+### 2. Frontend environment variables
 
-Crear `frontend/.env`:
+Create `frontend/.env`:
 
 ```env
-# Dejar vacío para usar proxy de Vite en desarrollo
-VITE_API_KEY=tu_service_admin_api_key
+# Leave empty to use Vite proxy in development
+VITE_API_KEY=your_service_admin_api_key
 ```
 
-> **Importante**: NO configurar `VITE_API_BASE_URL` en desarrollo. El proxy de Vite maneja el enrutamiento al backend.
+> **Important**: Do NOT set `VITE_API_BASE_URL` in development. The Vite proxy handles routing to the backend.
 
-### 3. Configuración de Google OAuth
+### 3. Google OAuth Configuration
 
-1. Ir a [Google Cloud Console](https://console.cloud.google.com/)
-2. Crear credenciales OAuth 2.0
-3. Agregar `http://localhost:8787/api/auth/callback/google` como URI de redirección autorizada
-4. Copiar Client ID y Client Secret a `backend/.env`
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create OAuth 2.0 credentials
+3. Add `http://localhost:8787/api/auth/callback/google` as authorized redirect URI
+4. Copy Client ID and Client Secret to `backend/.env`
 
-### 4. Wrangler — Binding D1
+### 4. Wrangler — D1 Binding
 
-Editar `backend/wrangler.jsonc` y reemplazar el `database_id` con el ID de tu base de datos D1:
+Edit `backend/wrangler.jsonc` and replace the `database_id` with your D1 database ID:
 
 ```jsonc
 {
@@ -148,57 +152,57 @@ Editar `backend/wrangler.jsonc` y reemplazar el `database_id` con el ID de tu ba
     {
       "binding": "DB",
       "database_name": "roly-top-db",
-      "database_id": "<tu-database-id>"
+      "database_id": "<your-database-id>"
     }
   ]
 }
 ```
 
-### 5. Migraciones de base de datos
+### 5. Database migrations
 
 ```bash
-# Aplicar migraciones a D1 local (desarrollo)
+# Apply migrations to local D1 (development)
 bun run db:migrate:local
 
-# Aplicar migraciones a D1 remoto (producción)
+# Apply migrations to remote D1 (production)
 bun run db:migrate:remote
 ```
 
-### 6. Sincronización completa del schema (D1 remoto)
+### 6. Full schema sync (remote D1)
 
-Si el schema de la base de datos remota está desincronizado o necesitas empezar desde cero, ejecuta la migración completa:
+If the remote database schema is out of sync or you need to start from scratch, run the full migration:
 
 ```bash
 cd backend
 bun --env-file=.env ./node_modules/.bin/wrangler.exe d1 execute DB --remote --config wrangler.jsonc --file drizzle/full_migration.sql
 ```
 
-> **Advertencia**: Esto elimina y recrea todas las tablas. Usar solo al configurar una nueva base de datos o corregir desviaciones del schema.
+> **Warning**: This drops and recreates all tables. Only use when setting up a new database or correcting schema deviations.
 
-La migración completa crea estas tablas:
-- `users` — Usuarios Better Auth (con `role`, `banned`, `url_limit`)
-- `sessions` — Sesiones Better Auth (con `impersonated_by`)
-- `accounts` — Cuentas Better Auth (proveedores OAuth)
-- `verifications` — Verificaciones de email Better Auth
-- `urls` — URLs cortas (con `user_id`)
+The full migration creates these tables:
+- `users` — Better Auth users (with `role`, `banned`, `url_limit`)
+- `sessions` — Better Auth sessions (with `impersonated_by`)
+- `accounts` — Better Auth accounts (OAuth providers)
+- `verifications` — Better Auth email verifications
+- `urls` — Short URLs (with `user_id`)
 
-### 7. Variables de Cloudflare Workers
+### 7. Cloudflare Workers Variables
 
-Configurar estos **Secrets** en Cloudflare Dashboard → Workers → roly.top → Settings → Variables and Secrets:
+Set these **Secrets** in Cloudflare Dashboard → Workers → roly.top → Settings → Variables and Secrets:
 
-| Secret | Descripción |
+| Secret | Description |
 |--------|-------------|
-| `BETTER_AUTH_SECRET` | Generar con `openssl rand -base64 32` |
+| `BETTER_AUTH_SECRET` | Generate with `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | `https://roly.top` |
-| `GOOGLE_CLIENT_ID` | Client ID de Google OAuth |
-| `GOOGLE_CLIENT_SECRET` | Client Secret de Google OAuth |
-| `SERVICE_ADMIN_API_KEY` | Tu API key de administrador |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
+| `SERVICE_ADMIN_API_KEY` | Your admin API key |
 | `TRUSTED_ORIGINS` | `https://roly.top` |
 | `DEV_MODE` | `false` |
 
-### 8. URI de redirección de Google OAuth
+### 8. Google OAuth Redirect URI
 
-Agregar esta URI en [Google Cloud Console](https://console.cloud.google.com/) → Credentials → OAuth Client ID → Authorized redirect URIs:
+Add this URI in [Google Cloud Console](https://console.cloud.google.com/) → Credentials → OAuth Client ID → Authorized redirect URIs:
 
 ```
 https://roly.top/api/auth/callback/google
@@ -206,77 +210,77 @@ https://roly.top/api/auth/callback/google
 
 ---
 
-## Desarrollo Local
+## Local Development
 
 ```bash
-# Desde la raíz del repo — ejecuta ambos frontend y backend:
-bun run dev:back       # Backend en http://localhost:8787
-bun run dev:front      # Frontend en http://localhost:5173
+# From the repo root — runs both frontend and backend:
+bun run dev:back       # Backend at http://localhost:8787
+bun run dev:front      # Frontend at http://localhost:5173
 ```
 
-El servidor de desarrollo Vite proxea las requests `/api/*` y `/v1/*` al backend, manteniendo mismo origen para las cookies.
+The Vite dev server proxies `/api/*` and `/v1/*` requests to the backend, keeping same-origin for cookies.
 
 ---
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 roly.top/
 ├── backend/                  # Hono + Cloudflare Workers + Better Auth
 │   ├── src/
-│   │   ├── domain/           # Entidades y puertos del repositorio
-│   │   ├── application/      # Casos de uso
-│   │   ├── infrastructure/   # Implementaciones del repositorio
-│   │   ├── presentation/     # Rutas HTTP (v1, redirect)
-│   │   ├── auth/             # Configuración Better Auth
-│   │   ├── db/               # Schema Drizzle (urls + auth tables)
+│   │   ├── domain/           # Entities and repository ports
+│   │   ├── application/      # Use cases
+│   │   ├── infrastructure/   # Repository implementations
+│   │   ├── presentation/     # HTTP routes (v1, redirect)
+│   │   ├── auth/             # Better Auth configuration
+│   │   ├── db/               # Drizzle schema (urls + auth tables)
 │   │   └── utils/            # CORS, context, schemas
-│   ├── tests/                # Tests unitarios (bun:test)
-│   ├── drizzle/              # Migraciones SQL
-│   └── wrangler.jsonc        # Config del Worker (D1, Assets, env)
+│   ├── tests/                # Unit tests (bun:test)
+│   ├── drizzle/              # SQL migrations
+│   └── wrangler.jsonc        # Worker config (D1, Assets, env)
 ├── frontend/                 # Vue 3 + Vite SPA
 │   ├── src/
-│   │   ├── api/              # Cliente Axios, funciones API
-│   │   ├── lib/              # Cliente Better Auth
-│   │   ├── stores/           # Stores Pinia (auth, urls)
+│   │   ├── api/              # Axios client, API functions
+│   │   ├── lib/              # Better Auth client
+│   │   ├── stores/           # Pinia stores (auth, urls)
 │   │   ├── composables/      # useAuth, useUrlShortener
-│   │   ├── components/       # Componentes UI
-│   │   └── views/            # Vistas de páginas
-│   └── dist/                 # Assets estáticos construidos
-├── docs/                     # Traducciones y documentación adicional
-└── package.json              # Scripts raíz (workspaces)
+│   │   ├── components/       # UI components
+│   │   └── views/            # Page views
+│   └── dist/                 # Built static assets
+├── docs/                     # Translations and additional documentation
+└── package.json              # Root scripts (workspaces)
 ```
 
 ---
 
 ## API
 
-### Reglas del shortCode
+### shortCode Rules
 
-- 1 a 9 caracteres
-- Solo alfanuméricos en minúsculas: `[a-z0-9]+`
-- Auto-generado si no se proporciona al crear
-- Generado con `crypto.getRandomValues()` (criptográficamente seguro)
+- 1 to 9 characters
+- Lowercase alphanumeric only: `[a-z0-9]+`
+- Auto-generated if not provided on creation
+- Generated with `crypto.getRandomValues()` (cryptographically secure)
 
-### Endpoints Públicos (sin auth)
+### Public Endpoints (no auth)
 
-#### Estadísticas públicas
+#### Public statistics
 
 ```bash
 curl http://localhost:8787/v1/urls/public/stats
 ```
 
-#### Listar URLs públicas (solo usuarios admin)
+#### List public URLs (admin users only)
 
 ```bash
 curl http://localhost:8787/v1/urls/public
 ```
 
-Retorna URLs creadas por usuarios con `role: "admin"`.
+Returns URLs created by users with `role: "admin"`.
 
-### Endpoints Autenticados (requieren cookie de sesión)
+### Authenticated Endpoints (require session cookie)
 
-#### Crear una URL corta
+#### Create a short URL
 
 ```bash
 curl -X POST http://localhost:8787/v1/urls \
@@ -295,45 +299,45 @@ curl -X POST http://localhost:8787/v1/urls \
 }
 ```
 
-#### Listar mis URLs
+#### List my URLs
 
 ```bash
 curl http://localhost:8787/v1/urls
 ```
 
-#### Obtener una URL por shortCode
+#### Get a URL by shortCode
 
 ```bash
 curl http://localhost:8787/v1/urls/c04jzv
 ```
 
-#### Eliminar una URL
+#### Delete a URL
 
 ```bash
 curl -X DELETE http://localhost:8787/v1/urls/c04jzv
 ```
 
-### Endpoints de Administración (requieren rol admin)
+### Admin Endpoints (require admin role)
 
-#### Obtener estadísticas del dashboard
+#### Get dashboard statistics
 
 ```bash
 curl http://localhost:8787/v1/admin/stats
 ```
 
-#### Listar usuarios paginados
+#### List paginated users
 
 ```bash
 curl "http://localhost:8787/v1/admin/users?page=1&pageSize=10&search=example"
 ```
 
-#### Obtener detalles de usuario
+#### Get user details
 
 ```bash
 curl http://localhost:8787/v1/admin/users/:userId
 ```
 
-#### Banear usuario
+#### Ban user
 
 ```bash
 curl -X POST http://localhost:8787/v1/admin/users/:userId/ban \
@@ -341,13 +345,13 @@ curl -X POST http://localhost:8787/v1/admin/users/:userId/ban \
   -d '{"reason": "Spam", "expiresAt": "2026-12-31T23:59:59.000Z"}'
 ```
 
-#### Desbanear usuario
+#### Unban user
 
 ```bash
 curl -X POST http://localhost:8787/v1/admin/users/:userId/unban
 ```
 
-#### Actualizar límite de URLs
+#### Update URL limit
 
 ```bash
 curl -X PATCH http://localhost:8787/v1/admin/users/:userId/url-limit \
@@ -355,157 +359,157 @@ curl -X PATCH http://localhost:8787/v1/admin/users/:userId/url-limit \
   -d '{"limit": 10}'
 ```
 
-#### Eliminar usuario
+#### Delete user
 
 ```bash
 curl -X DELETE http://localhost:8787/v1/admin/users/:userId
 ```
 
-#### Listar todas las URLs (paginadas)
+#### List all URLs (paginated)
 
 ```bash
 curl "http://localhost:8787/v1/admin/urls?page=1&pageSize=10&search=example"
 ```
 
-#### Eliminar una URL específica
+#### Delete a specific URL
 
 ```bash
 curl -X DELETE http://localhost:8787/v1/admin/urls/c04jzv
 ```
 
-#### Eliminar todas las URLs
+#### Delete all URLs
 
 ```bash
 curl -X DELETE http://localhost:8787/v1/admin/urls
 ```
 
-#### Hacer usuario admin
+#### Make user admin
 
 ```bash
 curl -X POST http://localhost:8787/v1/admin/setup/make-admin \
-  -H "Authorization: Bearer tu_service_admin_api_key" \
+  -H "Authorization: Bearer your_service_admin_api_key" \
   -H "Content-Type: application/json" \
   -d '{"email": "user@example.com"}'
 ```
 
-### Redirección
+### Redirect
 
 ```bash
 curl -i http://localhost:8787/c04jzv
 ```
 
-Responde con `302 Location: https://www.epicgames.com` e incrementa el contador de visitas.
+Responds with `302 Location: https://www.epicgames.com` and increments the visit counter.
 
 ---
 
-## Autenticación
+## Authentication
 
-El proyecto usa **Better Auth** con Google OAuth para autenticación y el **Admin plugin** para control de acceso basado en roles.
+The project uses **Better Auth** with Google OAuth for authentication and the **Admin plugin** for role-based access control.
 
-### Flujo de Autenticación
+### Authentication Flow
 
-1. El usuario hace clic en "Iniciar Sesión" en el frontend
-2. El frontend llama a `POST /api/auth/sign-in/social` → el backend redirige a Google
-3. Google autentica → redirige de vuelta a `GET /api/auth/callback/google`
-4. El backend crea/actualiza el usuario en la tabla `users`, establece la cookie de sesión
-5. El frontend obtiene la sesión via `GET /api/auth/get-session`
+1. User clicks "Sign In" on the frontend
+2. Frontend calls `POST /api/auth/sign-in/social` → backend redirects to Google
+3. Google authenticates → redirects back to `GET /api/auth/callback/google`
+4. Backend creates/updates user in the `users` table, sets session cookie
+5. Frontend gets the session via `GET /api/auth/get-session`
 
 ### Roles
 
-| Rol | Permisos |
-|-----|----------|
-| `user` | Crear URLs propias, ver URLs propias, eliminar URLs propias |
-| `admin` | Todos los permisos de user + listar URLs públicas + endpoints admin |
+| Role | Permissions |
+|------|-------------|
+| `user` | Create own URLs, view own URLs, delete own URLs |
+| `admin` | All user permissions + list public URLs + admin endpoints |
 
-### Hacer usuario admin
+### Make user admin
 
-Después de que un usuario inicie sesión con Google por primera vez:
+After a user signs in with Google for the first time:
 
 ```bash
 curl -X POST http://localhost:8787/v1/admin/setup/make-admin \
-  -H "Authorization: Bearer tu_service_admin_api_key" \
+  -H "Authorization: Bearer your_service_admin_api_key" \
   -H "Content-Type: application/json" \
   -d '{"email": "user@example.com"}'
 ```
 
-Luego el usuario debe **cerrar sesión y volver a iniciar** para obtener el rol actualizado en su sesión.
+Then the user must **sign out and sign back in** to get the updated role in their session.
 
-### Endpoints del Admin plugin
+### Admin Plugin Endpoints
 
-Gestionados por Better Auth en `/api/auth/admin/*`:
+Managed by Better Auth at `/api/auth/admin/*`:
 
-| Método | Endpoint | Descripción |
+| Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/admin/create-user` | Crear nuevo usuario |
-| POST | `/api/auth/admin/set-role` | Cambiar rol de usuario |
-| GET | `/api/auth/admin/list-users` | Listar todos los usuarios |
-| POST | `/api/auth/admin/ban-user` | Banear usuario |
-| POST | `/api/auth/admin/unban-user` | Desbanear usuario |
+| POST | `/api/auth/admin/create-user` | Create new user |
+| POST | `/api/auth/admin/set-role` | Change user role |
+| GET | `/api/auth/admin/list-users` | List all users |
+| POST | `/api/auth/admin/ban-user` | Ban user |
+| POST | `/api/auth/admin/unban-user` | Unban user |
 
 ---
 
-## Base de Datos
+## Database
 
-### Esquema Completo
+### Full Schema
 
-#### Tabla `urls`
+#### `urls` Table
 
-| Columna | Tipo | Restricciones | Descripción |
-|---------|------|---------------|-------------|
-| `id` | INTEGER | PK, autoincrement | Identificador único |
-| `original_url` | TEXT | NOT NULL | URL destino |
-| `short_code` | TEXT | NOT NULL, UNIQUE | Código corto (máx 9 chars) |
-| `created_at` | TEXT | NOT NULL | Fecha de creación (ISO) |
-| `visits` | INTEGER | NOT NULL, default 0 | Contador de visitas |
-| `user_id` | TEXT | nullable, indexed | FK a usuario propietario |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | INTEGER | PK, autoincrement | Unique identifier |
+| `original_url` | TEXT | NOT NULL | Target URL |
+| `short_code` | TEXT | NOT NULL, UNIQUE | Short code (max 9 chars) |
+| `created_at` | TEXT | NOT NULL | Creation date (ISO) |
+| `visits` | INTEGER | NOT NULL, default 0 | Visit counter |
+| `user_id` | TEXT | nullable, indexed | FK to owner user |
 
-#### Tabla `users`
+#### `users` Table
 
-| Columna | Tipo | Restricciones | Descripción |
-|---------|------|---------------|-------------|
-| `id` | TEXT | PK | ID de Better Auth |
-| `name` | TEXT | NOT NULL | Nombre del usuario |
-| `email` | TEXT | NOT NULL, UNIQUE | Email del usuario |
-| `email_verified` | INTEGER | NOT NULL, default false | Email verificado |
-| `image` | TEXT | nullable | URL de imagen de perfil |
-| `created_at` | INTEGER | NOT NULL | Timestamp de creación |
-| `updated_at` | INTEGER | NOT NULL | Timestamp de actualización |
-| `role` | TEXT | default "user" | Rol (user/admin) |
-| `banned` | INTEGER | default false | Estado de baneo |
-| `ban_reason` | TEXT | nullable | Razón del baneo |
-| `ban_expires` | INTEGER | nullable | Expiración del baneo |
-| `url_limit` | INTEGER | default 2 | Límite de URLs |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | TEXT | PK | Better Auth ID |
+| `name` | TEXT | NOT NULL | User name |
+| `email` | TEXT | NOT NULL, UNIQUE | User email |
+| `email_verified` | INTEGER | NOT NULL, default false | Email verified |
+| `image` | TEXT | nullable | Profile image URL |
+| `created_at` | INTEGER | NOT NULL | Creation timestamp |
+| `updated_at` | INTEGER | NOT NULL | Update timestamp |
+| `role` | TEXT | default "user" | Role (user/admin) |
+| `banned` | INTEGER | default false | Ban status |
+| `ban_reason` | TEXT | nullable | Ban reason |
+| `ban_expires` | INTEGER | nullable | Ban expiration |
+| `url_limit` | INTEGER | default 2 | URL limit |
 
-#### Tablas de Better Auth
+#### Better Auth Tables
 
-- `sessions` — Sesiones de usuario (con `impersonated_by` para admin)
-- `accounts` — Cuentas OAuth (Google)
-- `verifications` — Verificaciones de email
+- `sessions` — User sessions (with `impersonated_by` for admin)
+- `accounts` — OAuth accounts (Google)
+- `verifications` — Email verifications
 
-### Relaciones
+### Relationships
 
-- `users` → tiene muchos `sessions`, `accounts`
-- `sessions` → pertenece a `users`
-- `accounts` → pertenece a `users`
+- `users` → has many `sessions`, `accounts`
+- `sessions` → belongs to `users`
+- `accounts` → belongs to `users`
 
 ---
 
-## Formato de Errores
+## Error Format
 
-Todos los errores de la API siguen este formato:
+All API errors follow this format:
 
 ```json
 {
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "La URL debe comenzar con http:// o https://",
+    "message": "The URL must start with http:// or https://",
     "statusCode": 400
   }
 }
 ```
 
-### Mapeo de Códigos
+### Code Mapping
 
 | Code | HTTP Status |
 |------|-------------|
@@ -523,40 +527,40 @@ Todos los errores de la API siguen este formato:
 
 ```bash
 # Backend
-bun --cwd backend test                  # Todos los tests
-bun --cwd backend run test:watch        # Modo watch
-bun --cwd backend run test:coverage     # Con reporte de cobertura
+bun --cwd backend test                  # All tests
+bun --cwd backend run test:watch        # Watch mode
+bun --cwd backend run test:coverage     # With coverage report
 
-# Todos los tests del monorepo
+# All monorepo tests
 bun test
 ```
 
-### Convenciones de Tests
+### Test Conventions
 
-- Los mocks están en `tests/__mocks__/url.repository.mock.ts`
-- Tests completamente unitarios (sin D1, Wrangler ni red)
-- Descripciones en español
-- Organización por capa → entidad → caso de uso
+- Mocks are in `tests/__mocks__/url.repository.mock.ts`
+- Completely unit tests (no D1, Wrangler, or network)
+- Descriptions in Spanish
+- Organization by layer → entity → use case
 
 ---
 
-## Despliegue
+## Deployment
 
 ```bash
-# Construir frontend
+# Build frontend
 bun run build:front
 
-# Desplegar backend + assets del frontend
+# Deploy backend + frontend assets
 bun run deploy
 ```
 
-Antes de desplegar, asegúrese de haber configurado:
+Before deploying, make sure you have configured:
 
-- `database_id` en `wrangler.jsonc` (D1 de producción)
-- `BETTER_AUTH_SECRET` como secret
-- `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` como secrets
-- `SERVICE_ADMIN_API_KEY` como secret
-- `TRUSTED_ORIGINS` con su dominio de producción
+- `database_id` in `wrangler.jsonc` (production D1)
+- `BETTER_AUTH_SECRET` as secret
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` as secrets
+- `SERVICE_ADMIN_API_KEY` as secret
+- `TRUSTED_ORIGINS` with your production domain
 
 ```bash
 bunx wrangler secret put BETTER_AUTH_SECRET
@@ -567,84 +571,86 @@ bunx wrangler secret put SERVICE_ADMIN_API_KEY
 
 ---
 
-## Comandos Útiles
+## Useful Commands
 
-### Monorepo (raíz)
+### Monorepo (root)
 
 ```bash
-bun install              # Instalar dependencias de todos los workspaces
-bun run dev:back         # Ejecutar wrangler dev
-bun run dev:front        # Ejecutar Vite dev server
-bun run build:front      # Construir frontend
-bun run build:back       # Construir backend
-bun run check            # Verificar código con Biome
-bun run format           # Formatear con Biome
-bun run lint             # Lint con Biome
+bun install              # Install all workspace dependencies
+bun run dev:back         # Run wrangler dev
+bun run dev:front        # Run Vite dev server
+bun run build:front      # Build frontend
+bun run build:back       # Build backend
+bun run check            # Check code with Biome
+bun run format           # Format with Biome
+bun run lint             # Lint with Biome
 ```
 
 ### Backend
 
 ```bash
-bun --cwd backend test                  # Tests unitarios
+bun --cwd backend test                  # Unit tests
 bun --cwd backend dev                   # wrangler dev
 bun --cwd backend deploy                # wrangler deploy --minify
-bun --cwd backend run db:generate       # Generar migración SQL
-bun --cwd backend run db:migrate:local  # Aplicar a D1 local
-bun --cwd backend run db:migrate:remote # Aplicar a D1 remoto
+bun --cwd backend run db:generate       # Generate SQL migration
+bun --cwd backend run db:migrate:local  # Apply to local D1
+bun --cwd backend run db:migrate:remote # Apply to remote D1
 bun --cwd backend run db:studio         # Drizzle Studio GUI
 ```
 
 ### Frontend
 
 ```bash
-bun --cwd frontend dev                  # Servidor de desarrollo
-bun --cwd frontend build                # Build para producción
-bun --cwd frontend check                # Verificar código
-bun --cwd frontend format               # Formatear código
-bun --cwd frontend lint                 # Lint y auto-fix
+bun --cwd frontend dev                  # Development server
+bun --cwd frontend build                # Production build
+bun --cwd frontend check                # Check code
+bun --cwd frontend format               # Format code
+bun --cwd frontend lint                 # Lint and auto-fix
 ```
 
 ---
 
-## Arquitectura
+## Architecture
 
-### Backend (Arquitectura Hexagonal)
+### Backend (Hexagonal Architecture)
 
 ```
-domain/          → Entidades, puertos del repositorio (sin dependencias externas)
-application/     → Casos de uso (orquestan lógica de negocio)
-infrastructure/  → Implementaciones del repositorio (Drizzle + D1)
-presentation/    → Rutas HTTP (handlers Hono)
-auth/            → Configuración Better Auth
-db/              → Schema Drizzle (urls + auth tables)
+domain/          → Entities, repository ports (no external dependencies)
+application/     → Use cases (orchestrate business logic)
+infrastructure/  → Repository implementations (Drizzle + D1)
+presentation/    → HTTP routes (Hono handlers)
+auth/            → Better Auth configuration
+db/              → Drizzle schema (urls + auth tables)
 ```
 
-**Regla de dependencia**: las capas externas dependen de las internas, nunca al revés.
+**Dependency rule**: outer layers depend on inner layers, never the other way around.
 
 ### Frontend
 
 ```
-lib/             → Configuración del cliente Better Auth
-stores/          → Stores Pinia (authStore, urlStore)
-composables/     → Lógica reutilizable (useAuth, useUrlShortener)
-api/             → Instancia Axios, funciones API
-components/      → Componentes Vue (features, layout, ui)
-views/           → Componentes de nivel de página
+lib/             → Better Auth client configuration
+stores/          → Pinia stores (authStore, urlStore)
+composables/     → Reusable logic (useAuth, useUrlShortener)
+api/             → Axios instance, API functions
+components/      → Vue components (features, layout, ui)
+views/           → Page-level components
 ```
 
-### Decisiones de Diseño Clave
+### Key Design Decisions
 
-1. **Proxy de Vite**: en desarrollo, las requests del frontend van por el proxy de Vite (mismo origen) para que las cookies funcionen sin problemas de CORS
-2. **Auth basada en sesiones**: Better Auth maneja sesiones via cookies httpOnly (no tokens)
-3. **Acceso basado en roles**: el plugin admin proporciona roles `user`/`admin` con diferentes permisos
-4. **URLs públicas**: solo las URLs creadas por usuarios admin se muestran en la lista pública
-5. **Inyección de repositorio**: `UrlRepository` se inyecta via middleware de contexto Hono (no se instancia por ruta)
-6. **ETag caching**: todos los endpoints GET implementan ETags para optimizar el uso de ancho de banda
-7. **Deduplicación de URLs**: `POST /v1/urls` retorna la URL existente si ya existe para el usuario
-8. **Límites por usuario**: configurable por admin, verificado solo al crear
+1. **Vite proxy**: in development, frontend requests go through the Vite proxy (same origin) so cookies work without CORS issues
+2. **Session-based auth**: Better Auth handles sessions via httpOnly cookies (not tokens)
+3. **Role-based access**: the admin plugin provides `user`/`admin` roles with different permissions
+4. **Public URLs**: only URLs created by admin users are shown in the public list
+5. **Repository injection**: `UrlRepository` is injected via Hono context middleware (not instantiated per route)
+6. **ETag caching**: all GET endpoints implement ETags to optimize bandwidth usage
+7. **URL deduplication**: `POST /v1/urls` returns the existing URL if it already exists for the user
+8. **Per-user limits**: configurable by admin, only checked on creation
 
 ---
 
-## Licencia
+## License
 
-MIT © [roldyoran](https://github.com/roldyoran)
+This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+
+Copyright (C) 2026 [roldyoran](https://github.com/roldyoran)
