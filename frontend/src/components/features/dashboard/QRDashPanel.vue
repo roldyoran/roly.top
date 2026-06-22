@@ -99,7 +99,7 @@ import { nextTick, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import { getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
-import defaultLogo from "@/assets/vue.svg";
+import defaultLogo from "/icon.svg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

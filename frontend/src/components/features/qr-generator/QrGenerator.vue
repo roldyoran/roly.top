@@ -135,7 +135,7 @@ const defaultLogoSizePercent = 0.18;
 const canvasSize = ref<number>(192);
 const canvasPadding = ref<number>(6);
 
-import defaultLogo from "@/assets/vue.svg";
+import defaultLogo from "/icon.svg";
 
 async function generateFromInput() {
 	error.value = "";
