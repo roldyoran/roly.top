@@ -47,3 +47,6 @@ frontend/stats.html
 backend/wrangler.jsonc
 
 .unlighthouse
+
+# scripts (local tooling, not committed)
+scripts/
