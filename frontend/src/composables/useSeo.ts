@@ -8,6 +8,7 @@ interface SeoOptions {
 	ogTitle?: MaybeRef<string>;
 	ogDescription?: MaybeRef<string>;
 	ogImage?: MaybeRef<string>;
+	ogImageAlt?: MaybeRef<string>;
 	twitterSite?: MaybeRef<string>;
 	canonical?: MaybeRef<string>;
 	robots?: MaybeRef<string>;
@@ -18,6 +19,8 @@ const SITE_NAME = "roly.top";
 const DEFAULT_DESCRIPTION =
 	"Acorta tus URLs de forma rápida y gratuita. Genera códigos QR, obtén estadísticas y gestiona tus enlaces cortos con roly.top.";
 const DEFAULT_OG_IMAGE = "/og-image.png";
+const DEFAULT_OG_IMAGE_ALT =
+	"roly.top - Acortador de URLs rápido y gratuito con código QR y estadísticas";
 const DEFAULT_TWITTER_SITE = "@rolytop";
 
 export function useSeo(options: SeoOptions = {}) {
@@ -54,6 +57,10 @@ export function useSeo(options: SeoOptions = {}) {
 		if (img?.startsWith("http")) return img;
 		return `${baseUrl.value}${img || DEFAULT_OG_IMAGE}`;
 	});
+
+	const resolvedOgImageAlt = computed(
+		() => unref(options.ogImageAlt) || DEFAULT_OG_IMAGE_ALT,
+	);
 
 	const resolvedTwitterSite = computed(
 		() => unref(options.twitterSite) || DEFAULT_TWITTER_SITE,
@@ -93,6 +100,18 @@ export function useSeo(options: SeoOptions = {}) {
 				content: resolvedOgImage,
 			},
 			{
+				property: "og:image:width",
+				content: "1200",
+			},
+			{
+				property: "og:image:height",
+				content: "630",
+			},
+			{
+				property: "og:image:alt",
+				content: resolvedOgImageAlt,
+			},
+			{
 				property: "og:site_name",
 				content: SITE_NAME,
 			},
@@ -121,6 +140,10 @@ export function useSeo(options: SeoOptions = {}) {
 			{
 				name: "twitter:image",
 				content: resolvedOgImage,
+			},
+			{
+				name: "twitter:image:alt",
+				content: resolvedOgImageAlt,
 			},
 		],
 		link: [
