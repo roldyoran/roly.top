@@ -403,16 +403,20 @@ import { useUrlStore } from "@/stores/urlStore";
 
 useSeo({
 	title: "Acortador de URLs",
-	description: "Acorta tus URLs de forma rapida y gratuita.",
+	description: "Acorta tus URLs de forma rápida y gratuita. Genera códigos QR, obtén estadísticas y gestiona tus enlaces cortos.",
+	ogImageAlt: "roly.top - Acortador de URLs rápido y gratuito con código QR y estadísticas",
 	jsonLd: {
 		"@context": "https://schema.org",
 		"@type": "WebApplication",
 		name: "roly.top",
 		url: "https://roly.top",
-		description: "Acorta tus URLs de forma rapida y gratuita.",
+		description: "Acorta tus URLs de forma rápida y gratuita. Genera códigos QR, obtén estadísticas y gestiona tus enlaces cortos.",
 		applicationCategory: "UtilitiesApplication",
 		operatingSystem: "Web",
 		offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+		author: { "@type": "Person", name: "roldyoran" },
+		featuredImage: "https://roly.top/og-image.png",
+		inLanguage: "es",
 	},
 });
 
