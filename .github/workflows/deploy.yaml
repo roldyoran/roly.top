@@ -1,19 +1,21 @@
-name: Deploy to Cloudflare Workers
+name: CI/CD
 
 on:
   push:
+    branches: [main, develop]
+  pull_request:
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -24,13 +26,58 @@ jobs:
       - name: Lint check
         run: bun run lint
 
-      - name: Test
-        run: bun test
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Frontend tests
+        run: bun run test:front
+
+      - name: Backend tests
+        run: bun run test:back
+
+  build:
+    name: Build
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
 
       - name: Build frontend
         run: bun run build:front
         env:
           VITE_APP_BASE_URL: ${{ secrets.VITE_APP_BASE_URL }}
+
+  deploy:
+    name: Deploy
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
 
       - name: Configure D1 binding and secrets
         run: |
