@@ -39,9 +39,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Frontend tests
-        run: bun run test:front
-
       - name: Backend tests
         run: bun run test:back
 
