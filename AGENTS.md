@@ -13,11 +13,6 @@ Monorepo con **bun** — shortener de URLs en Cloudflare Workers. Lee las guías
 - **Backend**: [backend/README.md](backend/README.md) — setup, API, deploy, comandos
 - **Frontend**: [frontend/README.md](frontend/README.md) — stack, features, configuración
 - **Arquitectura**: [docs/BACKEND_ARCHITECTURE.md](docs/BACKEND_ARCHITECTURE.md)
-- **Mejoras**: [PLAN-MEJORAS.md](PLAN-MEJORAS.md) — auditoría y fases de mejoras
-
-## OpenCode
-
-- `opencode.json` — MCP habilitado para shadcn-vue (`bunx shadcn-vue@latest mcp`)
 
 ---
 
@@ -29,28 +24,37 @@ Monorepo con **bun** — shortener de URLs en Cloudflare Workers. Lee las guías
 
 ```bash
 # Desarrollo
-bun run dev:front     # Inicia servidor frontend (Vite, HMR)
-bun run dev:back      # Inicia servidor backend (Wrangler, localhost:8787)
+bun run dev              # Frontend + Backend en paralelo
+bun run dev:front        # Solo frontend (Vite, HMR)
+bun run dev:back         # Solo backend (Wrangler, localhost:8787)
 
 # Build
-bun run build:front   # vue-tsc -b && vite build
-bun run build:back    # Build del backend
+bun run build            # Frontend + Backend
+bun run build:front      # vue-tsc -b && vite build
+bun run build:back       # Build del backend
 
-# Verificación de código (frontend)
-bun run check         # Biome check (lint + format) — falla si hay errores
-bun run lint          # Biome lint --write (auto-fix, no format)
-bun run format        # Biome format --write
+# Verificación de código (frontend + backend)
+bun run check            # Biome check en paralelo
+bun run lint             # Biome lint --write en paralelo
+bun run format           # Biome format --write en paralelo
 
-# Backend
-bun test              # Todos los tests (100 tests, ~600ms)
-bun run test:unit     # Solo tests/unit/
-bun run test:watch    # Watch mode
+# Tests
+bun run test             # Todos los tests
+bun run test:back        # Solo backend tests
+
+# Base de datos
+bun run db:generate      # Generar migración desde schema
+bun run db:migrate:local # Aplicar migración en D1 local
+bun run db:migrate:remote# Aplicar migración en D1 remoto
+
+# Deploy
+bun run deploy           # Deploy backend a Cloudflare Workers
 ```
 
 ### Instalar dependencias
 
 ```bash
-bun install           # Instala todos los workspaces
+bun install              # Instala todos los workspaces
 ```
 
 ---
@@ -101,8 +105,8 @@ presentation/  → HTTP routes (Hono)
 
 ### CI/CD
 - Deploy solo en push a `main` (GitHub Actions)
-- Pipeline: lint → test → build frontend → deploy Workers
-- Secrets via `wrangler --var` (nunca en archivos)
+- Pipeline: lint → test → deploy (build frontend incluido en deploy)
+- Secrets via GitHub Actions secrets (nunca en archivos)
 - `wrangler.jsonc` se genera desde `wrangler.example.jsonc` en CI
 
 ### Git
