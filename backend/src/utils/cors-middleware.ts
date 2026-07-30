@@ -2,7 +2,7 @@
  * Middleware para configurar CORS
  * Permite solicitudes desde cualquier origen
  */
-import { Context, Next } from "hono";
+import type { Context, Next } from "hono";
 
 /**
  * Middleware para configurar CORS de forma segura y personalizable
