@@ -213,9 +213,10 @@ https://roly.top/api/auth/callback/google
 ## Local Development
 
 ```bash
-# From the repo root — runs both frontend and backend:
-bun run dev:back       # Backend at http://localhost:8787
-bun run dev:front      # Frontend at http://localhost:5173
+# From the repo root:
+bun run dev            # Runs frontend + backend in parallel
+bun run dev:back       # Backend only at http://localhost:8787
+bun run dev:front      # Frontend only at http://localhost:5173
 ```
 
 The Vite dev server proxies `/api/*` and `/v1/*` requests to the backend, keeping same-origin for cookies.
@@ -226,7 +227,7 @@ The Vite dev server proxies `/api/*` and `/v1/*` requests to the backend, keepin
 
 ```
 roly.top/
-├── backend/                  # Hono + Cloudflare Workers + Better Auth
+├── backend/                  # @roly.top/backend — Hono + Workers + D1
 │   ├── src/
 │   │   ├── domain/           # Entities and repository ports
 │   │   ├── application/      # Use cases
@@ -236,9 +237,8 @@ roly.top/
 │   │   ├── db/               # Drizzle schema (urls + auth tables)
 │   │   └── utils/            # CORS, context, schemas
 │   ├── tests/                # Unit tests (bun:test)
-│   ├── drizzle/              # SQL migrations
-│   └── wrangler.jsonc        # Worker config (D1, Assets, env)
-├── frontend/                 # Vue 3 + Vite SPA
+│   └── drizzle/              # SQL migrations
+├── frontend/                 # @roly.top/frontend — Vue 3 + Vite SPA
 │   ├── src/
 │   │   ├── api/              # Axios client, API functions
 │   │   ├── lib/              # Better Auth client
@@ -247,8 +247,9 @@ roly.top/
 │   │   ├── components/       # UI components
 │   │   └── views/            # Page views
 │   └── dist/                 # Built static assets
-├── docs/                     # Translations and additional documentation
-└── package.json              # Root scripts (workspaces)
+├── docs/                     # Documentation
+├── package.json              # @roly.top/monorepo — root scripts
+└── biome.json                # Unified Biome config
 ```
 
 ---
@@ -526,13 +527,13 @@ All API errors follow this format:
 ## Tests
 
 ```bash
-# Backend
-bun --cwd backend test                  # All tests
-bun --cwd backend run test:watch        # Watch mode
-bun --cwd backend run test:coverage     # With coverage report
+# Backend (only tests available)
+bun run test:back               # All backend tests
+bun --cwd backend test:watch    # Watch mode
+bun --cwd backend test:coverage # With coverage report
 
 # All monorepo tests
-bun test
+bun run test
 ```
 
 ### Test Conventions
@@ -577,35 +578,37 @@ bunx wrangler secret put SERVICE_ADMIN_API_KEY
 
 ```bash
 bun install              # Install all workspace dependencies
-bun run dev:back         # Run wrangler dev
-bun run dev:front        # Run Vite dev server
-bun run build:front      # Build frontend
-bun run build:back       # Build backend
-bun run check            # Check code with Biome
-bun run format           # Format with Biome
-bun run lint             # Lint with Biome
+bun run dev              # Run frontend + backend in parallel
+bun run build            # Build frontend then backend
+bun run check            # Check both packages in parallel
+bun run lint             # Lint both packages in parallel
+bun run format           # Format both packages in parallel
+bun run test             # Run all tests
+bun run deploy           # Deploy backend to Cloudflare Workers
+bun run db:generate      # Generate SQL migration from schema
+bun run db:migrate:local # Apply migrations to local D1
+bun run db:migrate:remote# Apply migrations to remote D1
 ```
 
 ### Backend
 
 ```bash
-bun --cwd backend test                  # Unit tests
-bun --cwd backend dev                   # wrangler dev
-bun --cwd backend deploy                # wrangler deploy --minify
-bun --cwd backend run db:generate       # Generate SQL migration
-bun --cwd backend run db:migrate:local  # Apply to local D1
-bun --cwd backend run db:migrate:remote # Apply to remote D1
-bun --cwd backend run db:studio         # Drizzle Studio GUI
+bun --cwd backend dev              # wrangler dev
+bun --cwd backend check            # Biome check
+bun --cwd backend lint             # Biome lint --write
+bun --cwd backend format           # Biome format --write
+bun --cwd backend test             # Unit tests
+bun --cwd backend deploy           # wrangler deploy --minify
 ```
 
 ### Frontend
 
 ```bash
-bun --cwd frontend dev                  # Development server
-bun --cwd frontend build                # Production build
-bun --cwd frontend check                # Check code
-bun --cwd frontend format               # Format code
-bun --cwd frontend lint                 # Lint and auto-fix
+bun --cwd frontend dev             # Vite dev server
+bun --cwd frontend build           # Production build
+bun --cwd frontend check           # Biome check
+bun --cwd frontend lint            # Biome lint --write
+bun --cwd frontend format          # Biome format --write
 ```
 
 ---

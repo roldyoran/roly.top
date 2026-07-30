@@ -1,8 +1,8 @@
-# Arquitectura del Backend — shorturl
+# Arquitectura del Backend — roly.top
 
 ## Vision general
 
-**shorturl** es un acortador de URLs construido con **Hono** sobre **Cloudflare Workers**, usando **Cloudflare D1** (SQLite serverless) como base de datos y **Better Auth** para autenticacion con Google OAuth.
+**roly.top** es un acortador de URLs construido con **Hono** sobre **Cloudflare Workers**, usando **Cloudflare D1** (SQLite serverless) como base de datos y **Better Auth** para autenticacion con Google OAuth.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -473,16 +473,17 @@ Sin `VITE_API_BASE_URL` en `.env`, el frontend hace requests al mismo origen (`l
 
 ```bash
 # Desarrollo
-bun run dev:back      # Backend en http://localhost:8787
-bun run dev:front     # Frontend en http://localhost:5173
+bun run dev              # Frontend + Backend en paralelo
+bun run dev:back         # Backend en http://localhost:8787
+bun run dev:front        # Frontend en http://localhost:5173
 
 # Base de datos
-bun run db:generate           # Generar migracion desde schema
-bun run db:migrate:local      # Aplicar migracion en D1 local
-bun run db:migrate:remote     # Aplicar migracion en D1 remoto
+bun run db:generate      # Generar migracion desde schema
+bun run db:migrate:local # Aplicar migracion en D1 local
+bun run db:migrate:remote# Aplicar migracion en D1 remoto
 
 # Tests
-bun test                      # Todos los tests del backend
+bun run test:back        # Todos los tests del backend
 ```
 
 ---
