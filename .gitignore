@@ -55,6 +55,8 @@ lerna-debug.log*
 # project specific
 stats.html
 frontend/stats.html
+frontend-new/
+.turbo/
 backend/wrangler.jsonc
 .unlighthouse
 

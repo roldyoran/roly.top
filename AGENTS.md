@@ -126,3 +126,6 @@ presentation/  → HTTP routes (Hono)
 - Ramas: `main` (producción), `develop` (integración), `feat/*` (features)
 - Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, etc.)
 - Merge con `--no-ff` para preservar historia de branches
+
+# IMPORTANT
+- NO REINVENTES LA RUEDA, INVESTIGA LAS MEJORES PRACTICAS, ARQUITECTURAS O CLI'S OFICIALES DE LAS TECNOLOGIAS PARA USARLAS
