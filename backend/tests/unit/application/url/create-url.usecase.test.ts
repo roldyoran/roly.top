@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, mock } from "bun:test";
-import {
-	CreateUrlUseCase,
-	ShortCodeAlreadyExistsError,
-} from "@/application/url/create-url.usecase";
+import { CreateUrlUseCase } from "@/application/url/create-url.usecase";
+import { ShortCodeAlreadyExistsError } from "@/domain/url/url.errors";
 import {
 	createMockRepository,
 	urlFixture,

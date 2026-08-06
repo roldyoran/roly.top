@@ -1,5 +1,6 @@
 # prod
 dist/
+dist-ssr/
 
 # dev
 .yarn/
@@ -7,6 +8,7 @@ dist/
 .vscode/*
 !.vscode/launch.json
 !.vscode/*.code-snippets
+!.vscode/extensions.json
 .idea/workspace.xml
 .idea/usage.statistics.xml
 .idea/shelf
@@ -19,7 +21,9 @@ backend/.wrangler
 # env
 .env
 .env.local
+.env.development
 .env.production
+.env.test
 .dev.vars
 backend/.env
 backend/.env.local
@@ -27,7 +31,9 @@ backend/.env.production
 backend/.dev.vars
 frontend/.env
 frontend/.env.local
+frontend/.env.development
 frontend/.env.production
+frontend/.env.test
 
 # logs
 logs/
@@ -40,13 +46,21 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# project specific
 stats.html
 frontend/stats.html
-
-
 backend/wrangler.jsonc
-
 .unlighthouse
+
+# editor
+.idea
+*.local
 
 # scripts (local tooling, not committed)
 scripts/

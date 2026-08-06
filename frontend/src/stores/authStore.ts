@@ -2,17 +2,7 @@ import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 import { useAuth } from "@/composables/useAuth";
 import { useUrlStore } from "@/stores/urlStore";
-
-interface AuthUser {
-	id: string;
-	name: string;
-	email: string;
-	image?: string | null;
-	role?: string;
-	banned?: boolean;
-	banReason?: string | null;
-	banExpires?: string | null;
-}
+import type { AuthUser } from "@/types";
 
 export const useAuthStore = defineStore("authStore", () => {
 	const {

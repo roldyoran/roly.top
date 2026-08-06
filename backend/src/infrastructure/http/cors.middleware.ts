@@ -41,6 +41,7 @@ export const corsMiddleware = (options?: {
 				"Content-Type",
 				"x-api-key",
 				"Authorization",
+				"If-None-Match",
 			],
 			maxAge: options?.maxAge ?? 86400,
 		};

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { corsMiddleware } from "@/utils/cors-middleware";
+import { corsMiddleware } from "@/infrastructure/http/cors.middleware";
 
 function createMockContext(options?: { origin?: string; method?: string }) {
 	const headers: Record<string, string> = {};

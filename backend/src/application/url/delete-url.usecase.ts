@@ -1,12 +1,6 @@
 import type { UrlEntity } from "@/domain/url/url.entity";
 import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
-import { AppError } from "@/domain/app-error";
-
-export class UrlNotFoundError extends AppError {
-	constructor(shortCode: string) {
-		super(`No existe una URL con el shortCode "${shortCode}"`, "URL_NOT_FOUND");
-	}
-}
+import { UrlNotFoundError } from "@/domain/url/url.errors";
 
 export class DeleteUrlUseCase {
 	constructor(private readonly urlRepository: UrlRepositoryPort) {}
