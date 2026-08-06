@@ -59,7 +59,7 @@ describe("corsMiddleware", () => {
 			await middleware(ctx, async () => {});
 
 			expect(headers["Access-Control-Allow-Headers"]).toBe(
-				"Content-Type, x-api-key, Authorization",
+				"Content-Type, x-api-key, Authorization, If-None-Match",
 			);
 		});
 
