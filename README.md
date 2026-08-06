@@ -37,7 +37,7 @@
 |-------|------------|
 | Backend | Hono, Cloudflare Workers, D1 (SQLite), Drizzle ORM, Better Auth |
 | Frontend | Vue 3, Pinia, Shadcn-VUE, Tailwind CSS v4, Vite |
-| Tooling | Bun, Biome, TypeScript, Wrangler |
+| Tooling | Bun, Turborepo, Biome, TypeScript, Wrangler |
 
 ---
 
@@ -47,14 +47,27 @@
 git clone git@github.com:roldyoran/roly.top.git
 cd roly.top
 bun install
-bun run dev        # Frontend + backend in parallel
+bun run setup        # Create .env files in backend/ and frontend/
+bun run dev          # Frontend + backend in parallel
 ```
 
 ---
 
 ## Configuration
 
-### 1. Backend (`backend/.env`)
+### 1. Environment Variables
+
+```bash
+bun run setup        # Copies .env.example to .env in each workspace
+```
+
+This creates:
+- `backend/.env` — Backend secrets (D1, auth, API keys)
+- `frontend/.env` — Frontend config (API key)
+
+> See `.env.example` in the root for full documentation of all variables.
+
+### 2. Backend (`backend/.env`)
 
 ```env
 DEV_MODE=true
@@ -66,40 +79,75 @@ GOOGLE_CLIENT_SECRET=your_client_secret
 TRUSTED_ORIGINS=https://roly.top
 ```
 
-### 2. Frontend (`frontend/.env`)
+### 3. Frontend (`frontend/.env`)
 
 ```env
 VITE_API_KEY=your_service_admin_api_key
 ```
 
-> Do NOT set `VITE_API_BASE_URL`. The Vite proxy handles routing.
+> Do NOT set `VITE_API_BASE_URL`. The Vite proxy routes `/api` and `/v1` to the backend.
 
-### 3. Google OAuth
+### 4. Google OAuth
 
 1. Create credentials at [Google Cloud Console](https://console.cloud.google.com/)
 2. Add redirect URI: `http://localhost:8787/api/auth/callback/google`
 3. Copy Client ID/Secret to `backend/.env`
 
-### 4. Database
+### 5. Database
 
 ```bash
-bun run db:migrate:local    # Development
-bun run db:migrate:remote   # Production
+bun run db:generate      # Generate migration from schema
+bun run db:migrate:local # Apply to local D1
+bun run db:migrate:remote# Apply to production D1
 ```
 
 ---
 
 ## Commands
 
+### Development
+
 ```bash
-bun run dev              # Frontend + backend
-bun run build            # Build both
-bun run check            # Lint both (Biome)
-bun run lint             # Auto-fix both
-bun run test             # Run tests
-bun run deploy           # Deploy to Cloudflare Workers
+bun run dev              # Frontend + backend (Turborepo)
+bun run dev:front        # Frontend only (Vite)
+bun run dev:back         # Backend only (Wrangler)
+```
+
+### Build
+
+```bash
+bun run build            # Both (Turborepo)
+bun run build:front      # Frontend only
+bun run build:back       # Backend only
+```
+
+### Code Quality
+
+```bash
+bun run check            # Biome check (lint + format)
+bun run lint             # Auto-fix lint
+bun run format           # Auto-fix format
+```
+
+### Testing
+
+```bash
+bun run test             # Backend tests
+bun run test:back        # Backend tests only
+```
+
+### Database
+
+```bash
 bun run db:generate      # Generate migration
 bun run db:migrate:local # Apply to local D1
+bun run db:migrate:remote# Apply to production D1
+```
+
+### Deploy
+
+```bash
+bun run deploy           # Deploy to Cloudflare Workers
 ```
 
 ---
@@ -108,61 +156,91 @@ bun run db:migrate:local # Apply to local D1
 
 ```
 roly.top/
-├── backend/              # @roly.top/backend
+├── turbo.json                # Turborepo config (cache, task pipeline)
+├── .env.example              # Centralized env documentation
+├── scripts/
+│   └── setup-env.sh          # Setup script for .env files
+├── biome.json                # Unified Biome config
+├── backend/                  # @roly.top/backend
 │   ├── src/
-│   │   ├── domain/       # Entities, repository ports
-│   │   ├── application/  # Use cases
-│   │   ├── infrastructure/# Implementations (Drizzle, error handler)
-│   │   ├── presentation/ # HTTP routes (v1, redirect)
-│   │   ├── auth/         # Better Auth config
-│   │   ├── db/           # Drizzle schema
-│   │   └── utils/        # CORS, context, schemas
-│   ├── tests/            # Unit tests
-│   └── drizzle/          # SQL migrations
-├── frontend/             # @roly.top/frontend
+│   │   ├── domain/           # Entities, ports, errors
+│   │   │   ├── url/          # UrlEntity, UrlRepositoryPort, url.errors.ts
+│   │   │   ├── admin/        # AdminUser, AdminRepositoryPort
+│   │   │   └── user/         # UserRepositoryPort
+│   │   ├── application/      # Use cases + shared services
+│   │   │   ├── url/          # CreateUrl, DeleteUrl, etc.
+│   │   │   ├── admin/        # SetAdminRole, BanUser, etc.
+│   │   │   └── shared/       # UrlLimitService
+│   │   ├── infrastructure/   # Implementations
+│   │   │   ├── persistence/  # Drizzle repositories
+│   │   │   └── http/         # Error handler, CORS
+│   │   ├── presentation/     # HTTP routes
+│   │   │   └── http/
+│   │   │       ├── v1/       # API v1 routes
+│   │   │       └── redirect/ # Short code redirect
+│   │   ├── auth/             # Better Auth config
+│   │   ├── db/               # Drizzle schema
+│   │   └── utils/            # Context, schemas
+│   ├── tests/                # Unit tests
+│   └── drizzle/              # SQL migrations
+├── frontend/                 # @roly.top/frontend
 │   ├── src/
-│   │   ├── api/          # Axios client, API functions
-│   │   ├── stores/       # Pinia stores
-│   │   ├── composables/  # useAuth, useUrlShortener
-│   │   ├── components/   # UI components
-│   │   └── views/        # Page views
-│   └── dist/             # Build output
-├── docs/                 # Documentation
-└── biome.json            # Unified Biome config
+│   │   ├── api/              # Axios client, API functions
+│   │   ├── types/            # Centralized TypeScript types
+│   │   ├── stores/           # Pinia stores (auth, urls, admin)
+│   │   ├── composables/      # useAuth, useUrlShortener, etc.
+│   │   ├── components/
+│   │   │   ├── ui/           # Shadcn-VUE primitives
+│   │   │   ├── features/     # Feature components
+│   │   │   ├── layout/       # Layout components
+│   │   │   └── shared/       # Shared components
+│   │   ├── views/            # Page views
+│   │   ├── lib/              # Utilities, auth client
+│   │   └── router/           # Vue Router config
+│   └── dist/                 # Build output
+└── docs/                     # Documentation
 ```
 
 ---
 
 ## Architecture
 
-### Backend (Hexagonal)
+### Backend (Hexagonal - Ports & Adapters)
 
 ```
-domain/        → Entities, ports (zero dependencies)
-application/   → Use cases (DI, no framework imports)
-infrastructure/→ Implementations (Drizzle, D1)
-presentation/  → HTTP routes (Hono)
+domain/         → Entities, ports, errors (zero dependencies)
+application/    → Use cases + shared services (DI, no framework imports)
+infrastructure/ → Implementations (Drizzle, D1, error handler, CORS)
+presentation/   → HTTP routes (Hono)
 ```
 
 **Rule**: outer layers depend on inner layers, never the reverse.
 
+**Key files**:
+- `domain/url/url.errors.ts` — Business errors (ShortCodeAlreadyExistsError, UrlNotFoundError)
+- `application/shared/url-limit.service.ts` — URL limit logic (admin=999, user=2)
+- `infrastructure/http/cors.middleware.ts` — CORS configuration
+
 ### Frontend
 
 ```
-stores/     → Pinia (auth, urls)
-composables/→ Reusable logic
-api/        → Axios + ETag caching
-components/ → Shadcn-VUE + features
-views/      → Page-level components
+types/        → Centralized TypeScript types
+stores/       → Pinia (auth, urls, admin)
+composables/  → Reusable logic (useAuth, useUrlShortener)
+api/          → Axios + ETag caching
+components/   → Shadcn-VUE + features
+views/        → Page-level components
 ```
 
 ### Key Decisions
 
-1. **Vite proxy**: same-origin for cookies in development
-2. **Session-based auth**: httpOnly cookies via Better Auth
-3. **Repository injection**: via Hono context middleware
-4. **ETag caching**: all GET endpoints
-5. **URL deduplication**: returns existing URL if duplicate
+1. **Turborepo**: build caching and parallel execution
+2. **Vite proxy**: same-origin for cookies in development
+3. **Session-based auth**: httpOnly cookies via Better Auth
+4. **Repository injection**: via Hono context middleware
+5. **ETag caching**: all GET endpoints
+6. **URL deduplication**: returns existing URL if duplicate
+7. **Centralized types**: `types/` directory for shared TypeScript interfaces
 
 ---
 

@@ -26,9 +26,10 @@ bun run format       # Biome format --write
 
 ```
 src/
-├── api/            # Axios client, API functions, types
+├── api/            # Axios client, API functions
+├── types/          # Centralized TypeScript types
 ├── lib/            # Better Auth client
-├── stores/         # Pinia stores (auth, urls)
+├── stores/         # Pinia stores (auth, urls, admin)
 ├── composables/    # useAuth, useUrlShortener, useSeo
 ├── components/
 │   ├── ui/         # Shadcn-VUE components (do not modify)

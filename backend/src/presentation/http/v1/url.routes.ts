@@ -3,13 +3,10 @@ import { zValidator } from "@hono/zod-validator";
 import type { Bindings, Variables } from "@/utils/context";
 import { GetPublicUrlsUseCase } from "@/application/url/get-public-urls.usecase";
 import { shortCodeSchema, createUrlSchema } from "@/utils/schemas";
-import {
-	NotFoundError,
-	UnauthorizedError,
-	UrlLimitReachedError,
-} from "@/domain/app-error";
+import { NotFoundError, UnauthorizedError } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
 import { CreateUrlUseCase } from "@/application/url/create-url.usecase";
+import { UrlLimitService } from "@/application/shared/url-limit.service";
 
 type UrlVariables = Variables & {
 	user: { id: string } | null;
@@ -73,16 +70,12 @@ urlRoutes.get("/", async (c) => {
 	const urlRepo = c.get("urlRepo");
 	const urls = await urlRepo.findByUserId(user.id);
 
-	// Obtener el límite del usuario para incluirlo en la respuesta
-	const ADMIN_URL_LIMIT = 999;
+	// Obtener el límite del usuario via servicio de dominio
 	const userRepo = c.get("userRepo");
-	const dbUser = await userRepo.findLimitAndRoleById(user.id);
+	const urlLimitService = new UrlLimitService(userRepo);
+	const urlLimit = await urlLimitService.getLimitForUser(user.id);
 
-	const payload = {
-		urls,
-		urlLimit:
-			dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2),
-	};
+	const payload = { urls, urlLimit };
 
 	// ETag handling
 	const etag = await computeETag(payload);
@@ -111,15 +104,10 @@ urlRoutes.post(
 		const urlRepo = c.get("urlRepo");
 		const userRepo = c.get("userRepo");
 
-		const ADMIN_URL_LIMIT = 999;
-		const dbUser = await userRepo.findLimitAndRoleById(user.id);
-
-		const limit =
-			dbUser?.role === "admin" ? ADMIN_URL_LIMIT : (dbUser?.urlLimit ?? 2);
+		// Verificar límite de URLs via servicio de dominio
+		const urlLimitService = new UrlLimitService(userRepo);
 		const urlCount = await urlRepo.countByUserId(user.id);
-		if (urlCount >= limit) {
-			throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
-		}
+		await urlLimitService.enforceLimit(user.id, urlCount);
 
 		const useCase = new CreateUrlUseCase(urlRepo);
 		const created = await useCase.execute({
