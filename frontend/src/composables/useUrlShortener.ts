@@ -101,17 +101,11 @@ export const useUrlShortener = () => {
 		}
 
 		try {
-			console.log("[shortenUrl] calling shortenMutation", {
-				originalUrl,
-				customHash,
-			});
-			console.log("[shortenUrl] urlStore debug:", urlStore.getDebugInfo());
 			urlStore.isLoading = true;
 			const data = await shortenMutation.mutateAsync({
 				originalUrl,
 				customHash,
 			});
-			console.log("[shortenUrl] mutateAsync result:", data);
 			if (data?.shortCode) {
 				return {
 					success: true,
@@ -122,7 +116,6 @@ export const useUrlShortener = () => {
 			}
 			return { success: false };
 		} catch (error: unknown) {
-			console.error("[shortenUrl] caught error:", error);
 			const errObj = error as {
 				response?: { data?: { error?: { message?: string } } };
 				message?: string;

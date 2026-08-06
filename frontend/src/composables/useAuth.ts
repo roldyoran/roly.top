@@ -1,8 +1,9 @@
 import { computed, ref } from "vue";
 import { authClient } from "@/lib/auth-client";
+import type { BetterAuthUser } from "@/types";
 
 // Estado global reactivo (plain Vue refs, NO Better Auth store)
-const user = ref<Record<string, unknown> | null>(null);
+const user = ref<BetterAuthUser | null>(null);
 const session = ref<Record<string, unknown> | null>(null);
 const isLoading = ref(false);
 
@@ -47,7 +48,7 @@ export function useAuth() {
 		try {
 			const data = await authClient.getSession();
 			if (data?.data) {
-				user.value = data.data.user as Record<string, unknown>;
+				user.value = data.data.user as BetterAuthUser;
 				session.value = data.data.session as Record<string, unknown>;
 			} else {
 				user.value = null;

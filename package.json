@@ -1,38 +1,38 @@
 {
-  "name": "@roly.top/monorepo",
-  "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
-  "packageManager": "bun@1.2.15",
-  "scripts": {
-    "dev": "bun run --parallel dev:front dev:back",
-    "dev:front": "bun --cwd frontend dev",
-    "dev:back": "bun --cwd backend dev",
-    "build": "bun run build:front && bun run build:back",
-    "build:front": "bun --cwd frontend build",
-    "build:back": "bun --cwd backend build",
-    "check": "bun run --parallel check:front check:back",
-    "check:front": "bun --cwd frontend check",
-    "check:back": "bun --cwd backend check",
-    "lint": "bun run --parallel lint:front lint:back",
-    "lint:front": "bun --cwd frontend lint",
-    "lint:back": "bun --cwd backend lint",
-    "format": "bun run --parallel format:front format:back",
-    "format:front": "bun --cwd frontend format",
-    "format:back": "bun --cwd backend format",
-    "test": "bun run test:back",
-    "test:back": "bun --cwd backend test",
-    "deploy": "bun --cwd backend deploy",
-    "db:generate": "bun --cwd backend db:generate",
-    "db:migrate:local": "bun --cwd backend db:migrate:local",
-    "db:migrate:remote": "bun --cwd backend db:migrate:remote"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.4.5",
-    "playwright": "^1.61.0",
-    "shadcn-vue": "^2.7.4"
-  },
-  "dependencies": {}
+	"name": "@roly.top/monorepo",
+	"private": true,
+	"workspaces": ["backend", "frontend"],
+	"packageManager": "bun@1.2.15",
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"setup": "bash scripts/setup-env.sh",
+		"dev": "turbo dev",
+		"dev:front": "bun --cwd frontend dev",
+		"dev:back": "bun --cwd backend dev",
+		"build": "turbo build",
+		"build:front": "bun --cwd frontend build",
+		"build:back": "bun --cwd backend build",
+		"check": "turbo check",
+		"check:front": "bun --cwd frontend check",
+		"check:back": "bun --cwd backend check",
+		"lint": "turbo lint",
+		"lint:front": "bun --cwd frontend lint",
+		"lint:back": "bun --cwd backend lint",
+		"format": "turbo format",
+		"format:front": "bun --cwd frontend format",
+		"format:back": "bun --cwd backend format",
+		"test": "bun run test:back",
+		"test:back": "bun --cwd backend test",
+		"deploy": "bun --cwd backend deploy",
+		"db:generate": "bun --cwd backend db:generate",
+		"db:migrate:local": "bun --cwd backend db:migrate:local",
+		"db:migrate:remote": "bun --cwd backend db:migrate:remote"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.5",
+		"shadcn-vue": "^2.7.4",
+		"turbo": "^2.5.0"
+	}
 }

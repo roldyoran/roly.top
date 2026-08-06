@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { corsMiddleware } from "@/utils/cors-middleware";
+import { corsMiddleware } from "@/infrastructure/http/cors.middleware";
 import { checkEnvMiddleware, type Bindings } from "@/utils/context";
 import { createAuth, type Auth } from "@/auth";
 import { v1Router } from "@/presentation/http/v1";

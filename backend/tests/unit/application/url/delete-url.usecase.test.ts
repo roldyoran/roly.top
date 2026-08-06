@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, mock } from "bun:test";
-import {
-	DeleteUrlUseCase,
-	UrlNotFoundError,
-} from "@/application/url/delete-url.usecase";
+import { DeleteUrlUseCase } from "@/application/url/delete-url.usecase";
+import { UrlNotFoundError } from "@/domain/url/url.errors";
 import {
 	createMockRepository,
 	urlFixture,
