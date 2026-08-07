@@ -1,11 +1,14 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
 import type { Bindings, Variables } from "@/utils/context";
 import { GetPublicUrlsUseCase } from "@/application/url/get-public-urls.usecase";
 import { shortCodeSchema, createUrlSchema } from "@/utils/schemas";
 import { NotFoundError, UnauthorizedError } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
 import { CreateUrlUseCase } from "@/application/url/create-url.usecase";
+import { CreateAnonymousUrlUseCase } from "@/application/url/create-anonymous-url.usecase";
+import { ClaimUrlUseCase } from "@/application/url/claim-url.usecase";
 import { UrlLimitService } from "@/application/shared/url-limit.service";
 
 type UrlVariables = Variables & {
@@ -88,20 +91,25 @@ urlRoutes.get("/", async (c) => {
 	return c.json(payload);
 });
 
-// POST /v1/urls — crea una nueva URL corta asociada al usuario
+// POST /v1/urls — crea una nueva URL corta
 // Body: { originalUrl: string, shortCode?: string }
+// Si no hay sesión, crea URL anónima temporal (7 días)
 urlRoutes.post(
 	"/",
 	zValidator("json", createUrlSchema, validationHook),
 	async (c) => {
 		const user = c.get("user");
-
-		if (!user) {
-			throw new UnauthorizedError("Debes iniciar sesión para crear URLs");
-		}
-
 		const { originalUrl, shortCode } = c.req.valid("json");
 		const urlRepo = c.get("urlRepo");
+
+		// Creación anónima (sin auth)
+		if (!user) {
+			const useCase = new CreateAnonymousUrlUseCase(urlRepo);
+			const created = await useCase.execute({ originalUrl });
+			return c.json(created, 201);
+		}
+
+		// Creación autenticada (flujo existente)
 		const userRepo = c.get("userRepo");
 
 		// Verificar límite de URLs via servicio de dominio
@@ -162,6 +170,29 @@ urlRoutes.delete(
 			);
 		}
 		return c.json(deleted);
+	},
+);
+
+// POST /v1/urls/claim — reclama una URL anónima para el usuario autenticado
+// Body: { claimToken: string (UUID) }
+urlRoutes.post(
+	"/claim",
+	zValidator(
+		"json",
+		z.object({ claimToken: z.string().uuid() }),
+		validationHook,
+	),
+	async (c) => {
+		const user = c.get("user");
+		if (!user) {
+			throw new UnauthorizedError("Debes iniciar sesión para reclamar URLs");
+		}
+
+		const { claimToken } = c.req.valid("json");
+		const urlRepo = c.get("urlRepo");
+		const useCase = new ClaimUrlUseCase(urlRepo);
+		const url = await useCase.execute({ claimToken, userId: user.id });
+		return c.json(url);
 	},
 );
 

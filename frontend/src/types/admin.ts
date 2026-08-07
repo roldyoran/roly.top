@@ -43,4 +43,7 @@ export interface AdminUrl {
 	createdAt: string;
 	visits: number;
 	userId: string | null;
+	// Campos para URLs anónimas
+	expiresAt: string | null;
+	claimToken: string | null;
 }

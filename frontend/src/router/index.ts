@@ -10,6 +10,11 @@ const router = createRouter({
 			component: () => import("@/views/HomeView.vue"),
 		},
 		{
+			path: "/url-expirada/:shortCode",
+			name: "url-expired",
+			component: () => import("@/views/ExpiredUrlView.vue"),
+		},
+		{
 			path: "/auth/error",
 			name: "auth-error",
 			component: () => import("@/views/BannedView.vue"),

@@ -1,8 +1,11 @@
-import { eq, sql, count, and, isNull, inArray } from "drizzle-orm";
+import { eq, sql, count, and, isNull, inArray, like } from "drizzle-orm";
 import type { DrizzleDB } from "@/db";
 import { urlsTable } from "@/db/schema";
 import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
-import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
+import type {
+	UrlRepositoryPort,
+	PaginatedResult,
+} from "@/domain/url/url.repository.port";
 
 // Generador de shortCode aleatorio sin sesgo (unbiased): 9 chars [a-z0-9]
 function generateShortCode(length = 9): string {
@@ -128,7 +131,13 @@ export class UrlRepository implements UrlRepositoryPort {
 
 		const [created] = await this.db
 			.insert(urlsTable)
-			.values({ originalUrl: input.originalUrl, shortCode, createdAt })
+			.values({
+				originalUrl: input.originalUrl,
+				shortCode,
+				createdAt,
+				claimToken: input.claimToken ?? null,
+				expiresAt: input.expiresAt ?? null,
+			})
 			.returning();
 
 		return created;
@@ -179,5 +188,81 @@ export class UrlRepository implements UrlRepositoryPort {
 			.update(urlsTable)
 			.set({ userId })
 			.where(isNull(urlsTable.userId));
+	}
+
+	async findByClaimToken(token: string): Promise<UrlEntity | null> {
+		const [url] = await this.db
+			.select()
+			.from(urlsTable)
+			.where(eq(urlsTable.claimToken, token))
+			.limit(1);
+		return url ?? null;
+	}
+
+	async claimUrl(
+		claimToken: string,
+		userId: string,
+	): Promise<UrlEntity | null> {
+		const [updated] = await this.db
+			.update(urlsTable)
+			.set({ userId, claimToken: null, expiresAt: null })
+			.where(eq(urlsTable.claimToken, claimToken))
+			.returning();
+		return updated ?? null;
+	}
+
+	async findExpiredAnonymousUrls(params: {
+		page: number;
+		pageSize: number;
+		search?: string;
+	}): Promise<PaginatedResult<UrlEntity>> {
+		const { page, pageSize, search } = params;
+		const offset = (page - 1) * pageSize;
+
+		const conditions = [
+			isNull(urlsTable.userId),
+			isNull(urlsTable.userId),
+			isNull(urlsTable.userId),
+		];
+
+		// Construir condiciones dinámicamente
+		const whereClauses = [
+			isNull(urlsTable.userId),
+			sql`${urlsTable.expiresAt} IS NOT NULL`,
+			sql`${urlsTable.expiresAt} < datetime('now')`,
+		];
+
+		if (search) {
+			whereClauses.push(
+				sql`(${urlsTable.shortCode} LIKE ${`%${search}%`} OR ${urlsTable.originalUrl} LIKE ${`%${search}%`})`,
+			);
+		}
+
+		const whereCondition = and(...whereClauses);
+
+		// Count
+		const [countResult] = await this.db
+			.select({ value: count() })
+			.from(urlsTable)
+			.where(whereCondition);
+
+		const total = countResult?.value ?? 0;
+
+		// Data
+		const data = await this.db
+			.select()
+			.from(urlsTable)
+			.where(whereCondition)
+			.orderBy(sql`${urlsTable.expiresAt} ASC`)
+			.limit(pageSize)
+			.offset(offset);
+
+		return {
+			data,
+			total,
+			page,
+			pageSize,
+			totalPages: Math.ceil(total / pageSize),
+		};
 	}
 }

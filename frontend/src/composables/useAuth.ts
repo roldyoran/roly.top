@@ -36,6 +36,7 @@ export function useAuth() {
 			session.value = null;
 			localStorage.removeItem("savedUrls");
 			localStorage.removeItem("publicList_v1");
+			localStorage.removeItem("pending_claim");
 		} catch (error) {
 			console.error("Error signing out:", error);
 			throw error;

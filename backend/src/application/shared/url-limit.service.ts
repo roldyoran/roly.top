@@ -34,9 +34,7 @@ export class UrlLimitService {
 	async enforceLimit(userId: string, currentUrlCount: number): Promise<void> {
 		const limit = await this.getLimitForUser(userId);
 		if (currentUrlCount >= limit) {
-			throw new UrlLimitReachedError(
-				`Límite de ${limit} URLs alcanzado`,
-			);
+			throw new UrlLimitReachedError(`Límite de ${limit} URLs alcanzado`);
 		}
 	}
 }
