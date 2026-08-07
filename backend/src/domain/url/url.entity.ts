@@ -7,6 +7,10 @@ export interface UrlEntity {
 	createdAt: string;
 	visits: number;
 	userId: string | null;
+	// Token UUID para reclamar URL anónima
+	claimToken: string | null;
+	// Timestamp ISO de expiración (7 días para URLs anónimas)
+	expiresAt: string | null;
 }
 
 export interface CreateUrlInput {
@@ -14,4 +18,8 @@ export interface CreateUrlInput {
 	// Si no se provee, se genera automáticamente
 	shortCode?: string;
 	userId?: string | null;
+	// Token UUID para reclamar URL anónima
+	claimToken?: string | null;
+	// Timestamp ISO de expiración
+	expiresAt?: string | null;
 }

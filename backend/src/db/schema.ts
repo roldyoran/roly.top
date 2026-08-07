@@ -17,8 +17,15 @@ export const urlsTable = sqliteTable(
 		visits: int().notNull().default(0),
 		// ID del usuario propietario (Better Auth user.id). Null = URL pública/heredada
 		userId: text("user_id"),
+		// Token UUID para reclamar URL anónima. Se limpia al reclamar.
+		claimToken: text("claim_token"),
+		// Timestamp ISO de expiración (7 días para URLs anónimas). Se limpia al reclamar.
+		expiresAt: text("expires_at"),
 	},
-	(table) => [index("user_id_idx").on(table.userId)],
+	(table) => [
+		index("user_id_idx").on(table.userId),
+		index("claim_token_idx").on(table.claimToken),
+	],
 );
 
 export type InsertUrl = typeof urlsTable.$inferInsert;

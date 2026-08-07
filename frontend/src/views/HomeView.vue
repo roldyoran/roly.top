@@ -159,8 +159,21 @@
             <span class="sc-title-text">roly.top — acortador de URLs</span>
           </div>
           <div class="sc-body">
-            <div v-if="!authStore.isAuthenticated" class="text-center py-4">
-              <p class="text-sm text-muted-foreground mb-3">Inicia sesión para comenzar a acortar URLs</p>
+            <!-- Banner para anónimo sin URL pendiente -->
+            <div v-if="!authStore.isAuthenticated && !pendingClaim" class="text-center mb-3">
+              <p class="text-sm text-muted-foreground">
+                Acorta tu URL sin cuenta. <span class="text-muted-foreground/60">Dura 7 días.</span>
+              </p>
+            </div>
+
+            <!-- Banner para anónimo con URL pendiente -->
+            <div v-if="!authStore.isAuthenticated && pendingClaim" class="text-center py-4">
+              <p class="text-sm font-medium text-foreground mb-1">
+                Tienes una URL activa
+              </p>
+              <p class="text-xs text-muted-foreground mb-2">
+                <code class="font-mono">/{{ pendingClaim.shortCode }}</code> expira el {{ formatDate(pendingClaim.expiresAt) }}
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -169,12 +182,14 @@
                 @click="authStore.signIn"
               >
                 <Google class="w-4 h-4" />
-                Iniciar sesión
+                Iniciar sesión para administrar
               </Button>
             </div>
 
-            <template v-else>
-              <div v-if="hasReachedLimit" class="mb-3.5 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+            <!-- Input del shortener (solo si puede crear URL) -->
+            <template v-if="authStore.isAuthenticated || !pendingClaim">
+              <!-- Warning de límite (solo autenticado) -->
+              <div v-if="authStore.isAuthenticated && hasReachedLimit" class="mb-3.5 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <p class="text-sm text-destructive font-medium">
                   Has alcanzado el límite de {{ urlStore.urlLimit }} URLs. Elimina una antes de crear otra.
                 </p>
@@ -183,7 +198,6 @@
               <div class="terminal-row">
                 <span class="terminal-prompt">
                   roly.top/
-                  <span class="terminal-cursor"></span>
                 </span>
                 <input
                   ref="urlInputRef"
@@ -193,19 +207,20 @@
                   placeholder="pega tu URL larga aquí..."
                   autocomplete="off"
                   spellcheck="false"
-                  :disabled="hasReachedLimit"
+                  :disabled="authStore.isAuthenticated && hasReachedLimit"
                   @keydown.enter="handleShorten"
                 />
                 <button
                   class="shorten-btn"
-                  :disabled="isLoading || hasReachedLimit"
+                  :disabled="isLoading || (authStore.isAuthenticated && hasReachedLimit)"
                   @click="handleShorten"
                 >
                   {{ isLoading ? 'Procesando...' : 'Acortar →' }}
                 </button>
               </div>
 
-              <div class="flex items-center justify-between gap-3 flex-wrap">
+              <!-- Opciones extra (solo autenticado) -->
+              <div v-if="authStore.isAuthenticated" class="flex items-center justify-between gap-3 flex-wrap">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <Switch v-model="customAlias" />
                   <span class="text-xs text-muted-foreground font-500">Alias personalizado</span>
@@ -215,7 +230,7 @@
                 </span>
               </div>
 
-              <div class="overflow-hidden max-h-0 opacity-0 transition-all duration-200" :class="customAlias ? 'max-h-[52px] opacity-100 mt-2.5' : ''">
+              <div v-if="authStore.isAuthenticated" class="overflow-hidden max-h-0 opacity-0 transition-all duration-200" :class="customAlias ? 'max-h-[52px] opacity-100 mt-2.5' : ''">
                 <input
                   v-model="alias"
                   class="w-full h-10 px-3 bg-background border border-border rounded-lg text-foreground font-mono text-xs outline-none transition-colors focus:border-primary focus:shadow-[0_0_0_3px_oklch(0.7 0.2_130/0.15)] placeholder:text-muted-foreground"
@@ -227,6 +242,7 @@
                 />
               </div>
 
+              <!-- Resultado -->
               <div v-if="shortUrl" ref="resultCardRef" class="mt-3 p-3.5 bg-primary/5 border border-primary/20 rounded-[10px] flex items-center gap-3" :class="resultLeaving ? 'animate-slide-out' : 'animate-slide-in'">
                 <div class="flex-1 min-w-0">
                   <a class="font-mono text-sm font-700 text-primary block" href="#">{{ shortUrl }}</a>
@@ -439,6 +455,32 @@ const customAlias = ref(false);
 const urlInputRef = ref<HTMLInputElement | null>(null);
 const resultCardRef = ref<HTMLDivElement | null>(null);
 const resultLeaving = ref(false);
+
+// Pending claim para URLs anónimas
+const pendingClaim = computed(() => {
+	const raw = localStorage.getItem("pending_claim");
+	if (!raw) return null;
+	try {
+		const parsed = JSON.parse(raw);
+		// Verificar si no ha expirado
+		if (parsed.expiresAt && new Date(parsed.expiresAt) < new Date()) {
+			localStorage.removeItem("pending_claim");
+			return null;
+		}
+		return parsed;
+	} catch {
+		localStorage.removeItem("pending_claim");
+		return null;
+	}
+});
+
+function formatDate(dateStr: string): string {
+	return new Date(dateStr).toLocaleDateString("es-ES", {
+		day: "2-digit",
+		month: "long",
+		year: "numeric",
+	});
+}
 
 const publicStats = reactive({ publicUrls: 0, totalRedirects: 0 });
 

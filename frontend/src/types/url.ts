@@ -32,3 +32,15 @@ export interface UserUrlsResponse {
 	urls: UrlInfoResponse[];
 	urlLimit: number;
 }
+
+/** Respuesta de creación anónima */
+export interface AnonymousUrlResponse {
+	id: number;
+	originalUrl: string;
+	shortCode: string;
+	createdAt: string;
+	visits: number;
+	userId: null;
+	claimToken: string;
+	expiresAt: string;
+}
