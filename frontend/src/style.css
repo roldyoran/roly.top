@@ -88,12 +88,12 @@ body {
 	}
 }
 .animate-fade-in-up {
-	animation: fade-in-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes fade-in-up {
 	0% {
 		opacity: 0;
-		transform: translateY(12px);
+		transform: translateY(16px);
 	}
 	100% {
 		opacity: 1;
@@ -101,11 +101,59 @@ body {
 	}
 }
 
+/* Tab content enter animation */
+.animate-tab-enter {
+	animation: tab-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes tab-enter {
+	0% {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Stagger delay utilities for list items */
+.stagger-1 {
+	animation-delay: 0.04s;
+}
+.stagger-2 {
+	animation-delay: 0.08s;
+}
+.stagger-3 {
+	animation-delay: 0.12s;
+}
+.stagger-4 {
+	animation-delay: 0.16s;
+}
+.stagger-5 {
+	animation-delay: 0.2s;
+}
+.stagger-6 {
+	animation-delay: 0.24s;
+}
+.stagger-7 {
+	animation-delay: 0.28s;
+}
+.stagger-8 {
+	animation-delay: 0.32s;
+}
+.stagger-9 {
+	animation-delay: 0.36s;
+}
+.stagger-10 {
+	animation-delay: 0.4s;
+}
+
 /* Honor reduced motion */
 @media (prefers-reduced-motion: reduce) {
 	.animate-slide-up,
 	.animate-fade-in,
 	.animate-fade-in-up,
+	.animate-tab-enter,
 	.animate-pulse-slow,
 	.fade-up,
 	.hero-stagger * {
@@ -526,7 +574,7 @@ html {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding: 10px 16px;
+	padding: 12px 16px;
 	background: var(--muted);
 	border-bottom: 1px solid var(--border);
 }
@@ -553,7 +601,7 @@ html {
 	color: var(--muted-foreground);
 }
 .sc-body {
-	padding: 20px 20px 16px;
+	padding: 20px;
 }
 
 /* Terminal prompt row */
@@ -568,7 +616,7 @@ html {
 	transition:
 		border-color 0.15s,
 		box-shadow 0.15s;
-	margin-bottom: 14px;
+	margin-bottom: 16px;
 }
 .terminal-row:focus-within {
 	border-color: var(--primary);
@@ -578,7 +626,7 @@ html {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 12px 0 14px;
+	padding: 0 12px;
 	font-family: var(--font-mono);
 	font-size: 13px;
 	color: var(--primary);
@@ -682,7 +730,7 @@ html {
 .pub-tab {
 	display: flex;
 	align-items: center;
-	gap: 7px;
+	gap: 8px;
 	padding: 12px 16px;
 	font-size: 13px;
 	font-weight: 500;
@@ -755,14 +803,14 @@ html {
 .stats-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-	gap: 14px;
+	gap: 16px;
 	margin-bottom: 24px;
 }
 .stat-card {
 	background: var(--card);
 	border: 1px solid var(--border);
 	border-radius: 12px;
-	padding: 20px;
+	padding: 16px;
 	position: relative;
 	overflow: hidden;
 	transition:
@@ -787,7 +835,7 @@ html {
 	font-size: 10px;
 	color: var(--muted-foreground);
 	font-weight: 700;
-	margin-bottom: 10px;
+	margin-bottom: 8px;
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	font-family: var(--font-mono);
@@ -822,7 +870,7 @@ html {
 .dash-grid {
 	display: grid;
 	grid-template-columns: 1fr 300px;
-	gap: 18px;
+	gap: 16px;
 }
 @media (max-width: 1100px) {
 	.dash-grid {
@@ -838,7 +886,7 @@ html {
 	overflow: hidden;
 }
 .panel-card-header {
-	padding: 14px 18px;
+	padding: 12px 16px;
 	border-bottom: 1px solid var(--border);
 	display: flex;
 	align-items: center;
@@ -857,7 +905,7 @@ html {
 	border-collapse: collapse;
 }
 .url-table th {
-	padding: 10px 16px;
+	padding: 12px 16px;
 	font-size: 10px;
 	font-weight: 700;
 	text-align: left;
@@ -869,7 +917,7 @@ html {
 	font-family: var(--font-mono);
 }
 .url-table td {
-	padding: 11px 16px;
+	padding: 12px 16px;
 	border-bottom: 1px solid var(--border);
 	font-size: 13px;
 }
@@ -889,7 +937,7 @@ html {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	padding: 2px 9px;
+	padding: 2px 8px;
 	border-radius: 999px;
 	font-size: 11px;
 	font-weight: 700;
@@ -908,7 +956,7 @@ html {
 
 /* Activity feed */
 .activity-list {
-	padding: 6px 0;
+	padding: 8px 0;
 }
 .activity-item {
 	padding: 10px 18px;
@@ -967,7 +1015,7 @@ html {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	margin-bottom: 14px;
+	margin-bottom: 16px;
 	flex-wrap: wrap;
 }
 .dash-search-input {
@@ -998,7 +1046,7 @@ html {
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	color: var(--muted-foreground);
-	margin-bottom: 7px;
+	margin-bottom: 8px;
 	font-family: var(--font-mono);
 }
 
@@ -1011,7 +1059,7 @@ html {
 	border: 1px solid var(--border);
 	border-radius: 12px;
 	overflow: hidden;
-	margin-bottom: 18px;
+	margin-bottom: 16px;
 }
 .settings-group-label {
 	font-size: 10px;

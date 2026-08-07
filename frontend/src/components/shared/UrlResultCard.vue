@@ -1,9 +1,5 @@
 <template>
-  <motion.div
-    initial="hidden"
-    animate="visible"
-    :variants="cardVariants"
-  >
+  <div class="animate-fade-in-up">
     <Card class="result-card rounded-2xl p-4 mt-3">
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-2">
@@ -20,12 +16,12 @@
           <Link class="w-4 h-4 flex-shrink-0 text-primary" />
           <span class="font-mono text-xs text-primary truncate">{{ shortUrl }}</span>
         </div>
-        <motion.div whileHover="{ scale: 1.03 }" whileTap="{ scale: 0.97 }">
+        <div class="transition-transform duration-150 hover:scale-[1.03] active:scale-[0.97]">
           <Button variant="outline" size="sm" @click="$emit('copy')" class="h-10 px-3 font-mono text-[10px] tracking-wider">
             <Copy class="w-3.5 h-3.5 mr-1.5" />
             COPIAR
           </Button>
-        </motion.div>
+        </div>
         <Button variant="outline" size="sm" as-child class="h-10 w-10 p-0">
           <a :href="shortUrl" target="_blank" rel="noopener noreferrer" aria-label="Abrir URL acortada">
             <ExternalLink class="w-3.5 h-3.5" />
@@ -53,12 +49,11 @@
         </div>
       </div>
     </Card>
-  </motion.div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { Clock, Copy, ExternalLink, Eye, Link, X } from "lucide-vue-next";
-import { motion } from "motion-v";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -73,25 +68,6 @@ defineEmits<{
 	copy: [];
 	close: [];
 }>();
-
-const cardVariants = {
-	hidden: {
-		opacity: 0,
-		y: 16,
-		scale: 0.98,
-		boxShadow: "0 0 0 rgba(0,0,0,0)",
-	},
-	visible: {
-		opacity: 1,
-		y: 0,
-		scale: 1,
-		boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
-		transition: {
-			duration: 0.5,
-			ease: [0.22, 1, 0.36, 1],
-		},
-	},
-};
 </script>
 
 <style scoped>

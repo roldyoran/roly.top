@@ -1,8 +1,8 @@
 <template>
-	<div class="flex flex-col gap-3">
+	<div class="flex flex-col gap-4">
 		<!-- WELCOME BANNER -->
 		<Card class="relative overflow-hidden border-border/60">
-			<CardContent class="p-3.5 sm:p-4">
+			<CardContent class="p-4">
 				<div class="relative z-10 flex items-center justify-between">
 					<div>
 						<p class="text-[10px] font-mono tracking-wider text-muted-foreground">
@@ -11,7 +11,7 @@
 						<h1 class="text-lg sm:text-xl font-display font-800 tracking-tight">
 							{{ userName || 'Usuario' }}
 						</h1>
-						<p class="text-[10px] text-muted-foreground mt-0.5 font-mono">
+						<p class="text-[10px] text-muted-foreground mt-1 font-mono">
 							{{ totalLinks }} enlace{{ totalLinks !== 1 ? 's' : '' }} activo{{ totalLinks !== 1 ? 's' : '' }}
 						</p>
 					</div>
@@ -31,7 +31,7 @@
 		</Card>
 
 		<!-- STAT CARDS -->
-		<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+		<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
 			<template v-if="isLoading">
 				<Card v-for="i in 4" :key="i" class="border-border/60">
 					<CardContent class="p-3">
@@ -43,7 +43,7 @@
 			</template>
 			<template v-else>
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="px-3 py-2.5">
+					<CardContent class="p-3">
 						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Enlaces</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -62,7 +62,7 @@
 				</Card>
 
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="px-3 py-2.5">
+					<CardContent class="p-3">
 						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Clics</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -76,7 +76,7 @@
 				</Card>
 
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="px-3 py-2.5">
+					<CardContent class="p-3">
 						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Límite</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -100,7 +100,7 @@
 				</Card>
 
 				<Card class="relative overflow-hidden border-border/60">
-					<CardContent class="px-3 py-2.5">
+					<CardContent class="p-3">
 						<div class="flex items-center justify-between mb-1.5">
 							<span class="text-[9px] font-mono font-700 tracking-widest uppercase text-muted-foreground">Cuenta</span>
 							<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
@@ -120,7 +120,7 @@
 		</div>
 
 		<!-- BOTTOM ROW: Actions + Account -->
-		<div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
+		<div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
 			<!-- Quick Actions -->
 			<Card class="lg:col-span-3 border-border/60">
 				<CardContent class="p-3">
@@ -132,7 +132,7 @@
 							Acciones Rápidas
 						</span>
 					</div>
-					<div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+					<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
 						<Button
 							variant="outline"
 							class="flex flex-col items-center gap-1.5 h-auto py-2.5 border-border/60 hover:border-primary/30 hover:bg-primary/5"
@@ -189,17 +189,17 @@
 						</span>
 					</div>
 					<div class="flex flex-col gap-0">
-						<div class="flex items-center justify-between py-1.5">
+						<div class="flex items-center justify-between py-2">
 							<span class="text-[10px] font-mono text-muted-foreground">Nombre</span>
 							<span class="text-[10px] font-mono font-600">{{ userName || 'Invitado' }}</span>
 						</div>
 						<Separator />
-						<div class="flex items-center justify-between py-1.5">
+						<div class="flex items-center justify-between py-2">
 							<span class="text-[10px] font-mono text-muted-foreground">Correo</span>
 							<span class="text-[10px] font-mono text-muted-foreground truncate max-w-[200px] text-right">{{ userEmail || 'N/D' }}</span>
 						</div>
 						<Separator />
-						<div class="flex items-center justify-between py-1.5">
+						<div class="flex items-center justify-between py-2">
 							<span class="text-[10px] font-mono text-muted-foreground">Rol</span>
 							<Badge
 								:variant="isAdmin ? 'default' : 'secondary'"

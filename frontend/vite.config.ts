@@ -24,8 +24,6 @@ export default defineConfig({
 						"clsx",
 						"tailwind-merge",
 					],
-					// Separate heavy animation library for lazy loading
-					"vendor-motion": ["motion-v"],
 					// Icons tree-shake friendly chunk
 					"vendor-icons": ["lucide-vue-next"],
 					// Zod for validation (non-critical path)
