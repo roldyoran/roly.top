@@ -1,4 +1,5 @@
 <template>
+	<TooltipProvider>
 	<div class="flex flex-col gap-5">
 		<!-- HEADER -->
 		<div class="flex items-center justify-between flex-wrap gap-3">
@@ -23,7 +24,7 @@
 		<!-- QUICK STATS -->
 		<div class="grid grid-cols-3 gap-3">
 			<Card class="border-border/60">
-				<CardContent class="p-3.5 relative overflow-hidden">
+				<CardContent class="p-3 relative overflow-hidden">
 					<div class="flex items-center gap-2 mb-2">
 						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 							<Link class="size-3 text-primary" />
@@ -35,7 +36,7 @@
 				</CardContent>
 			</Card>
 			<Card class="border-border/60">
-				<CardContent class="p-3.5 relative overflow-hidden">
+				<CardContent class="p-3 relative overflow-hidden">
 					<div class="flex items-center gap-2 mb-2">
 						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 							<MousePointerClick class="size-3 text-primary" />
@@ -47,7 +48,7 @@
 				</CardContent>
 			</Card>
 			<Card class="border-border/60">
-				<CardContent class="p-3.5 relative overflow-hidden">
+				<CardContent class="p-3 relative overflow-hidden">
 					<div class="flex items-center gap-2 mb-2">
 						<div class="flex size-6 items-center justify-center rounded-md bg-primary/10">
 							<TrendingUp class="size-3 text-primary" />
@@ -98,7 +99,7 @@
 
 		<!-- LINKS LIST -->
 		<template v-else>
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-3">
 				<Card
 					v-for="url in filteredUrls"
 					:key="url.shortCode"
@@ -144,26 +145,50 @@
 
 							<!-- Actions -->
 							<div class="flex items-center gap-1 flex-shrink-0">
-								<Button
-									variant="outline"
-									size="sm"
-									class="h-auto px-2.5 py-1.5 text-[11px] font-mono font-600 border-border/60"
-									aria-label="Copiar"
-									@click="copyUrl(url.shortCode)"
-								>
-									<Copy class="size-3" data-icon="inline-start" />
-									<span class="hidden sm:inline">Copiar</span>
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									class="h-auto px-2.5 py-1.5 text-[11px] font-mono font-600 text-destructive border-border/60 hover:bg-destructive/5 hover:border-destructive/30"
-									aria-label="Eliminar"
-									@click="confirmDelete(url.shortCode)"
-								>
-									<Trash2 class="size-3" data-icon="inline-start" />
-									<span class="hidden sm:inline">Eliminar</span>
-								</Button>
+								<Tooltip>
+									<TooltipTrigger :asChild="true">
+										<Button
+											variant="ghost"
+											size="sm"
+											class="h-6 w-6 sm:h-7 sm:w-7 p-0"
+											aria-label="Copiar URL"
+											@click="copyUrl(url.shortCode)"
+										>
+											<Copy class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Copiar URL</TooltipContent>
+								</Tooltip>
+
+								<Tooltip>
+									<TooltipTrigger :asChild="true">
+										<Button
+											variant="ghost"
+											size="sm"
+											class="h-6 w-6 sm:h-7 sm:w-7 p-0"
+											aria-label="Generar código QR"
+											@click="generateQR(url.shortCode)"
+										>
+											<QrCode class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Generar QR</TooltipContent>
+								</Tooltip>
+
+								<Tooltip>
+									<TooltipTrigger :asChild="true">
+										<Button
+											variant="ghost"
+											size="sm"
+											class="h-6 w-6 sm:h-7 sm:w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+											aria-label="Eliminar URL"
+											@click="confirmDelete(url.shortCode)"
+										>
+											<Trash2 class="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Eliminar</TooltipContent>
+								</Tooltip>
 							</div>
 						</div>
 
@@ -219,23 +244,48 @@
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
+
+		<!-- QR DIALOG -->
+		<Dialog v-model:open="showQRModal">
+			<DialogContent class="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle>Código QR</DialogTitle>
+					<DialogDescription>
+						Escanea este código para acceder a: {{ currentQRUrl }}
+					</DialogDescription>
+				</DialogHeader>
+				<div class="flex items-center justify-center py-4">
+					<canvas ref="qrCanvas" class="border rounded-lg"></canvas>
+				</div>
+				<div class="flex justify-center">
+					<Button @click="downloadQR" variant="outline">
+						<Download class="w-4 h-4 mr-2" />
+						Descargar QR
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
 	</div>
+	</TooltipProvider>
 </template>
 
 <script setup lang="ts">
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import {
 	Copy,
+	Download,
 	Link,
 	MousePointerClick,
 	Plus,
+	QrCode,
 	Search,
 	Trash2,
 	TrendingUp,
 } from "lucide-vue-next";
+import QRCode from "qrcode-generator";
 import { computed, ref, watch } from "vue";
 import { toast } from "vue-sonner";
-import { deleteUrlRequest, getUrlsRequest } from "@/api/http";
+import { deleteUrlRequest, getAppBaseUrl, getUrlsRequest } from "@/api/http";
 import type { UrlInfoResponse } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -257,6 +307,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useUrlStore } from "@/stores/urlStore";
 
@@ -271,6 +327,11 @@ const searchQuery = ref("");
 const deleteDialogOpen = ref(false);
 const deleteTarget = ref("");
 const isDeleting = ref(false);
+
+// QR modal state (same as UrlsList)
+const showQRModal = ref(false);
+const qrCanvas = ref<HTMLCanvasElement>();
+const currentQRUrl = ref<string>("");
 
 const urlsQuery = useQuery({
 	queryKey: ["userUrls"],
@@ -376,6 +437,86 @@ function confirmDelete(shortCode: string) {
 	deleteTarget.value = shortCode;
 	deleteDialogOpen.value = true;
 }
+
+// QR Code functions (same as UrlsList)
+const getFullShortUrl = (shortCode: string): string => {
+	return `${getAppBaseUrl()}/${shortCode}`;
+};
+
+const generateQR = (shortCode: string) => {
+	const fullUrl = getFullShortUrl(shortCode);
+	currentQRUrl.value = fullUrl;
+	showQRModal.value = true;
+	setTimeout(() => {
+		createQRCode(fullUrl);
+	}, 100);
+};
+
+const createQRCode = (url: string) => {
+	if (!qrCanvas.value) return;
+
+	const qr = QRCode(0, "M");
+	qr.addData(url);
+	qr.make();
+
+	const canvas = qrCanvas.value;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) return;
+
+	const moduleCount = qr.getModuleCount();
+	const moduleSize = 6;
+	const margin = 4;
+	canvas.width = canvas.height = moduleCount * moduleSize + margin * 2;
+
+	ctx.fillStyle = "#ffffff";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	ctx.fillStyle = "#000000";
+	const offset = margin;
+	for (let y = 0; y < moduleCount; y++) {
+		for (let x = 0; x < moduleCount; x++) {
+			if (qr.isDark(y, x)) {
+				ctx.fillRect(
+					offset + x * moduleSize,
+					offset + y * moduleSize,
+					moduleSize,
+					moduleSize,
+				);
+			}
+		}
+	}
+};
+
+const downloadQR = () => {
+	if (!qrCanvas.value) {
+		toast.error("Error", {
+			description: "No se encontró el código QR",
+		});
+		return;
+	}
+	try {
+		const dataUrl = qrCanvas.value.toDataURL("image/png");
+		const cleanUrl = currentQRUrl.value
+			.replace(/^https?:\/\//, "")
+			.replace(/\//g, "-")
+			.slice(0, 50);
+		const fileName = `qr-${cleanUrl || "codigo"}.png`;
+		const link = document.createElement("a");
+		link.download = fileName;
+		link.href = dataUrl;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		toast.success("QR descargado", {
+			description: "El código QR se ha descargado correctamente",
+		});
+	} catch (error) {
+		console.error("Error al descargar el QR:", error);
+		toast.error("Error al descargar", {
+			description: "No se pudo descargar el código QR",
+		});
+	}
+};
 
 async function executeDelete() {
 	isDeleting.value = true;
