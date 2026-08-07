@@ -1,5 +1,6 @@
 export type { AdminStats, AdminUrl, AdminUser, PaginatedResult } from "./admin";
 export type {
+	AnonymousUrlResponse,
 	SavedUrlItem,
 	ShortenResult,
 	UrlInfoResponse,
