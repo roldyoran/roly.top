@@ -104,19 +104,16 @@
           </Empty>
         </div>
 
-        <motion.div
+        <div
           v-else
-          class="space-y-2"
+          class="space-y-2 animate-fade-in"
           :class="shouldUseScroll ? 'max-h-[70vh] overflow-y-auto pr-1 scroll-container' : ''"
-          initial="hidden"
-          animate="visible"
-          :variants="listContainerVariants"
         >
-          <motion.div
-            v-for="url in displayUrls"
+          <div
+            v-for="(url, index) in displayUrls"
             :key="`${url.shortCode}-${url.originalUrl}`"
-            :variants="listItemVariants"
-            class="url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40 relative overflow-hidden"
+            class="animate-fade-in-up url-item rounded-xl border border-border bg-card px-4 py-3 flex flex-col gap-0.5 transition-colors hover:bg-muted/40 relative overflow-hidden"
+            :class="index < 10 ? `stagger-${index + 1}` : ''"
           >
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             <div class="flex items-center justify-between gap-3">
@@ -191,8 +188,8 @@
                 {{ formatDate(url.createdAt) }}
               </span>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         <div v-if="isMyList && totalPages > 1" class="flex items-center justify-between mt-4">
           <p class="text-sm text-muted-foreground">
@@ -303,7 +300,6 @@ import {
 	Search,
 	Trash,
 } from "lucide-vue-next";
-import { motion } from "motion-v";
 import QRCode from "qrcode-generator";
 import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
@@ -487,24 +483,6 @@ const shouldUseScroll = computed(() => {
 	}
 	return filteredUrls.value.length > 8;
 });
-
-const listContainerVariants = {
-	hidden: {},
-	visible: {
-		transition: {
-			staggerChildren: 0.04,
-		},
-	},
-};
-
-const listItemVariants = {
-	hidden: { opacity: 0, y: 8 },
-	visible: {
-		opacity: 1,
-		y: 0,
-		transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
-	},
-};
 
 const getFullShortUrl = (shortCode: string): string => {
 	return `${getAppBaseUrl()}/${shortCode}`;

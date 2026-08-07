@@ -64,12 +64,9 @@
         </div>
       </form>
 
-      <motion.div
+      <div
         ref="qrResult"
-        :initial="{ opacity: 0, scale: 0.95, y: 12 }"
-        :animate="qrDataUrl ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }"
-        :transition="{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }"
-        class="flex flex-col gap-4"
+        class="animate-fade-in-up flex flex-col gap-4"
       >
         <div class="flex justify-center p-4 rounded-lg border bg-muted/30">
           <div :class="['w-48 h-48 flex items-center justify-center border border-border rounded-md overflow-hidden relative', qrDataUrl ? 'bg-white' : 'bg-card']">
@@ -93,14 +90,13 @@
             </Button>
           </div>
         </div>
-      </motion.div>
+      </div>
     </CardContent>
   </Card>
 </template>
 
 <script setup lang="ts">
 import { Copy, Download, QrCode } from "lucide-vue-next";
-import { motion } from "motion-v";
 import qrcode from "qrcode-generator";
 import { nextTick, ref, watch } from "vue";
 import { toast } from "vue-sonner";

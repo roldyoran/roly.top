@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col relative">
     <!-- Top Bar -->
-    <header class="sticky top-0 z-50 h-[62px] flex items-center justify-between px-7 border-b border-border/50 bg-background/88 backdrop-blur-[16px]">
+    <header class="sticky top-0 z-50 h-[62px] flex items-center justify-between px-4 sm:px-7 border-b border-border/50 bg-background/88 backdrop-blur-[16px]">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-[9px] bg-primary flex items-center justify-center flex-shrink-0 shadow-[0_0_16px_oklch(0.7 0.2 130/0.3)]">
           <Link class="w-4 h-4 text-primary-foreground" />
@@ -116,43 +116,35 @@
     <!-- Home content -->
     <main class="flex-grow relative z-10">
       <!-- Hero -->
-      <section class="flex flex-col items-center justify-center px-6 pt-10 pb-14 relative overflow-hidden">
+      <section class="flex flex-col items-center justify-center px-4 sm:px-6 pt-8 sm:pt-10 pb-12 sm:pb-16 md:pb-20 relative overflow-hidden">
         <div class="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none" style="background: radial-gradient(ellipse at 50% 30%, oklch(0.7 0.02 130 / 0.02) 0%, oklch(0.7 0.02 130 / 0.01) 40%, transparent 70%);"></div>
 
-        <motion.div
-          class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-foreground/70 mb-8"
-          :initial="{ opacity: 0, y: 20 }"
-          :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.05 }"
+        <div
+          class="animate-fade-in-up inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-card border border-border text-[11px] font-mono text-foreground/70 mb-6 sm:mb-8"
+          style="animation-delay: 0.05s;"
         >
           <CloudflareWorkers class="w-4 h-4" />
           Powered by Cloudflare Workers
-        </motion.div>
+        </div>
 
-        <motion.h1
-          class="font-display font-800 text-center leading-[0.9] mb-4 text-foreground text-[clamp(40px,6vw,80px)] tracking-[-0.04em]"
-          :initial="{ opacity: 0, y: 20 }"
-          :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }"
+        <h1
+          class="animate-fade-in-up font-display font-800 text-center leading-[0.9] mb-5 sm:mb-6 text-foreground text-[clamp(40px,6vw,80px)] tracking-[-0.04em]"
+          style="animation-delay: 0.12s;"
         >
           Acorta tu URL<br><span class="text-primary" style="text-shadow: 0 0 40px oklch(0.7 0.18 130 / 0.45), 0 0 80px oklch(0.7 0.18 130 / 0.22);">al instante.</span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          class="text-[15px] text-muted-foreground text-center max-w-[400px] mb-[52px] leading-relaxed"
-          :initial="{ opacity: 0, y: 20 }"
-          :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.22 }"
+        <p
+          class="animate-fade-in-up text-[15px] text-muted-foreground text-center max-w-[400px] mb-8 sm:mb-[52px] leading-relaxed px-2"
+          style="animation-delay: 0.22s;"
         >
             Simple · Rápido · Gratis · Construido sobre infraestructura Edge
-        </motion.p>
+        </p>
 
         <!-- Terminal Shortener Card -->
-        <motion.div
-          class="shortener-card w-full max-w-[640px]"
-          :initial="{ opacity: 0, y: 20 }"
-          :animate="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.38 }"
+        <div
+          class="animate-fade-in-up shortener-card w-full max-w-[640px]"
+          style="animation-delay: 0.38s;"
         >
           <div class="sc-titlebar">
             <span class="sc-dot sc-dot-red"></span>
@@ -162,7 +154,7 @@
           </div>
           <div class="sc-body">
             <!-- Banner para anónimo sin URL pendiente -->
-            <div v-if="!authStore.isAuthenticated && !pendingClaim" class="text-center mb-3">
+            <div v-if="!authStore.isAuthenticated && !pendingClaim" class="text-center mb-4">
               <p class="text-sm text-muted-foreground">
                 Acorta tu URL sin cuenta. <span class="text-muted-foreground/60">Dura 7 días.</span>
               </p>
@@ -170,10 +162,10 @@
 
             <!-- Banner para anónimo con URL pendiente -->
             <div v-if="!authStore.isAuthenticated && pendingClaim" class="text-center py-4">
-              <p class="text-sm font-medium text-foreground mb-1">
+              <p class="text-sm font-medium text-foreground mb-1.5">
                 Tienes una URL activa
               </p>
-              <p class="text-xs text-muted-foreground mb-2">
+              <p class="text-xs text-muted-foreground mb-3">
                 <code class="font-mono">/{{ pendingClaim.shortCode }}</code> expira el {{ formatDate(pendingClaim.expiresAt) }}
               </p>
               <Button
@@ -232,10 +224,10 @@
                 </span>
               </div>
 
-              <div v-if="authStore.isAuthenticated" class="overflow-hidden max-h-0 opacity-0 transition-all duration-200" :class="customAlias ? 'max-h-[52px] opacity-100 mt-2.5' : ''">
+              <div v-if="authStore.isAuthenticated" class="overflow-hidden max-h-0 opacity-0 transition-all duration-200" :class="customAlias ? 'max-h-[52px] opacity-100 mt-3' : ''">
                 <input
                   v-model="alias"
-                  class="w-full h-10 px-3 bg-background border border-border rounded-lg text-foreground font-mono text-xs outline-none transition-colors focus:border-primary focus:shadow-[0_0_0_3px_oklch(0.7 0.2_130/0.15)] placeholder:text-muted-foreground"
+                  class="w-full h-10 px-3 bg-background border border-border rounded-lg text-foreground font-mono text-xs outline-none transition-colors focus:border-primary focus:shadow-[0_0_0_3px_oklch(0.7_0.2_130/0.15)] placeholder:text-muted-foreground"
                   type="text"
                   placeholder="mi-alias (a-z 0-9, máx 9 caracteres)"
                   maxlength="9"
@@ -245,7 +237,7 @@
               </div>
 
               <!-- Resultado -->
-              <div v-if="shortUrl" ref="resultCardRef" class="mt-3 p-3.5 bg-primary/5 border border-primary/20 rounded-[10px] flex items-center gap-3" :class="resultLeaving ? 'animate-slide-out' : 'animate-slide-in'">
+              <div v-if="shortUrl" ref="resultCardRef" class="mt-4 p-3.5 bg-primary/5 border border-primary/20 rounded-[10px] flex items-center gap-3" :class="resultLeaving ? 'animate-slide-out' : 'animate-slide-in'">
                 <div class="flex-1 min-w-0">
                   <a class="font-mono text-sm font-700 text-primary block" href="#">{{ shortUrl }}</a>
                   <p class="text-[11px] text-muted-foreground font-mono mt-0.5 truncate">{{ originalUrl }}</p>
@@ -257,11 +249,11 @@
               </div>
             </template>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       <!-- Stats Strip -->
-      <div class="stats-strip">
+      <div class="stats-strip mx-4 sm:mx-6 md:mx-auto md:max-w-[1100px] md:rounded-xl my-8 sm:my-10">
         <div class="stat-strip-item">
           <div class="stat-strip-num">{{ publicStats.publicUrls }}</div>
           <div class="stat-strip-label">enlaces públicos creados</div>
@@ -296,55 +288,19 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="max-w-[1100px] mx-auto px-7 py-8 pb-20">
-        <AnimatePresence mode="wait">
-          <motion.div
-            v-if="activeTab === 'list'"
-            key="list"
-            :initial="{ opacity: 0, y: 16 }"
-            :animate="{ opacity: 1, y: 0 }"
-            :exit="{ opacity: 0, y: -10 }"
-            :transition="{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }"
-          >
-            <UrlsList mode="public" />
-          </motion.div>
-          <motion.div
-            v-else-if="activeTab === 'qr'"
-            key="qr"
-            :initial="{ opacity: 0, y: 16 }"
-            :animate="{ opacity: 1, y: 0 }"
-            :exit="{ opacity: 0, y: -10 }"
-            :transition="{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }"
-          >
-            <QrGenerator />
-          </motion.div>
-          <motion.div
-            v-else-if="activeTab === 'myurls'"
-            key="myurls"
-            :initial="{ opacity: 0, y: 16 }"
-            :animate="{ opacity: 1, y: 0 }"
-            :exit="{ opacity: 0, y: -10 }"
-            :transition="{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }"
-          >
-            <UrlsList mode="my" />
-          </motion.div>
-          <motion.div
-            v-else-if="activeTab === 'info'"
-            key="info"
-            :initial="{ opacity: 0, y: 16 }"
-            :animate="{ opacity: 1, y: 0 }"
-            :exit="{ opacity: 0, y: -10 }"
-            :transition="{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }"
-          >
-            <UrlInfoForm />
-          </motion.div>
-        </AnimatePresence>
+      <div class="max-w-[1100px] mx-auto px-4 sm:px-7 py-6 sm:py-8 pb-16 sm:pb-20 min-h-[40vh] flex flex-col justify-center">
+        <div :key="activeTab" class="animate-tab-enter w-full">
+          <UrlsList v-if="activeTab === 'list'" mode="public" />
+          <QrGenerator v-else-if="activeTab === 'qr'" />
+          <UrlsList v-else-if="activeTab === 'myurls'" mode="my" />
+          <UrlInfoForm v-else-if="activeTab === 'info'" />
+        </div>
       </div>
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-border bg-background/95 py-4 mt-auto">
-      <div class="max-w-[1100px] mx-auto px-7 flex items-center justify-between flex-wrap gap-3">
+    <footer class="border-t border-border bg-background/95 py-4 mt-8 sm:mt-12">
+      <div class="max-w-[1100px] mx-auto px-4 sm:px-7 flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
             <div class="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
@@ -373,12 +329,13 @@ import {
 	Github,
 	LayoutDashboard,
 	Link,
+	List,
 	LogOut,
 	Menu,
+	QrCode,
 	User,
 	X,
 } from "lucide-vue-next";
-import { AnimatePresence, motion } from "motion-v";
 import {
 	computed,
 	defineAsyncComponent,

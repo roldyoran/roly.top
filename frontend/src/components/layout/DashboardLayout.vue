@@ -51,7 +51,7 @@ function switchPanel(id: string) {
 						<span class="font-bold text-foreground">{{ panelLabels[currentPanel] || currentPanel }}</span>
 					</div>
 				</div>
-				<div class="ml-auto flex items-center gap-2">
+				<div class="ml-auto flex items-center gap-3">
 					<ThemeToggle />
 					<Button size="sm" class="bg-primary text-primary-foreground font-display font-700 h-8 px-3" @click="switchPanel('create')">
 						<Plus class="size-3 mr-1" />
