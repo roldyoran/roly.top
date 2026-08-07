@@ -51,9 +51,11 @@
           >
             <img
               v-if="authStore.userImage"
-              :src="authStore.userImage"
+              :src="optimizedUserImage"
               :alt="authStore.userName"
               class="w-5 h-5 rounded-full"
+              loading="lazy"
+              decoding="async"
             />
             <div v-else class="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
               <User class="w-3 h-3 text-primary" />
@@ -371,10 +373,8 @@ import {
 	Github,
 	LayoutDashboard,
 	Link,
-	List,
 	LogOut,
 	Menu,
-	QrCode,
 	User,
 	X,
 } from "lucide-vue-next";
@@ -389,7 +389,6 @@ import {
 } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
-import { z } from "zod";
 import {
 	getAppBaseUrl,
 	getPublicStatsRequest,
@@ -398,7 +397,6 @@ import {
 import type { UrlInfoResponse, UserUrlsResponse } from "@/api/types";
 import CloudflareWorkers from "@/assets/cloudflare-workers.vue";
 import Google from "@/assets/google.vue";
-import UrlsList from "@/components/features/urls/UrlsList.vue";
 import ThemeToggle from "@/components/layout/ThemeToggle.vue";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -406,6 +404,10 @@ import { useAuth } from "@/composables/useAuth";
 import { useCopyToClipboard } from "@/composables/useCopyToClipboard";
 import { useSeo } from "@/composables/useSeo";
 
+// Lazy load non-critical components for better FCP/LCP
+const UrlsList = defineAsyncComponent(
+	() => import("@/components/features/urls/UrlsList.vue"),
+);
 const QrGenerator = defineAsyncComponent(
 	() => import("@/components/features/qr-generator/QrGenerator.vue"),
 );
@@ -460,6 +462,17 @@ const pendingClaim = computed(() => {
 	}
 });
 
+// Optimize Google user image - request smaller size for avatar
+const optimizedUserImage = computed(() => {
+	if (!authStore.userImage) return "";
+	const url = authStore.userImage;
+	// Google avatar URLs: append =s40 for 40x40px (smaller than default 96x96)
+	if (url.includes("googleusercontent.com")) {
+		return `${url}=s40`;
+	}
+	return url;
+});
+
 function formatDate(dateStr: string): string {
 	return new Date(dateStr).toLocaleDateString("es-ES", {
 		day: "2-digit",
@@ -480,13 +493,23 @@ const hasReachedLimit = computed(
 
 const activeTab = ref<"list" | "qr" | "myurls" | "info">("list");
 
-const urlSchema = z
-	.string()
-	.nonempty({ message: "Ingresa una URL" })
-	.url({ message: "Ingresa una URL valida" })
-	.refine((val) => /^https?:\/\//i.test(val), {
-		message: "Solo se permiten URLs con protocolo http(s)",
-	});
+// Lazy load Zod for validation - non-critical path
+// biome-ignore lint/suspicious/noExplicitAny: deferred schema type
+let urlSchema: any = null;
+
+const getUrlSchema = async () => {
+	if (!urlSchema) {
+		const { z } = await import("zod");
+		urlSchema = z
+			.string()
+			.nonempty({ message: "Ingresa una URL" })
+			.url({ message: "Ingresa una URL valida" })
+			.refine((val) => /^https?:\/\//i.test(val), {
+				message: "Solo se permiten URLs con protocolo http(s)",
+			});
+	}
+	return urlSchema;
+};
 
 const fireConfetti = async () => {
 	const { default: confetti } = await import("canvas-confetti");
@@ -512,7 +535,8 @@ const onAliasInput = (e: Event) => {
 
 async function handleShorten() {
 	const raw = (urlInput.value || "").trim();
-	const parsed = urlSchema.safeParse(raw);
+	const schema = await getUrlSchema();
+	const parsed = schema.safeParse(raw);
 	if (!parsed.success) {
 		const first = parsed.error.issues?.[0];
 		toast.error(first?.message ?? "URL invalida");
@@ -574,43 +598,52 @@ async function handleSignOut() {
 }
 
 onMounted(async () => {
-	// Inicializar authStore antes de inicializar urlStore con userId
-	// fetchSession() es el helper bajo useAuth y authStore.initialize() ya llama a fetchSession
+	// Initialize auth store first (critical path)
 	try {
 		await authStore.initialize();
 	} catch (e) {
 		console.error("Error initializing authStore:", e);
 	}
 
-	// Ahora que authStore tiene userId (si está autenticado), inicializamos urlStore con el userId
+	// Initialize URL store with userId
 	urlStore.initialize(authStore.userId ?? undefined);
 
-	// Sincronizar con el backend: obtener lista y límite real si el usuario está autenticado
-	if (authStore.isAuthenticated) {
-		try {
-			const res = await getUrlsRequest();
-			if (res && typeof res === "object") {
-				const response = res as UserUrlsResponse;
-				if ("urlLimit" in response) urlStore.setUrlLimit(response.urlLimit);
-				if (Array.isArray(response.urls)) {
-					const urls = response.urls;
-					urlStore.clearAllUrls();
-					urls.forEach((u: UrlInfoResponse) => {
-						urlStore.addUrl(u.originalUrl, u.shortCode);
-					});
-				}
-			}
-		} catch (e) {
-			console.error("Error fetching user urls for init:", e);
+	// Defer non-critical network requests using requestIdleCallback
+	const deferNonCriticalWork = () => {
+		// Sync with backend if authenticated (non-blocking)
+		if (authStore.isAuthenticated) {
+			getUrlsRequest()
+				.then((res) => {
+					if (res && typeof res === "object") {
+						const response = res as UserUrlsResponse;
+						if ("urlLimit" in response) urlStore.setUrlLimit(response.urlLimit);
+						if (Array.isArray(response.urls)) {
+							urlStore.clearAllUrls();
+							response.urls.forEach((u: UrlInfoResponse) => {
+								urlStore.addUrl(u.originalUrl, u.shortCode);
+							});
+						}
+					}
+				})
+				.catch((e) => console.error("Error fetching user urls for init:", e));
 		}
-	}
 
-	try {
-		const stats = await getPublicStatsRequest();
-		publicStats.publicUrls = stats.publicUrls;
-		publicStats.totalRedirects = stats.totalRedirects;
-	} catch {
-		// Silenciar error - stats son opcionales
+		// Fetch public stats (lowest priority)
+		getPublicStatsRequest()
+			.then((stats) => {
+				publicStats.publicUrls = stats.publicUrls;
+				publicStats.totalRedirects = stats.totalRedirects;
+			})
+			.catch(() => {
+				// Silenciar error - stats son opcionales
+			});
+	};
+
+	// Use requestIdleCallback if available, fallback to setTimeout
+	if (typeof requestIdleCallback !== "undefined") {
+		requestIdleCallback(deferNonCriticalWork, { timeout: 1000 });
+	} else {
+		setTimeout(deferNonCriticalWork, 0);
 	}
 });
 </script>

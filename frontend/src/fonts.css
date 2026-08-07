@@ -1,3 +1,4 @@
+/* Critical fonts - loaded with swap for FCP */
 @font-face {
 	font-family: "Syne";
 	src: url("/fonts/Syne-ExtraBold.woff2") format("woff2");
@@ -13,26 +14,30 @@
 	font-style: normal;
 	font-display: swap;
 }
+
+/* Non-critical weights - use optional to prevent blocking */
 @font-face {
 	font-family: "Inter";
 	src: url("/fonts/Inter-Medium.woff2") format("woff2");
 	font-weight: 500;
 	font-style: normal;
-	font-display: swap;
+	font-display: optional;
 }
+
 @font-face {
 	font-family: "Inter";
 	src: url("/fonts/Inter-SemiBold.woff2") format("woff2");
 	font-weight: 600;
 	font-style: normal;
-	font-display: swap;
+	font-display: optional;
 }
+
 @font-face {
 	font-family: "Inter";
 	src: url("/fonts/Inter-Bold.woff2") format("woff2");
 	font-weight: 700;
 	font-style: normal;
-	font-display: swap;
+	font-display: optional;
 }
 
 @font-face {
@@ -40,12 +45,13 @@
 	src: url("/fonts/SpaceMono-Regular.woff2") format("woff2");
 	font-weight: 400;
 	font-style: normal;
-	font-display: swap;
+	font-display: optional;
 }
+
 @font-face {
 	font-family: "Space Mono";
 	src: url("/fonts/SpaceMono-Bold.woff2") format("woff2");
 	font-weight: 700;
 	font-style: normal;
-	font-display: swap;
+	font-display: optional;
 }
