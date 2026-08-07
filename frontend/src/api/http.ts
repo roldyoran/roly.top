@@ -17,11 +17,18 @@ export function getApiBaseUrl(): string {
 }
 
 // Devuelve la URL base del frontend para construir URLs cortas
-// Preferencia: env VITE_APP_BASE_URL -> window.location.origin
+// En dev: backend (8787) porque las rutas de redirección están en el backend
+// En prod: mismo origen (frontend = backend via Cloudflare Workers)
 export function getAppBaseUrl(): string {
 	const envUrl = import.meta.env.VITE_APP_BASE_URL as string | undefined;
 	if (envUrl && envUrl.length > 0) return envUrl;
-	if (typeof window !== "undefined") return window.location.origin;
+	if (typeof window !== "undefined") {
+		// En dev, el frontend (5173) y backend (8787) son puertos distintos
+		if (import.meta.env.DEV) {
+			return `${window.location.protocol}//${window.location.hostname}:8787`;
+		}
+		return window.location.origin;
+	}
 	return "";
 }
 
@@ -250,5 +257,33 @@ export async function deleteUrlRequest(
 	const response = await axiosInstance.delete(`/v1/urls/${shortCode}`, {
 		signal,
 	});
+	return response.data;
+}
+
+// Función para crear URL anónima (sin auth)
+export async function anonymousShortenUrlRequest(
+	originalUrl: string,
+	signal?: AbortSignal,
+) {
+	const axiosInstance = getAxiosInstance();
+	const response = await axiosInstance.post(
+		"/v1/urls",
+		{ originalUrl },
+		{ signal },
+	);
+	return response.data;
+}
+
+// Función para reclamar una URL anónima
+export async function claimUrlRequest(
+	claimToken: string,
+	signal?: AbortSignal,
+) {
+	const axiosInstance = getAxiosInstance();
+	const response = await axiosInstance.post(
+		"/v1/urls/claim",
+		{ claimToken },
+		{ signal },
+	);
 	return response.data;
 }

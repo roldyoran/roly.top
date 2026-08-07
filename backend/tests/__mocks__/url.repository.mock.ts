@@ -1,5 +1,8 @@
 import { mock, type Mock } from "bun:test";
 import type { UrlRepositoryPort } from "@/domain/url/url.repository.port";
+import type {
+	PaginatedResult,
+} from "@/domain/url/url.repository.port";
 import type { UrlEntity, CreateUrlInput } from "@/domain/url/url.entity";
 
 /**
@@ -32,6 +35,17 @@ export type MockedRepository = {
 		(shortCode: string) => Promise<UrlEntity | null>
 	>;
 	assignAllToUser: Mock<(userId: string) => Promise<void>>;
+	findByClaimToken: Mock<(token: string) => Promise<UrlEntity | null>>;
+	claimUrl: Mock<
+		(claimToken: string, userId: string) => Promise<UrlEntity | null>
+	>;
+	findExpiredAnonymousUrls: Mock<
+		(params: {
+			page: number;
+			pageSize: number;
+			search?: string;
+		}) => Promise<PaginatedResult<UrlEntity>>
+	>;
 } & UrlRepositoryPort;
 
 /**
@@ -76,6 +90,25 @@ export function createMockRepository(): MockedRepository {
 			Promise.resolve(null as UrlEntity | null),
 		),
 		assignAllToUser: mock((_userId: string) => Promise.resolve()),
+		findByClaimToken: mock((_token: string) =>
+			Promise.resolve(null as UrlEntity | null),
+		),
+		claimUrl: mock((_claimToken: string, _userId: string) =>
+			Promise.resolve(null as UrlEntity | null),
+		),
+		findExpiredAnonymousUrls: mock((_params: {
+			page: number;
+			pageSize: number;
+			search?: string;
+		}) =>
+			Promise.resolve({
+				data: [],
+				total: 0,
+				page: 1,
+				pageSize: 20,
+				totalPages: 0,
+			} as PaginatedResult<UrlEntity>),
+		),
 	} as MockedRepository;
 }
 
@@ -87,4 +120,6 @@ export const urlFixture: UrlEntity = {
 	createdAt: "2026-03-03T00:00:00.000Z",
 	visits: 0,
 	userId: null,
+	claimToken: null,
+	expiresAt: null,
 };

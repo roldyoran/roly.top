@@ -1,7 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { toast } from "vue-sonner";
-import { getAppBaseUrl, shortenUrlRequest } from "@/api/http";
-import type { SavedUrlItem, UrlInfoResponse } from "@/api/types";
+import {
+	anonymousShortenUrlRequest,
+	getAppBaseUrl,
+	shortenUrlRequest,
+} from "@/api/http";
+import type {
+	AnonymousUrlResponse,
+	SavedUrlItem,
+	UrlInfoResponse,
+} from "@/api/types";
+import { useAuthStore } from "@/stores/authStore";
 import { useUrlStore } from "@/stores/urlStore";
 
 /**
@@ -9,6 +18,7 @@ import { useUrlStore } from "@/stores/urlStore";
  */
 export const useUrlShortener = () => {
 	const urlStore = useUrlStore();
+	const authStore = useAuthStore();
 
 	const queryClient = useQueryClient();
 
@@ -74,6 +84,54 @@ export const useUrlShortener = () => {
 		originalUrl?: string;
 		error?: string;
 	}> => {
+		// Creación anónima (sin auth)
+		if (!authStore.isAuthenticated) {
+			// Verificar si ya hay pending_claim en localStorage
+			const pending = localStorage.getItem("pending_claim");
+			if (pending) {
+				toast.error("Ya tienes una URL activa", {
+					description:
+						"Inicia sesión para administrarla o espera a que expire.",
+				});
+				return { success: false };
+			}
+
+			try {
+				const data: AnonymousUrlResponse =
+					await anonymousShortenUrlRequest(originalUrl);
+
+				// Guardar claimToken en localStorage
+				localStorage.setItem(
+					"pending_claim",
+					JSON.stringify({
+						claimToken: data.claimToken,
+						shortCode: data.shortCode,
+						originalUrl: data.originalUrl,
+						expiresAt: data.expiresAt,
+						createdAt: data.createdAt,
+					}),
+				);
+
+				return {
+					success: true,
+					shortCode: data.shortCode,
+					shortUrl: `${getAppBaseUrl()}/${data.shortCode}`,
+					originalUrl: data.originalUrl,
+				};
+			} catch (error: unknown) {
+				const errObj = error as {
+					response?: { data?: { error?: { message?: string } } };
+					message?: string;
+				};
+				const msg =
+					errObj?.response?.data?.error?.message ||
+					errObj?.message ||
+					"Error al acortar la URL";
+				return { success: false, error: msg };
+			}
+		}
+
+		// Creación autenticada (flujo existente)
 		// Verificar si puede usar el servicio (límite del backend)
 		if (!urlStore.canUseService) {
 			toast.error("Límite de URLs alcanzado", {

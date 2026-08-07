@@ -19,6 +19,7 @@ import { shortCodeSchema } from "@/utils/schemas";
 import { UnauthorizedError, NotFoundError } from "@/domain/app-error";
 import { validationHook } from "@/infrastructure/http/error-handler";
 import { AdminRepository } from "@/infrastructure/persistence/admin.repository.impl";
+import { FindExpiredAnonymousUrlsUseCase } from "@/application/url/find-expired-urls.usecase";
 
 type AdminUser = { id: string; role?: string } | null;
 type AdminSessionVariables = {
@@ -215,6 +216,26 @@ adminRoutes.delete("/urls", async (c) => {
 	const useCase = new DeleteAllUrlsUseCase(urlRepo);
 	await useCase.execute();
 	return c.json({ message: "Todas las URLs han sido eliminadas" });
+});
+
+// GET /v1/admin/urls/expired — URLs anónimas expiradas (paginado)
+adminRoutes.get("/urls/expired", async (c) => {
+	const page = Number(c.req.query("page") ?? "1");
+	const pageSize = Number(c.req.query("pageSize") ?? "20");
+	const search = c.req.query("search") ?? undefined;
+	const urlRepo = c.get("urlRepo");
+	const useCase = new FindExpiredAnonymousUrlsUseCase(urlRepo);
+	const result = await useCase.execute({ page, pageSize, search });
+
+	// ETag handling
+	const etag = await computeETag(result);
+	const ifNone = c.req.header("if-none-match") || c.req.header("If-None-Match");
+	if (ifNone && ifNone === etag) {
+		c.header("ETag", etag);
+		return c.body(null, 304);
+	}
+	c.header("ETag", etag);
+	return c.json(result);
 });
 
 // ── Setup ────────────────────────────────────────────────────────────────────

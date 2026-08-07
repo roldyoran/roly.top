@@ -17,9 +17,24 @@ export class ShortCodeAlreadyExistsError extends AppError {
  */
 export class UrlNotFoundError extends AppError {
 	constructor(shortCode: string) {
-		super(
-			`No existe una URL con el shortCode "${shortCode}"`,
-			"URL_NOT_FOUND",
-		);
+		super(`No existe una URL con el shortCode "${shortCode}"`, "URL_NOT_FOUND");
+	}
+}
+
+/**
+ * Error lanzado cuando se intenta reclamar una URL que ha expirado.
+ */
+export class UrlExpiredError extends AppError {
+	constructor() {
+		super("Esta URL ha expirado", "URL_EXPIRED");
+	}
+}
+
+/**
+ * Error lanzado cuando se intenta reclamar una URL que ya fue reclamada por otro usuario.
+ */
+export class UrlAlreadyClaimedError extends AppError {
+	constructor() {
+		super("Esta URL ya fue reclamada por otro usuario", "URL_ALREADY_CLAIMED");
 	}
 }

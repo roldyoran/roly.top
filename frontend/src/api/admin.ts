@@ -1,13 +1,8 @@
+import type { AdminStats, AdminUrl, AdminUser, PaginatedResult } from "@/types";
 import { getAxiosInstance } from "./http";
-import type {
-	AdminUser,
-	AdminStats,
-	PaginatedResult,
-	AdminUrl,
-} from "@/types";
 
 // Re-exportar tipos para backward compatibility
-export type { AdminUser, AdminStats, PaginatedResult, AdminUrl } from "@/types";
+export type { AdminStats, AdminUrl, AdminUser, PaginatedResult } from "@/types";
 
 export async function getAdminStats(signal?: AbortSignal): Promise<AdminStats> {
 	const axios = getAxiosInstance();
@@ -94,4 +89,21 @@ export async function deleteAdminUrl(
 ): Promise<void> {
 	const axios = getAxiosInstance();
 	await axios.delete(`/v1/admin/urls/${shortCode}`, { signal });
+}
+
+// URLs anónimas expiradas
+export async function getExpiredAnonymousUrls(
+	page = 1,
+	pageSize = 20,
+	search?: string,
+	signal?: AbortSignal,
+): Promise<PaginatedResult<AdminUrl>> {
+	const axios = getAxiosInstance();
+	const params: Record<string, string | number> = { page, pageSize };
+	if (search) params.search = search;
+	const { data } = await axios.get("/v1/admin/urls/expired", {
+		params,
+		signal,
+	});
+	return data;
 }

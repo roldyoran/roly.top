@@ -13,6 +13,7 @@ const redirectRoutes = new Hono<{ Bindings: Bindings }>();
 // GET /:shortCode — redirige al usuario a la URL original e incrementa el contador de visitas.
 // Si el shortCode no existe en D1, redirige al index (SPA) en lugar de devolver 404.
 // Si el shortCode no cumple el formato (vía redirectValidationHook), también redirige al index.
+// Si la URL está expirada, redirige a /url-expirada/{shortCode}.
 redirectRoutes.get(
 	"/:shortCode",
 	zValidator("param", shortCodeSchema, redirectValidationHook),
@@ -24,6 +25,10 @@ redirectRoutes.get(
 		const url = await useCase.execute(shortCode);
 		if (!url) {
 			return c.redirect("/", 302);
+		}
+		// Verificar si la URL está expirada (solo URLs anónimas)
+		if (url.expiresAt && new Date(url.expiresAt) < new Date()) {
+			return c.redirect(`/url-expirada/${url.shortCode}`, 302);
 		}
 		return c.redirect(url.originalUrl, 302);
 	},

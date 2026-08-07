@@ -8,6 +8,24 @@
 		</div>
 
 		<div class="flex items-center gap-3 animate-fade-in-up" style="animation-delay: 100ms;">
+			<div class="flex items-center gap-2">
+				<Button
+					:variant="urlFilter === 'all' ? 'default' : 'outline'"
+					size="sm"
+					class="rounded-lg"
+					@click="urlFilter = 'all'; adminParams.page = 1"
+				>
+					Todas
+				</Button>
+				<Button
+					:variant="urlFilter === 'expired' ? 'default' : 'outline'"
+					size="sm"
+					class="rounded-lg"
+					@click="urlFilter = 'expired'; adminParams.page = 1"
+				>
+					Expiradas
+				</Button>
+			</div>
 			<div class="relative flex-1 max-w-sm">
 				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 				<Input
@@ -48,7 +66,7 @@
 								Short Code
 							</TableHead>
 							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11 w-40">
-								Propietario
+								{{ urlFilter === 'expired' ? 'Expira el' : 'Propietario' }}
 							</TableHead>
 							<TableHead class="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground h-11">
 								URL Original
@@ -81,7 +99,15 @@
 								</div>
 							</TableCell>
 							<TableCell class="py-3.5 w-36">
-								<span class="text-sm truncate max-w-[180px] block text-muted-foreground/80">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
+								<template v-if="urlFilter === 'expired'">
+									<span v-if="url.expiresAt" class="text-xs text-muted-foreground/80">
+										{{ formatDate(url.expiresAt) }}
+									</span>
+									<span v-else class="text-xs text-muted-foreground/50">—</span>
+								</template>
+								<template v-else>
+									<span class="text-sm truncate max-w-[180px] block text-muted-foreground/80">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
+								</template>
 							</TableCell>
 							<TableCell class="py-3.5">
 								<span class="text-sm truncate max-w-[300px] block text-muted-foreground/80">{{ url.originalUrl }}</span>
@@ -138,18 +164,25 @@
 					:key="url.shortCode"
 					class="p-4 space-y-3"
 				>
-					<div class="flex items-center justify-between">
-						<div class="flex items-center gap-2.5">
-							<span class="text-[10px] text-muted-foreground/40 font-mono tabular-nums">
-								{{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + index + 1 }}
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2.5">
+						<span class="text-[10px] text-muted-foreground/40 font-mono tabular-nums">
+							{{ (adminStore.urls.page - 1) * adminStore.urls.pageSize + index + 1 }}
+						</span>
+						<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
+							/{{ url.shortCode }}
+						</code>
+						<template v-if="urlFilter === 'expired'">
+							<span v-if="url.expiresAt" class="text-xs text-muted-foreground/50 ml-3">
+								Expira: {{ formatDate(url.expiresAt) }}
 							</span>
-							<code class="font-mono text-primary font-semibold text-xs bg-primary/10 px-2.5 py-1 rounded-lg ring-1 ring-primary/10">
-								/{{ url.shortCode }}
-							</code>
+						</template>
+						<template v-else>
 							<span class="text-xs text-muted-foreground ml-3 truncate">{{ url.userId ? ownerNames[url.userId] || 'Cargando...' : '—' }}</span>
-						</div>
-						<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }} visitas</span>
+						</template>
 					</div>
+					<span class="text-xs font-medium tabular-nums text-muted-foreground whitespace-nowrap">{{ url.visits }} visitas</span>
+				</div>
 					<p class="text-xs text-muted-foreground/70 truncate leading-relaxed">{{ url.originalUrl }}</p>
 					<div class="flex items-center justify-between">
 						<span class="text-[11px] text-muted-foreground/50 font-medium">{{ formatDate(url.createdAt) }}</span>
@@ -241,7 +274,12 @@ import { Copy, Link, Search, Trash2 } from "lucide-vue-next";
 import { computed, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 import type { AdminUrl, AdminUser, PaginatedResult } from "@/api/admin";
-import { deleteAdminUrl, getAdminUrls, getUsersByIds } from "@/api/admin";
+import {
+	deleteAdminUrl,
+	getAdminUrls,
+	getExpiredAnonymousUrls,
+	getUsersByIds,
+} from "@/api/admin";
 import { getAppBaseUrl } from "@/api/http";
 import { Button } from "@/components/ui/button";
 import {
@@ -276,6 +314,7 @@ const { copyToClipboard } = useCopyToClipboard();
 const searchQuery = ref("");
 const deleteOpen = ref(false);
 const selectedUrl = ref<AdminUrl | null>(null);
+const urlFilter = ref<"all" | "expired">("all");
 
 // map of userId -> name for owners of the displayed URLs
 const ownerNames = ref<Record<string, string>>({});
@@ -395,15 +434,17 @@ const queryClient = useQueryClient();
 
 const adminQuery = useQuery({
 	queryKey: computed(() => [
-		"adminUrls",
+		urlFilter.value === "expired" ? "adminExpiredUrls" : "adminUrls",
 		adminParams.value.page,
 		adminParams.value.pageSize,
 		adminParams.value.search,
 	]),
 	queryFn: async ({ signal }: { signal: AbortSignal }) => {
 		const { page, pageSize, search } = adminParams.value;
-		const res = await getAdminUrls(page, pageSize, search, signal);
-		return res;
+		if (urlFilter.value === "expired") {
+			return await getExpiredAnonymousUrls(page, pageSize, search, signal);
+		}
+		return await getAdminUrls(page, pageSize, search, signal);
 	},
 	placeholderData: keepPreviousData,
 	refetchOnWindowFocus: false,

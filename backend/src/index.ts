@@ -33,6 +33,8 @@ app.use("*", async (c, next) => {
 	c.header("X-Frame-Options", "DENY");
 	c.header("Referrer-Policy", "strict-origin-when-cross-origin");
 	c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+	c.header("Cross-Origin-Opener-Policy", "same-origin");
+	c.header("Cross-Origin-Resource-Policy", "same-origin");
 	await next();
 });
 
