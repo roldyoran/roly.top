@@ -1,0 +1,67 @@
+---
+import { languages, defaultLang } from "../i18n/ui";
+import { getLangFromUrl } from "../i18n/utils";
+import Dropdown from "@/components/starwind/dropdown/Dropdown.astro";
+import DropdownTrigger from "@/components/starwind/dropdown/DropdownTrigger.astro";
+import DropdownContent from "@/components/starwind/dropdown/DropdownContent.astro";
+import DropdownLinkItem from "@/components/starwind/dropdown/DropdownLinkItem.astro";
+import Globe from "@tabler/icons/outline/language.svg";
+
+const lang = getLangFromUrl(Astro.url);
+const currentLabel = languages[lang as keyof typeof languages];
+
+const pageMap: Record<string, string> = {
+  "/es/terminos": "/en/terms",
+  "/en/terms": "/es/terminos",
+  "/es/privacidad": "/en/privacy",
+  "/en/privacy": "/es/privacidad",
+};
+
+function getTargetHref(targetLang: string): string {
+  const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+  if (targetLang === defaultLang) {
+    for (const [from, to] of Object.entries(pageMap)) {
+      if (pathname === to || pathname === to + "/") {
+        return from;
+      }
+    }
+    if (pathname === "/en" || pathname === "/en/") return "/";
+    return pathname.replace(/^\/en/, "/es") || "/es";
+  }
+
+  if (pathname === "/" || pathname === "/es" || pathname === "/es/") return "/en/";
+
+  for (const [from, to] of Object.entries(pageMap)) {
+    if (pathname === from || pathname === from + "/") {
+      return to;
+    }
+  }
+
+  return pathname.replace(/^\/es/, "/en") || "/en/";
+}
+---
+
+<Dropdown>
+  <DropdownTrigger
+    class="flex h-9 items-center gap-1.5 rounded-lg px-2.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+  >
+    <Globe class="size-4" />
+    <span class="hidden sm:inline">{currentLabel}</span>
+  </DropdownTrigger>
+  <DropdownContent align="end" sideOffset={6}>
+    {
+      Object.entries(languages).map(([language, label]) => (
+        <DropdownLinkItem
+          href={getTargetHref(language)}
+          class:list={[
+            "font-mono text-xs",
+            language === lang && "bg-primary/10 text-primary",
+          ]}
+        >
+          {label}
+        </DropdownLinkItem>
+      ))
+    }
+  </DropdownContent>
+</Dropdown>

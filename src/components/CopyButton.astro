@@ -1,0 +1,97 @@
+---
+import Button from "@/components/starwind/button/Button.astro";
+import Copy from "@tabler/icons/outline/copy.svg";
+import Check from "@tabler/icons/outline/check.svg";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"button"> {
+  value: string;
+  tooltipLabel?: string;
+  successMessage?: string;
+  size?: "sm" | "icon-sm";
+  variant?: "ghost" | "primary" | "outline";
+  showIcon?: boolean;
+  hideIconMobile?: boolean;
+}
+
+const {
+  value,
+  tooltipLabel = "Copy",
+  successMessage = "Copied to clipboard",
+  size = "icon-sm",
+  variant = "ghost",
+  showIcon = true,
+  hideIconMobile = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const uniqueId = `copy-btn-${Math.random().toString(36).slice(2, 9)}`;
+const copyIconClass = `copy-icon size-4 sm:size-5${hideIconMobile ? " hidden sm:flex" : ""}`;
+const checkIconClass = `check-icon size-4 sm:size-5 hidden${hideIconMobile ? " sm:flex" : ""}`;
+---
+
+<Button
+  variant={variant}
+  size={size}
+  class:list={["copy-button", className]}
+  data-copy-value={value}
+  data-copy-id={uniqueId}
+  data-success-message={successMessage}
+  {...rest}
+>
+  {showIcon && (
+    <>
+      <Copy class={copyIconClass} />
+      <Check class={checkIconClass} />
+    </>
+  )}
+  <slot />
+</Button>
+
+<script>
+  function showToast(title: string, variant: "success" | "error" = "success") {
+    const manager = window.__starwindRuntime__?.toast;
+    if (manager) {
+      manager.add({ title, variant });
+    }
+  }
+
+  function initCopyButtons() {
+    const buttons = document.querySelectorAll<HTMLElement>(".copy-button");
+
+    buttons.forEach((btn) => {
+      if (btn.dataset.copyInitialized) return;
+      btn.dataset.copyInitialized = "true";
+
+      btn.addEventListener("click", async () => {
+        const value = btn.dataset.copyValue;
+        const successMessage = btn.dataset.successMessage ?? "Copied to clipboard";
+
+        if (!value) return;
+
+        try {
+          await navigator.clipboard.writeText(value);
+
+          const copyIcon = btn.querySelector<HTMLElement>(".copy-icon");
+          const checkIcon = btn.querySelector<HTMLElement>(".check-icon");
+
+          if (copyIcon) copyIcon.classList.add("hidden");
+          if (checkIcon) checkIcon.classList.remove("hidden");
+
+          showToast(successMessage, "success");
+
+          setTimeout(() => {
+            if (copyIcon) copyIcon.classList.remove("hidden");
+            if (checkIcon) checkIcon.classList.add("hidden");
+          }, 1500);
+        } catch {
+          showToast("Failed to copy", "error");
+        }
+      });
+    });
+  }
+
+  initCopyButtons();
+  document.addEventListener("astro:after-swap", initCopyButtons);
+</script>

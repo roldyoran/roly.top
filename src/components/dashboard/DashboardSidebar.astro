@@ -1,0 +1,239 @@
+---
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  SidebarSeparator,
+} from "@/components/starwind/sidebar";
+import LinkIcon from "@tabler/icons/outline/link.svg";
+import LayoutDashboard from "@tabler/icons/outline/layout-dashboard.svg";
+import ChartLine from "@tabler/icons/outline/chart-line.svg";
+import Plus from "@tabler/icons/outline/plus.svg";
+import QrCode from "@tabler/icons/outline/qrcode.svg";
+import Globe from "@tabler/icons/outline/world.svg";
+import Settings from "@tabler/icons/outline/settings.svg";
+import Shield from "@tabler/icons/outline/shield.svg";
+import type { TranslationKey } from "@/i18n/utils";
+
+interface Props {
+  user: { name: string; email: string; image?: string | null };
+  activePath?: string;
+  basePath?: string;
+  lang: string;
+  t: (key: TranslationKey) => string;
+  isAdmin?: boolean;
+}
+
+const {
+  user,
+  activePath = "/dashboard",
+  basePath = "/dashboard",
+  lang,
+  t,
+  isAdmin = false,
+} = Astro.props;
+
+// Prefijo de idioma para construir hrefs explícitos (`/es/...`, `/en/...`).
+// Antes se hacía `basePath + "/../admin"` y funcionaba solo por
+// normalización del navegador.
+const prefix = `/${lang}`;
+const dashboardHref = `${prefix}/dashboard`;
+const adminHref = `${prefix}/admin`;
+const initial = user.name?.trim()?.charAt(0)?.toUpperCase() ?? "U";
+---
+
+<Sidebar side="left" variant="sidebar" collapsible="icon" class="dashboard-sidebar">
+  <SidebarHeader>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        {/* Marca real (antes un `#` genérico): logo + wordmark a dashboard */}
+        <SidebarMenuButton
+          size="lg"
+          href={dashboardHref}
+          class="h-auto! gap-2.5 p-2"
+          tooltip="roly.top"
+        >
+          <img
+            src="/icon.svg"
+            alt="roly.top"
+            class="size-9 shrink-0 rounded-lg shadow-[0_0_16px_oklch(0.7_0.2_130/0.3)]"
+          />
+          <div class="flex min-w-0 flex-1 flex-col items-start">
+            <span class="font-display text-[17px] font-extrabold tracking-tight text-sidebar-foreground">
+              roly<span class="text-primary">.</span>top
+            </span>
+            <span class="-mt-0.5 block font-mono text-[11px] leading-none tracking-wider text-muted-foreground">
+              by roldyoran
+            </span>
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </SidebarHeader>
+
+  <SidebarContent>
+    <SidebarGroup>
+      <SidebarGroupLabel>{t("sidebar.resumen")}</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              href={dashboardHref}
+              isActive={activePath === basePath}
+              tooltip={t("sidebar.panel")}
+            >
+              <LayoutDashboard />
+              <span>{t("sidebar.panel")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            {/* Anchor a la sección de enlaces dentro del panel */}
+            <SidebarMenuButton
+              href={`${dashboardHref}#enlaces`}
+              tooltip={t("sidebar.misEnlaces")}
+            >
+              <LinkIcon />
+              <span>{t("sidebar.misEnlaces")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            {/* Anchor a la sección de analíticas dentro del panel */}
+            <SidebarMenuButton
+              href={`${dashboardHref}#analiticas`}
+              tooltip={t("sidebar.analiticas")}
+            >
+              <ChartLine />
+              <span>{t("sidebar.analiticas")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+
+    <SidebarSeparator />
+
+    <SidebarGroup>
+      <SidebarGroupLabel>{t("sidebar.herramientas")}</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            {/* Abre el diálogo de creación (lo escucha NewLinkDialog) */}
+            <SidebarMenuButton
+              tooltip={t("sidebar.nuevoEnlace")}
+              data-open-new-link
+            >
+              <Plus />
+              <span>{t("sidebar.nuevoEnlace")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              href={`${dashboardHref}#qr`}
+              tooltip={t("sidebar.qr")}
+            >
+              <QrCode />
+              <span>{t("sidebar.qr")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              href={`${dashboardHref}#publicos`}
+              tooltip={t("sidebar.publicos")}
+            >
+              <Globe />
+              <span>{t("sidebar.publicos")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+
+    <SidebarSeparator />
+
+    <SidebarGroup>
+      <SidebarGroupLabel>{t("sidebar.cuenta")}</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              href={`${dashboardHref}#config`}
+              tooltip={t("sidebar.configuracion")}
+            >
+              <Settings />
+              <span>{t("sidebar.configuracion")}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+
+    {
+      isAdmin && (
+        <>
+          <SidebarSeparator />
+          <SidebarGroup>
+            <SidebarGroupLabel>{t("sidebar.admin")}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href={adminHref} tooltip={t("sidebar.admin")}>
+                    <Shield />
+                    <span>{t("sidebar.admin")}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </>
+      )
+    }
+  </SidebarContent>
+
+  <SidebarFooter>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        {/* Solo informativo (salir está en Configuración): foto real si hay */}
+        <SidebarMenuButton tooltip={user.email} class="!h-auto! p-2!">
+          {user.image ? (
+            <img
+              src={user.image}
+              alt={user.name}
+              class="size-9 shrink-0 rounded-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary">
+              {initial}
+            </span>
+          )}
+          <div class="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+            <span class="truncate text-sm font-medium text-sidebar-foreground">{user.name}</span>
+            <span class="truncate max-w-36 text-xs text-muted-foreground">{user.email}</span>
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </SidebarFooter>
+
+  <SidebarRail />
+</Sidebar>
+
+<style>
+  /* Scroll suave para los anchors del sidebar (#enlaces, #qr, ...) */
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+</style>

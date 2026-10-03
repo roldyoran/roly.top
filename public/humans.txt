@@ -1,0 +1,20 @@
+/* roly.top humans.txt — el equipo detrás del acortador */
+SITE
+  Name: roly.top
+  URL: https://roly.top
+  Language: Español / English
+  Description: Acortador de URLs rápido, gratis y con QR + analítica, sobre Cloudflare Workers.
+
+TEAM
+  Developer: Roldyoran
+  Contact: roldyoran@gmail.com
+  GitHub: https://github.com/roldyoran
+
+TECH
+  Framework: Astro 7 + Svelte 5 + Tailwind CSS 4
+  Edge: Cloudflare Workers + D1
+  Auth: Better Auth
+  QR: qr-code-styling con logo /icon.svg
+
+THANKS
+  Astro, Cloudflare, Tabler Icons, Starwind UI

@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "roly-top-v2",
+  // Entrypoint único del adaptador de Astro: sirve tanto para `astro dev`
+  // (workerd vía @cloudflare/vite-plugin) como para `wrangler deploy`.
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      // Binding accesible en runtime como env.DB
+      "binding": "DB",
+      "database_name": "roly-top-db",
+      // PLACEHOLDER para desarrollo 100% local (miniflare/workerd no lo valida).
+      // Reemplazar con el ID real tras: pnpm wrangler d1 create roly-top-db
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}

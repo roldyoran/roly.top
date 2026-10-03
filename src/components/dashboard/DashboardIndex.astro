@@ -1,0 +1,316 @@
+---
+import type { TranslationKey } from "@/i18n/utils";
+import type { ui } from "@/i18n/ui";
+// Tipo único del resumen (ver `src/shared/dashboard.ts`): antes esta interfaz
+// estaba duplicada aquí y en cada panel hijo.
+import type { DashboardSummary, PublicLink } from "@/shared/dashboard";
+import { env } from "cloudflare:workers";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar.astro";
+import LinksPanel from "@/components/dashboard/LinksPanel.astro";
+import AnalyticsCard from "@/components/dashboard/AnalyticsCard.svelte";
+import TopLinksCard from "@/components/dashboard/TopLinksCard.svelte";
+import WelcomeBanner from "@/components/dashboard/WelcomeBanner.astro";
+import StatsCards from "@/components/dashboard/StatsCards.astro";
+import QuickActions from "@/components/dashboard/QuickActions.astro";
+import PublicQrGenerator from "@/components/PublicQrGenerator.svelte";
+import PublicLinksPanel from "@/components/dashboard/PublicLinksPanel.astro";
+import ConfigPanel from "@/components/dashboard/ConfigPanel.astro";
+import NewLinkDialog from "@/components/dashboard/NewLinkDialog.astro";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/starwind/sidebar";
+import { Button } from "@/components/starwind/button";
+import Plus from "@tabler/icons/outline/plus.svg";
+import Home from "@tabler/icons/outline/home.svg";
+import ChartLine from "@tabler/icons/outline/chart-line.svg";
+import { createDb } from "@/server/db";
+import { GetDashboardSummaryUseCase } from "@/server/application/dashboard/get-dashboard-summary.usecase";
+import { GetPublicLinksUseCase } from "@/server/application/url/get-public-links.usecase";
+import { DashboardRepository } from "@/server/infrastructure/persistence/dashboard.repository.impl";
+import { UrlRepository } from "@/server/infrastructure/persistence/url.repository.impl";
+import { buildShortUrl } from "@/lib/links";
+interface Props {
+  lang: keyof typeof ui;
+  t: (key: TranslationKey) => string;
+  activePath: string;
+  basePath: string;
+}
+
+const { lang, t, activePath, basePath } = Astro.props;
+
+const user = Astro.locals.user;
+const isAdmin = Astro.locals.isAdmin;
+
+// Estado inicial vacío: se muestra si el usuario no tiene sesión o si
+// la carga del resumen falla (nunca rompemos el render del dashboard).
+let summary: DashboardSummary = {
+  urls: [],
+  pagination: { page: 1, limit: 50, total: 0, totalPages: 1 },
+  totalUrls: 0,
+  totalClicks: 0,
+  clicksByDay: [],
+  topLinks: [],
+};
+
+// Catálogo público (lectura anónima en servidor, sin PII). Si falla,
+// la sección muestra su empty-state en vez de romper el dashboard.
+let publicLinks: PublicLink[] = [];
+
+// NOTA DE RENDIMIENTO: antes este componente hacía `fetch()` a su propia
+// API (`/api/v1/dashboard/summary`) durante el SSR, lo que duplicaba la
+// latencia (request HTTP interno + reconstrucción del `origin` con headers
+// del proxy) y podía fallar detrás de proxies. Ahora invocamos el caso de
+// uso directamente en el servidor: misma lógica, cero round-trip HTTP.
+// La API REST se conserva solo para las islas cliente (cambios de rango).
+if (user) {
+  try {
+    const db = createDb(env.DB);
+    const urlRepo = new UrlRepository(db);
+    const repository = new DashboardRepository(db, urlRepo);
+    const data = await new GetDashboardSummaryUseCase(repository).execute({
+      userId: user.id,
+      rangeDays: 7,
+    });
+    // Sin cast: `data` ya es `DashboardSummary`, el mismo tipo que
+    // consumen los paneles hijos vía `src/shared/dashboard.ts`.
+    summary = data;
+    // Catálogo público con el mismo acceso a datos (cero HTTP interno).
+    publicLinks = (
+      await new GetPublicLinksUseCase(urlRepo).execute(1, 12)
+    ).data;
+  } catch (error) {
+    console.error("[dashboard] failed to load summary", error);
+  }
+}
+
+const displayName = user?.name?.trim() || user?.email || "";
+const avatarInitial = (displayName.trim()[0] ?? "?").toUpperCase();
+const clicks7d = summary.clicksByDay.reduce((acc, p) => acc + p.clicks, 0);
+const topLink = summary.topLinks[0] ?? null;
+const lastShortUrl = summary.urls[0]
+  ? buildShortUrl(Astro.url.origin, summary.urls[0].shortCode)
+  : null;
+// Inicio localizado para el botón del header (a mano en mobile).
+const homeHref = lang === "en" ? "/en" : "/";
+---
+
+<div class="bg-ambient"></div>
+
+<SidebarProvider class="min-h-svh w-full">
+  <DashboardSidebar
+    user={{
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      image: user?.image ?? null,
+    }}
+    activePath={activePath}
+    basePath={basePath}
+    lang={lang}
+    t={t}
+    isAdmin={isAdmin}
+  />
+
+  <SidebarInset class="relative z-10 flex min-h-svh w-full flex-col">
+    <header class="bg-background sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-border/50 px-4 sm:px-6">
+      <div class="flex min-w-0 items-center gap-3">
+        <SidebarTrigger class="-ml-1" />
+        <h1 class="font-display truncate text-base font-bold tracking-tight text-foreground">
+          {t("sidebar.panel")}
+        </h1>
+      </div>
+      <div class="flex shrink-0 items-center gap-2">
+        {/* Acortar a la mano: abre el NewLinkDialog. En mobile solo icono. */}
+        <Button
+          variant="default"
+          size="sm"
+          class="h-8 shrink-0 px-2.5 font-mono text-xs font-bold hover:brightness-110 sm:px-3"
+          data-open-new-link
+          title={t("links.create")}
+        >
+          <Plus class="size-3.5" data-icon="inline-start" />
+          <span class="hidden sm:inline">{t("links.create")}</span>
+        </Button>
+        {/* Ir al inicio (index localizado). En mobile solo icono. */}
+        <Button
+          as="a"
+          href={homeHref}
+          variant="outline"
+          size="sm"
+          class="h-8 shrink-0 px-2.5 font-mono text-xs sm:px-3"
+          title={t("nav.home")}
+        >
+          <Home class="size-3.5" data-icon="inline-start" />
+          <span class="hidden sm:inline">{t("nav.home")}</span>
+        </Button>
+        {/* Chip de sesión hacia Configuración (salir vive ahí) */}
+        <a
+          href={`${basePath}#config`}
+          class="flex h-8 max-w-40 items-center gap-2 rounded-lg border border-border bg-card px-2 transition-colors hover:border-primary/30 sm:max-w-52"
+          title={displayName}
+        >
+          {user?.image ? (
+            <img
+              src={user.image}
+              alt={displayName}
+              class="size-5 shrink-0 rounded-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[10px] font-bold text-primary-foreground">
+              {avatarInitial}
+            </span>
+          )}
+          <span class="truncate font-mono text-[11px] text-foreground">
+            {displayName}
+          </span>
+        </a>
+      </div>
+    </header>
+
+    <main class="flex min-w-0 flex-1 flex-col gap-5 px-4 pt-5 pb-12 sm:px-6 sm:pt-7">
+      <WelcomeBanner
+        t={t}
+        displayName={displayName}
+        totalUrls={summary.totalUrls}
+        clicks7d={clicks7d}
+      />
+
+      <StatsCards
+        t={t}
+        totalUrls={summary.totalUrls}
+        totalClicks={summary.totalClicks}
+        clicks7d={clicks7d}
+        topShortCode={topLink?.shortCode ?? null}
+        dashboardHref={basePath}
+      />
+
+      <QuickActions t={t} dashboardHref={basePath} lastShortUrl={lastShortUrl} />
+
+      <LinksPanel t={t} initialUrls={summary.urls} isAdmin={isAdmin} />
+
+      {/* Sección propia como las demás (icono + título + desc). La gráfica
+          va a ancho completo y más alta; el top va debajo. Mobile-first:
+          base = apilado, sin columnas. */}
+      <section
+        id="analiticas"
+        class="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-card p-5"
+      >
+        <header class="flex min-w-0 items-center gap-2.5">
+          <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <ChartLine class="size-4 text-primary" />
+          </div>
+          <div class="min-w-0">
+            <h2 class="font-display truncate text-lg font-bold tracking-tight text-foreground">
+              {t("analytics.title")}
+            </h2>
+            <p class="font-mono text-[11px] text-muted-foreground">
+              {t("analytics.desc")}
+            </p>
+          </div>
+        </header>
+
+        {/* `client:visible`: estas islas hidratan solo al entrar en viewport,
+             así no bloquean el primer pintado del dashboard. Reciben los datos
+             ya calculados en SSR (`series`, `topLinks`) y solo hacen fetch a
+             la API cuando el usuario cambia de rango (7/30/90 días). */}
+        <AnalyticsCard
+          client:visible
+          labels={{
+            title: t("analytics.title"),
+            totalClicks: t("analytics.totalClicks"),
+            range7d: t("analytics.range.7d"),
+            range30d: t("analytics.range.30d"),
+            range90d: t("analytics.range.90d"),
+          }}
+          series={summary.clicksByDay}
+          lang={lang}
+          emptyLabel={t("analytics.empty")}
+        />
+        <TopLinksCard
+          client:visible
+          labels={{ title: t("topLinks.title") }}
+          topLinks={summary.topLinks}
+          emptyLabel={t("topLinks.empty")}
+        />
+      </section>
+
+      {/* Generador QR multitipo: el mismo componente del index
+          (`PublicQrGenerator`, 100% anónimo en cliente). Las filas de
+          enlaces lo pre-rellenan vía `roly:qr-generate` y saltan aquí (`#qr`). */}
+      <section
+        id="qr"
+        class="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-card p-5"
+      >
+        <PublicQrGenerator
+          client:visible
+          labels={{
+            title: t("qr.gen.title"),
+            desc: t("qr.gen.desc"),
+            typeLabel: t("qr.gen.typeLabel"),
+            typeUrl: t("qr.gen.type.url"),
+            typeText: t("qr.gen.type.text"),
+            typeWifi: t("qr.gen.type.wifi"),
+            typeVcard: t("qr.gen.type.vcard"),
+            typeEmail: t("qr.gen.type.email"),
+            typeSms: t("qr.gen.type.sms"),
+            typePhone: t("qr.gen.type.phone"),
+            typeWhatsapp: t("qr.gen.type.whatsapp"),
+            typeGeo: t("qr.gen.type.geo"),
+            fieldUrl: t("qr.gen.fieldUrl"),
+            fieldUrlPh: t("qr.gen.fieldUrlPh"),
+            fieldText: t("qr.gen.fieldText"),
+            fieldTextPh: t("qr.gen.fieldTextPh"),
+            fieldSsid: t("qr.gen.fieldSsid"),
+            fieldSsidPh: t("qr.gen.fieldSsidPh"),
+            fieldPassword: t("qr.gen.fieldPassword"),
+            fieldPasswordPh: t("qr.gen.fieldPasswordPh"),
+            fieldSecurity: t("qr.gen.fieldSecurity"),
+            secWpa: t("qr.gen.secWpa"),
+            secWep: t("qr.gen.secWep"),
+            secOpen: t("qr.gen.secOpen"),
+            fieldHidden: t("qr.gen.fieldHidden"),
+            fieldFirstName: t("qr.gen.fieldFirstName"),
+            fieldLastName: t("qr.gen.fieldLastName"),
+            fieldVcardPhone: t("qr.gen.fieldVcardPhone"),
+            fieldVcardEmail: t("qr.gen.fieldVcardEmail"),
+            fieldOrg: t("qr.gen.fieldOrg"),
+            fieldEmailTo: t("qr.gen.fieldEmailTo"),
+            fieldSubject: t("qr.gen.fieldSubject"),
+            fieldBody: t("qr.gen.fieldBody"),
+            fieldSmsNumber: t("qr.gen.fieldSmsNumber"),
+            fieldSmsMessage: t("qr.gen.fieldSmsMessage"),
+            fieldPhoneNumber: t("qr.gen.fieldPhoneNumber"),
+            fieldWaNumber: t("qr.gen.fieldWaNumber"),
+            fieldWaNumberPh: t("qr.gen.fieldWaNumberPh"),
+            fieldWaMessage: t("qr.gen.fieldWaMessage"),
+            fieldLat: t("qr.gen.fieldLat"),
+            fieldLng: t("qr.gen.fieldLng"),
+            logo: t("qr.gen.logo"),
+            invalid: t("qr.gen.invalid"),
+            current: t("qr.current"),
+            png: t("qr.png"),
+            svg: t("qr.svg"),
+            copy: t("qr.copy"),
+            copied: t("qr.copied"),
+            downloaded: t("qr.downloaded"),
+            failed: t("qr.failed"),
+            loading: t("qr.loading"),
+          }}
+        />
+      </section>
+
+      <PublicLinksPanel t={t} links={publicLinks} />
+
+      <ConfigPanel
+        t={t}
+        lang={lang}
+        user={{
+          name: user?.name ?? "",
+          email: user?.email ?? "",
+          image: user?.image ?? null,
+          createdAt: user?.createdAt ?? new Date().toISOString(),
+        }}
+      />
+    </main>
+  </SidebarInset>
+</SidebarProvider>
+
+<NewLinkDialog t={t} />

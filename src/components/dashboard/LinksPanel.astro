@@ -1,0 +1,588 @@
+---
+import { Input } from "@/components/starwind/input";
+import { Button } from "@/components/starwind/button";
+import { Badge } from "@/components/starwind/badge";
+import { Separator } from "@/components/starwind/separator";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/starwind/tooltip";
+import Search from "@tabler/icons/outline/search.svg";
+import Copy from "@tabler/icons/outline/copy.svg";
+import Trash from "@tabler/icons/outline/trash.svg";
+import Plus from "@tabler/icons/outline/plus.svg";
+import Link from "@tabler/icons/outline/link.svg";
+import Globe from "@tabler/icons/outline/world.svg";
+import Lock from "@tabler/icons/outline/lock.svg";
+import QrCode from "@tabler/icons/outline/qrcode.svg";
+import ExternalLink from "@tabler/icons/outline/external-link.svg";
+import Calendar from "@tabler/icons/outline/calendar.svg";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/starwind/alert-dialog";
+import type { TranslationKey } from "@/i18n/utils";
+// Tipo único de URL (ver `src/shared/dashboard.ts`): antes estaba copiado
+// en este archivo y en `DashboardIndex.astro`.
+import type { UrlEntity } from "@/shared/dashboard";
+// Helpers testeados (ver `tests/unit/links.test.ts`).
+import { safeHostname, timeAgo, buildShortUrl } from "@/lib/links";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+  initialUrls: UrlEntity[];
+  isAdmin?: boolean;
+}
+
+const { t, initialUrls, isAdmin = false } = Astro.props;
+
+// Origen para construir URLs cortas completas al copiar (antes se copiaba
+// solo el código, inservible al pegar). `Astro.url` existe en SSR.
+const origin = Astro.url.origin;
+
+const rows = initialUrls.map((u) => ({
+  id: u.id,
+  shortCode: u.shortCode,
+  // URL corta completa para copiar/compartir.
+  shortUrl: buildShortUrl(origin, u.shortCode),
+  // URL original completa para "abrir" (antes se reconstruía como
+  // `https://{host}` y se perdía path/query).
+  originalUrl: u.originalUrl,
+  origin: safeHostname(u.originalUrl),
+  age: timeAgo(u.createdAt),
+  visits: u.visits,
+  title: u.title,
+  isPublic: u.isPublic,
+}));
+---
+
+<section
+  id="enlaces"
+  class="links-panel flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-card p-5"
+  data-links-ok={t("links.delete.ok")}
+  data-links-error={t("links.delete.error")}
+  data-visibility-ok={t("links.visibility.ok")}
+  data-visibility-error={t("links.visibility.error")}
+  data-copy-ok={t("qr.copied")}
+  data-copy-error={t("qr.failed")}
+>
+  <header class="flex items-center justify-between gap-3">
+    <div class="flex min-w-0 items-center gap-2.5">
+      <div class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+        <Link class="size-4 text-primary" />
+      </div>
+      <div class="min-w-0">
+        <h2 class="font-display truncate text-lg font-bold tracking-tight text-foreground">
+          {t("links.title")}
+        </h2>
+        <p class="font-mono text-[11px] text-muted-foreground">
+          {rows.length} · {t("links.title").toLowerCase()}
+        </p>
+      </div>
+    </div>
+
+    {/* Abre el diálogo de creación (lo escucha NewLinkDialog) */}
+    <Button
+      variant="default"
+      size="sm"
+      class="h-9 shrink-0 px-3 font-mono text-xs font-bold hover:brightness-110"
+      data-open-new-link
+    >
+      <Plus class="size-3.5" data-icon="inline-start" />
+      <span>{t("links.create")}</span>
+    </Button>
+  </header>
+
+  <div class="relative w-full">
+    <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+    <Input
+      type="search"
+      placeholder={t("links.searchPlaceholder")}
+      class="h-10 pl-9 font-mono text-xs focus:border-primary/40 focus:shadow-[0_0_0_3px_var(--lime-glow)]"
+      id="links-search"
+    />
+  </div>
+
+  {
+    rows.length === 0 ? (
+      <div class="flex flex-col items-center justify-center gap-3 py-10 text-center" data-links-empty>
+        <div class="flex size-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+          <Link class="size-6 text-primary" />
+        </div>
+        <p class="font-display text-base font-bold tracking-tight text-foreground">{t("links.empty.title")}</p>
+        <p class="font-mono text-xs text-muted-foreground">{t("links.empty.desc")}</p>
+        <Button
+          variant="default"
+          size="sm"
+          class="mt-1 h-9 px-4 font-mono text-xs font-bold hover:brightness-110"
+          data-open-new-link
+        >
+          <Plus class="size-3.5" data-icon="inline-start" />
+          <span>{t("links.create")}</span>
+        </Button>
+      </div>
+    ) : (
+          <ul class="flex flex-col gap-3 sm:gap-1.5" data-links-list>
+            {rows.map((l) => (
+              // `links-row`: la búsqueda y el borrado en cliente localizan
+              // las filas por esta clase. Mismo look que la lista del index
+              // (`UrlTabs`): mobile stacked + desktop en una fila.
+              <li
+                class="links-row group rounded-xl border border-border/50 bg-muted/20 p-4 transition-all hover:border-border hover:bg-muted/40 sm:border-transparent sm:bg-transparent sm:p-3 sm:px-4 sm:py-3 sm:hover:border-border sm:hover:bg-muted/40"
+                data-link-id={l.id}
+              >
+                {/* Mobile layout */}
+                <div class="flex flex-col gap-3 sm:hidden">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2">
+                        <span class="truncate font-mono text-base font-bold text-primary">
+                          {l.shortUrl.replace(/^https?:\/\//, "")}
+                        </span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              class="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                              aria-label={t("links.copyAria")}
+                              data-copy={l.shortUrl}
+                            >
+                              <Copy class="size-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>{t("links.menu.copy")}</TooltipContent>
+                        </Tooltip>
+                        {l.isPublic && (
+                          <Badge
+                            variant="outline"
+                            class="gap-1 px-1.5 py-0 font-mono text-[10px]"
+                            tone="success"
+                            appearance="soft"
+                          >
+                            <span class="size-1.5 rounded-full bg-success" />
+                            {t("links.isPublic")}
+                          </Badge>
+                        )}
+                      </div>
+                      <p class="mt-1 max-w-md truncate font-mono text-xs text-muted-foreground/70" title={l.originalUrl}>
+                        {l.originalUrl}
+                      </p>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      <span class="font-display block text-xl font-extrabold text-foreground tabular-nums">
+                        {l.visits.toLocaleString()}
+                      </span>
+                      <span class="font-mono text-[10px] text-muted-foreground">
+                        {t("links.clicks")}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-muted-foreground/50">
+                    <Globe class="size-3 shrink-0" />
+                    <span class="truncate font-mono text-[10px]">{l.origin}</span>
+                    <span class="shrink-0 text-muted-foreground/40">·</span>
+                    <Calendar class="size-3 shrink-0" />
+                    <span class="shrink-0 font-mono text-[10px]">{l.age}</span>
+                  </div>
+                  {l.title && <p class="truncate text-xs text-muted-foreground">{l.title}</p>}
+                  {/* Acciones en grilla 2x2 en móvil (4 botones con etiqueta
+                      no caben en una sola fila de ~300px y el de borrar se
+                      desbordaba). Este bloque solo existe en el layout móvil
+                      (`sm:hidden` del padre). */}
+                  <div class="grid grid-cols-2 gap-2 border-t border-border/50 pt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="min-w-0 justify-center gap-1.5 text-muted-foreground"
+                      data-menu-qr={l.shortCode}
+                    >
+                      <QrCode class="size-4 shrink-0" />
+                      <span class="truncate font-mono text-[11px]">{t("links.menu.qr")}</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="min-w-0 justify-center gap-1.5 text-muted-foreground"
+                      data-menu-open={l.originalUrl}
+                    >
+                      <ExternalLink class="size-4 shrink-0" />
+                      <span class="truncate font-mono text-[11px]">{t("links.menu.open")}</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="min-w-0 justify-center gap-1.5 text-muted-foreground"
+                      data-menu-copy={l.shortUrl}
+                    >
+                      <Copy class="size-4 shrink-0" />
+                      <span class="truncate font-mono text-[11px]">{t("links.menu.copy")}</span>
+                    </Button>
+                    <AlertDialogTrigger targetId="links-delete-dialog" asChild class="min-w-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="w-full min-w-0 justify-center gap-1.5 text-muted-foreground hover:text-error"
+                        data-delete-id={l.id}
+                        data-delete-code={l.shortCode}
+                      >
+                        <Trash class="size-4 shrink-0" />
+                        <span class="truncate font-mono text-[11px]">{t("links.menu.delete")}</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                  </div>
+                  {/* `isPublic` es privilegio de admin: el toggle solo se
+                      renderiza para admins. El usuario normal solo ve el
+                      badge de lectura y puede borrar. */}
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      class="h-8 w-full border-border/60 font-mono text-[11px] font-semibold hover:border-primary/30 hover:bg-primary/5"
+                      data-menu-visibility={l.id}
+                      data-is-public={l.isPublic ? "1" : "0"}
+                    >
+                      {l.isPublic ? (
+                        <Lock class="size-3" data-icon="inline-start" />
+                      ) : (
+                        <Globe class="size-3" data-icon="inline-start" />
+                      )}
+                      <span>
+                        {l.isPublic ? t("links.menu.makePrivate") : t("links.menu.makePublic")}
+                      </span>
+                    </Button>
+                  )}
+                </div>
+
+                {/* Desktop layout */}
+                <div class="hidden flex-row items-center gap-4 sm:flex">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="truncate font-mono text-xl font-bold text-primary">
+                        {l.shortUrl.replace(/^https?:\/\//, "")}
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            class="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary [&_svg]:size-3.5"
+                            aria-label={t("links.copyAria")}
+                            data-copy={l.shortUrl}
+                          >
+                            <Copy />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t("links.menu.copy")}</TooltipContent>
+                      </Tooltip>
+                      {l.isPublic && (
+                        <Badge
+                          variant="outline"
+                          class="gap-1 px-1.5 py-0 font-mono text-[10px]"
+                          tone="success"
+                          appearance="soft"
+                        >
+                          <span class="size-1.5 rounded-full bg-success" />
+                          {t("links.isPublic")}
+                        </Badge>
+                      )}
+                    </div>
+                    <p class="mt-0.5 max-w-md truncate font-mono text-xs text-muted-foreground/70" title={l.originalUrl}>
+                      {l.originalUrl}
+                    </p>
+                    <div class="mt-1 flex items-center gap-1.5 text-muted-foreground/50">
+                      <Globe class="size-3 shrink-0" />
+                      <span class="truncate font-mono text-[10px]">{l.origin}</span>
+                      <span class="shrink-0 text-muted-foreground/40">·</span>
+                      <Calendar class="size-3 shrink-0" />
+                      <span class="shrink-0 font-mono text-[10px]">{l.age}</span>
+                    </div>
+                    {l.title && <p class="mt-0.5 max-w-md truncate text-xs text-muted-foreground">{l.title}</p>}
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <div class="text-right">
+                      <span class="font-display block text-lg font-extrabold text-foreground tabular-nums">
+                        {l.visits.toLocaleString()}
+                      </span>
+                      <span class="font-mono text-[10px] text-muted-foreground">
+                        {t("links.clicks")}
+                      </span>
+                    </div>
+                    <Separator orientation="vertical" class="h-6" />
+                    <div class="flex items-center gap-4">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            class="text-muted-foreground"
+                            data-menu-qr={l.shortCode}
+                          >
+                            <QrCode class="size-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t("links.menu.qr")}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            class="text-muted-foreground"
+                            data-menu-open={l.originalUrl}
+                          >
+                            <ExternalLink class="size-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t("links.menu.open")}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            class="text-muted-foreground"
+                            data-menu-copy={l.shortUrl}
+                          >
+                            <Copy class="size-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t("links.menu.copy")}</TooltipContent>
+                      </Tooltip>
+                      {isAdmin && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              class="text-muted-foreground"
+                              data-menu-visibility={l.id}
+                              data-is-public={l.isPublic ? "1" : "0"}
+                            >
+                              {l.isPublic ? (
+                                <Lock class="size-5" />
+                              ) : (
+                                <Globe class="size-5" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {l.isPublic ? t("links.menu.makePrivate") : t("links.menu.makePublic")}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertDialogTrigger targetId="links-delete-dialog" asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              class="text-muted-foreground hover:text-error"
+                              data-delete-id={l.id}
+                              data-delete-code={l.shortCode}
+                            >
+                              <Trash class="size-5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>{t("links.menu.delete")}</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+  {/* Confirmación de borrado con Starwind (reemplaza al `window.confirm`
+      nativo): un solo diálogo compartido; el JS guarda el id pendiente y
+      muestra el código en la descripción. */}
+  <AlertDialog id="links-delete-dialog">
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{t("links.menu.delete")}</AlertDialogTitle>
+        <AlertDialogDescription>
+          {t("links.delete.confirm")}
+          <span class="mt-1 block truncate font-mono font-bold" data-delete-code-label></span>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel size="sm">{t("links.delete.cancel")}</AlertDialogCancel>
+        <AlertDialogAction size="sm" variant="error" data-delete-confirm>
+          {t("links.menu.delete")}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+</section>
+
+
+
+<script>
+  function showToast(title: string, variant: "success" | "error" = "success") {
+    const manager = window.__starwindRuntime__?.toast;
+    if (manager) {
+      manager.add({ title, variant });
+    }
+  }
+
+  function initVisibilityMenu(okMessage: string, errorMessage: string) {
+    // Toggle público/privado: PATCH al backend real y recarga para
+    // reflejar el cambio (badge + catálogo público SSR).
+    document
+      .querySelectorAll<HTMLElement>("[data-menu-visibility]")
+      .forEach((el) => {
+        el.addEventListener("click", async () => {
+          const id = el.getAttribute("data-menu-visibility");
+          if (!id) return;
+          const makePublic = el.getAttribute("data-is-public") !== "1";
+          try {
+            const res = await fetch(`/api/v1/urls/${id}`, {
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ isPublic: makePublic }),
+            });
+            if (!res.ok) throw new Error("visibility failed");
+            showToast(okMessage, "success");
+            window.location.reload();
+          } catch {
+            showToast(errorMessage, "error");
+          }
+        });
+      });
+  }
+
+  // Sonner al copiar: este selector global `[data-copy]` también cubre
+  // los botones de "Enlaces Públicos", así un solo cambio avisa en
+  // ambos paneles.
+  function initCopyButtons(okMessage: string, errorMessage: string) {
+    document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((btn) => {
+      const value = btn.getAttribute("data-copy") ?? "";
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          btn.classList.add("links-row-copy--active");
+          setTimeout(() => btn.classList.remove("links-row-copy--active"), 1200);
+          showToast(okMessage, "success");
+        } catch {
+          showToast(errorMessage, "error");
+        }
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>("[data-menu-copy]").forEach((el) => {
+      el.addEventListener("click", async () => {
+        const code = el.getAttribute("data-menu-copy") ?? "";
+        try {
+          await navigator.clipboard.writeText(code);
+          showToast(okMessage, "success");
+        } catch {
+          showToast(errorMessage, "error");
+        }
+      });
+    });
+  }
+
+  function initSearch() {
+    const input = document.querySelector<HTMLInputElement>("#links-search");
+    if (!input) return;
+    input.addEventListener("input", (e) => {
+      const q = (e.target as HTMLInputElement).value.toLowerCase();
+      // Las filas se localizan por `.links-row` (ver markup de la lista).
+      document.querySelectorAll<HTMLLIElement>(".links-row").forEach((row) => {
+        const text = row.textContent?.toLowerCase() ?? "";
+        row.style.display = text.includes(q) ? "" : "none";
+      });
+    });
+  }
+
+  function initMenuActions() {
+    // "Abrir": la URL original completa viaja en `data-menu-open`.
+    document.querySelectorAll<HTMLElement>("[data-menu-open]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const url = el.getAttribute("data-menu-open");
+        if (url) window.open(url, "_blank", "noopener");
+      });
+    });
+    // "QR": pre-rellena el generador con la URL corta (vía evento
+    // `roly:qr-generate` que escucha PublicQrGenerator) y salta a su sección.
+    document.querySelectorAll<HTMLElement>("[data-menu-qr]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const code = el.getAttribute("data-menu-qr") ?? "";
+        if (code) {
+          window.dispatchEvent(
+            new CustomEvent("roly:qr-generate", {
+              detail: { url: `${window.location.origin}/${code}` },
+            }),
+          );
+        }
+        document
+          .getElementById("qr")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  function initDeleteDialog(okMessage: string, errorMessage: string) {
+    // El diálogo lo abre cada `AlertDialogTrigger` de las filas; aquí solo
+    // se guarda el id pendiente y se pinta el código en la descripción.
+    // Al confirmar se borra vía API y se quita la fila sin recargar.
+    let pendingId: string | null = null;
+    const codeLabel = document.querySelector<HTMLElement>("[data-delete-code-label]");
+
+    document.querySelectorAll<HTMLElement>("[data-delete-id]").forEach((el) => {
+      el.addEventListener("click", () => {
+        pendingId = el.getAttribute("data-delete-id");
+        if (codeLabel) {
+          codeLabel.textContent = el.getAttribute("data-delete-code") ?? "";
+        }
+      });
+    });
+
+    document
+      .querySelector<HTMLElement>("[data-delete-confirm]")
+      ?.addEventListener("click", async () => {
+        if (!pendingId) return;
+        const id = pendingId;
+        pendingId = null;
+        try {
+          const res = await fetch(`/api/v1/urls/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error("delete failed");
+          // Quita la fila del DOM sin recargar (el selector coincide con
+          // la clase `links-row` del markup de la lista).
+          const row = document.querySelector<HTMLElement>(
+            `.links-row[data-link-id="${id}"]`,
+          );
+          row?.parentElement?.removeChild(row);
+          showToast(okMessage, "success");
+        } catch {
+          showToast(errorMessage, "error");
+        }
+      });
+  }
+
+  const panel = document.querySelector<HTMLElement>(".links-panel");
+  initDeleteDialog(
+    panel?.dataset.linksOk ?? "Link deleted",
+    panel?.dataset.linksError ?? "Could not delete",
+  );
+  initVisibilityMenu(
+    panel?.dataset.visibilityOk ?? "Visibility updated",
+    panel?.dataset.visibilityError ?? "Could not update",
+  );
+
+  initCopyButtons(
+    panel?.dataset.copyOk ?? "Link copied",
+    panel?.dataset.copyError ?? "Could not copy",
+  );
+  initSearch();
+  initMenuActions();
+</script>

@@ -1,0 +1,21 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import DashboardIndex from "@/components/dashboard/DashboardIndex.astro";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/en/login");
+}
+---
+
+<Layout noindex={true}>
+  <DashboardIndex
+    lang={lang}
+    t={t}
+    activePath="/en/dashboard"
+    basePath="/en/dashboard"
+  />
+</Layout>

@@ -1,0 +1,312 @@
+---
+import { Button } from "@/components/starwind/button";
+import { Input } from "@/components/starwind/input";
+import { Label } from "@/components/starwind/label";
+import { Switch } from "@/components/starwind/switch";
+import LinkIcon from "@tabler/icons/outline/link.svg";
+import Copy from "@tabler/icons/outline/copy.svg";
+import Check from "@tabler/icons/outline/check.svg";
+import Sparkles from "@tabler/icons/outline/sparkles.svg";
+import type { TranslationKey } from "@/i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+}
+
+const { t } = Astro.props;
+---
+
+{/* Diálogo nativo (no el Dialog declarativo de Starwind): la apertura es
+    programada desde varios botones `[data-open-new-link]` repartidos por el
+    dashboard (sidebar, quick actions, panel). `showModal()` da foco,
+    ESC y backdrop gratis. */}
+<dialog
+  id="new-link-dialog"
+  class="m-auto max-h-[calc(100%-2.5rem)] w-[calc(100%-2.5rem)] max-w-md rounded-2xl border border-border bg-card p-0 text-foreground backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+  data-msg-alias-invalid={t("terminal.aliasInvalid")}
+  data-msg-created={t("newLink.created")}
+  data-msg-error={t("newLink.error")}
+  data-msg-copied={t("qr.copied")}
+  data-msg-failed={t("qr.failed")}
+>
+  <div class="flex flex-col gap-4 p-5 sm:p-6">
+    <div class="flex items-center gap-2.5">
+      <div
+        class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"
+        aria-hidden="true"
+      >
+        <LinkIcon class="size-4 text-primary" />
+      </div>
+      <div>
+        <h2 class="font-display text-lg font-bold tracking-tight">{t("newLink.title")}</h2>
+        <p class="text-xs text-muted-foreground">{t("newLink.desc")}</p>
+      </div>
+    </div>
+
+    {/* Paso 1: formulario (paridad con el index: URL + alias opcional) */}
+    <form data-new-link-form class="flex flex-col gap-3">
+      <Input
+        type="url"
+        name="originalUrl"
+        required
+        placeholder={t("newLink.placeholder")}
+        class="h-11 font-mono text-sm"
+        autocomplete="off"
+      />
+      <label
+        for="new-link-alias-toggle"
+        class="flex cursor-pointer items-center gap-2.5 select-none"
+      >
+        <Switch id="new-link-alias-toggle" size="sm" variant="primary" />
+        <span class="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+          <Sparkles class="size-3.5 opacity-70" />
+          {t("terminal.aliasLabel")}
+        </span>
+      </label>
+      {/* Alias con apertura/cierre animados (grid-rows 0fr↔1fr + opacidad):
+          `hidden`/`flex` no se pueden animar y "golpeaban". Mobile-first,
+          sin cambios en desktop. */}
+      <div
+        data-new-link-alias-wrapper
+        data-open="false"
+        class="grid grid-rows-[0fr] -translate-y-1 opacity-0 transition-all duration-300 ease-out data-[open=true]:grid-rows-[1fr] data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
+      >
+        <div class="flex min-h-0 min-w-0 flex-col gap-1.5 overflow-hidden">
+          <Label
+            for="new-link-alias-input"
+            size="sm"
+            class="block font-mono text-muted-foreground"
+          >
+            {t("terminal.aliasInputLabel")}
+          </Label>
+          <div class="relative">
+            <span
+              class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 font-mono text-[13px] text-muted-foreground/50"
+              >/</span
+            >
+            <Input
+              id="new-link-alias-input"
+              name="customAlias"
+              size="md"
+              type="text"
+              placeholder={t("terminal.aliasPlaceholder")}
+              maxlength="9"
+              autocomplete="off"
+              spellcheck="false"
+              class="h-11 rounded-lg pr-3.5 pl-6 font-mono text-[13px] placeholder:text-muted-foreground/40"
+            />
+          </div>
+          <p class="font-mono text-[11px] text-muted-foreground/80">
+            {t("terminal.aliasHelper")}
+          </p>
+        </div>
+      </div>
+      <p class="hidden text-xs text-destructive" data-new-link-error>
+        {t("newLink.error")}
+      </p>
+      <div class="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          class="h-9 font-mono text-xs"
+          data-new-link-cancel
+        >
+          {t("newLink.done")}
+        </Button>
+        <Button
+          type="submit"
+          variant="default"
+          size="sm"
+          class="h-9 font-mono text-xs"
+          data-new-link-submit
+        >
+          {t("newLink.create")}
+        </Button>
+      </div>
+    </form>
+
+    {/* Paso 2: resultado */}
+    <div class="hidden flex-col gap-3" data-new-link-result>
+      <p class="font-mono text-xs tracking-wider text-muted-foreground uppercase">
+        {t("newLink.result")}
+      </p>
+      <button
+        type="button"
+        data-new-link-copy
+        class="flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 transition-colors hover:border-primary/40"
+      >
+        <span class="truncate font-mono text-sm font-semibold text-primary" data-new-link-url></span>
+        <Copy class="size-4 shrink-0 text-primary" />
+      </button>
+      <p class="hidden items-center gap-1.5 font-mono text-xs text-success" data-new-link-copied>
+        <Check class="size-3.5" />
+        {t("qr.copied")}
+      </p>
+      <div class="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          class="h-9 font-mono text-xs"
+          data-new-link-view
+        >
+          {t("newLink.viewLinks")}
+        </Button>
+        <Button
+          type="button"
+          variant="default"
+          size="sm"
+          class="h-9 font-mono text-xs"
+          data-new-link-close
+        >
+          {t("newLink.done")}
+        </Button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  // Lógica del diálogo: apertura global, POST a la API real y vista de
+  // resultado. Al cerrar tras crear, se recarga para traer la lista
+  // fresca desde el servidor (SSR) en vez de inventar filas en cliente.
+  import { apiFetch } from "@/lib/api-client";
+
+  const dialog = document.getElementById("new-link-dialog") as HTMLDialogElement | null;
+  const form = dialog?.querySelector<HTMLFormElement>("[data-new-link-form]");
+  const result = dialog?.querySelector<HTMLElement>("[data-new-link-result]");
+  const errorMsg = dialog?.querySelector<HTMLElement>("[data-new-link-error]");
+  const submitBtn = dialog?.querySelector<HTMLButtonElement>("[data-new-link-submit]");
+  const urlOut = dialog?.querySelector<HTMLElement>("[data-new-link-url]");
+  const copiedMsg = dialog?.querySelector<HTMLElement>("[data-new-link-copied]");
+  const aliasToggle = document.getElementById(
+    "new-link-alias-toggle",
+  ) as HTMLButtonElement | null;
+  const aliasWrapper = dialog?.querySelector<HTMLElement>(
+    "[data-new-link-alias-wrapper]",
+  );
+  const aliasInput = document.getElementById(
+    "new-link-alias-input",
+  ) as HTMLInputElement | null;
+  let created = false;
+  let createdUrl = "";
+
+  // Sonner de Starwind (mismo runtime que el resto del dashboard).
+  function showToast(title: string, variant: "success" | "error" = "success") {
+    const manager = window.__starwindRuntime__?.toast;
+    if (manager) {
+      manager.add({ title, variant });
+    }
+  }
+
+  function showError(message?: string) {
+    if (!errorMsg) return;
+    if (message) errorMsg.textContent = message;
+    errorMsg.classList.remove("hidden");
+  }
+
+  aliasToggle?.addEventListener("click", () => {
+    const isChecked = aliasToggle.getAttribute("aria-checked") === "true";
+    // `data-open` dispara la transición CSS (apertura y cierre animados).
+    aliasWrapper?.setAttribute("data-open", String(isChecked));
+    // Foco al final de la apertura para no "jalar" el diálogo a mitad
+    // de la animación.
+    if (isChecked) window.setTimeout(() => aliasInput?.focus(), 200);
+  });
+
+  function openDialog() {
+    if (!dialog) return;
+    created = false;
+    createdUrl = "";
+    form?.classList.remove("hidden");
+    form?.reset();
+    aliasWrapper?.setAttribute("data-open", "false");
+    result?.classList.add("hidden");
+    result?.classList.remove("flex");
+    errorMsg?.classList.add("hidden");
+    copiedMsg?.classList.add("hidden");
+    copiedMsg?.classList.remove("flex");
+    if (!dialog.open) dialog.showModal();
+  }
+
+  function closeDialog() {
+    dialog?.close();
+    // Recarga solo si se creó algo: la lista SSR queda actualizada.
+    if (created) window.location.reload();
+  }
+
+  document.querySelectorAll("[data-open-new-link]").forEach((btn) => {
+    btn.addEventListener("click", openDialog);
+  });
+
+  // Cerrar tocando fuera del cuadro.
+  dialog?.addEventListener("click", (e) => {
+    if (e.target === dialog) closeDialog();
+  });
+
+  dialog
+    ?.querySelector("[data-new-link-cancel]")
+    ?.addEventListener("click", () => dialog.close());
+  dialog
+    ?.querySelector("[data-new-link-close]")
+    ?.addEventListener("click", closeDialog);
+  dialog
+    ?.querySelector("[data-new-link-view]")
+    ?.addEventListener("click", () => {
+      dialog.close();
+      document
+        .getElementById("enlaces")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (created) window.location.reload();
+    });
+  dialog
+    ?.querySelector("[data-new-link-copy]")
+    ?.addEventListener("click", async () => {
+      if (!createdUrl) return;
+      try {
+        await navigator.clipboard.writeText(createdUrl);
+        copiedMsg?.classList.remove("hidden");
+        copiedMsg?.classList.add("flex");
+        showToast(dialog?.dataset.msgCopied ?? "Copied", "success");
+      } catch {
+        showToast(dialog?.dataset.msgFailed ?? "Could not copy", "error");
+      }
+    });
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = form.querySelector<HTMLInputElement>("input[name='originalUrl']");
+    const originalUrl = input?.value.trim();
+    if (!originalUrl || !submitBtn) return;
+    // Alias opcional con la misma validación que el index (a-z 0-9, 1-9).
+    const alias = aliasInput?.value.trim().toLowerCase() || undefined;
+    if (alias && !/^[a-z0-9]{1,9}$/.test(alias)) {
+      showError(dialog?.dataset.msgAliasInvalid);
+      aliasInput?.focus();
+      return;
+    }
+    submitBtn.disabled = true;
+    errorMsg?.classList.add("hidden");
+    try {
+      const payload: Record<string, string> = { originalUrl };
+      if (alias) payload.customAlias = alias;
+      const body = await apiFetch<{ success: boolean; data: { shortCode: string } }>(
+        "/api/v1/urls",
+        { method: "POST", body: JSON.stringify(payload) },
+      );
+      created = true;
+      createdUrl = `${window.location.origin}/${body.data.shortCode}`;
+      if (urlOut) urlOut.textContent = createdUrl;
+      form.classList.add("hidden");
+      result?.classList.remove("hidden");
+      result?.classList.add("flex");
+      showToast(dialog?.dataset.msgCreated ?? "Created", "success");
+    } catch {
+      errorMsg?.classList.remove("hidden");
+      showToast(dialog?.dataset.msgError ?? "Error", "error");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>

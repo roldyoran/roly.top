@@ -1,0 +1,288 @@
+---
+import { Badge } from "@/components/starwind/badge";
+import { Button } from "@/components/starwind/button";
+import { Input } from "@/components/starwind/input";
+import { Separator } from "@/components/starwind/separator";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/starwind/tooltip";
+import Search from "@tabler/icons/outline/search.svg";
+import Copy from "@tabler/icons/outline/copy.svg";
+import Globe from "@tabler/icons/outline/world.svg";
+import QrCode from "@tabler/icons/outline/qrcode.svg";
+import ExternalLink from "@tabler/icons/outline/external-link.svg";
+import LinkIcon from "@tabler/icons/outline/link.svg";
+import type { TranslationKey } from "@/i18n/utils";
+// Catálogo real del backend (`GET /api/v1/public-links`, sin PII).
+import type { PublicLink } from "@/shared/dashboard";
+import { buildShortUrl } from "@/lib/links";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+  links: PublicLink[];
+}
+
+const { t, links } = Astro.props;
+
+// Origen para construir la URL completa al copiar (los botones [data-copy]
+// los maneja el script global de LinksPanel).
+const origin = Astro.url.origin;
+---
+
+<section
+  id="publicos"
+  class="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-card p-5"
+>
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-semibold tracking-tight text-foreground">{t("public.title")}</h2>
+        <Badge variant="secondary" class="gap-1">
+          <span class="size-1.5 rounded-full bg-primary" />
+          {links.length}
+        </Badge>
+      </div>
+      <p class="mt-1 text-xs text-muted-foreground">{t("public.desc")}</p>
+    </div>
+    {links.length > 0 && (
+      <div class="relative w-full sm:max-w-xs">
+        <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder={t("public.search")}
+          class="h-10 pl-9"
+          id="public-search"
+        />
+      </div>
+    )}
+  </div>
+
+  {/* Mismo estilo de tarjeta que la lista pública del index
+      (`UrlTabs`): mobile stacked + desktop en una fila, pero en compacto
+      y sin fecha de creación. El copiado lo maneja el script global de
+      LinksPanel (`[data-copy]`, con sonner). Mobile-first: base = móvil,
+      `sm:` = desktop. */}
+  {links.length === 0 ? (
+    <div class="flex flex-col items-center justify-center gap-3 py-10 text-center">
+      <div
+        class="flex size-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/10"
+        aria-hidden="true"
+      >
+        <Globe class="size-5 text-primary" />
+      </div>
+      <p class="text-sm font-semibold text-foreground">{t("public.emptyNone")}</p>
+      <p class="max-w-sm text-xs text-muted-foreground">{t("public.emptyNoneDesc")}</p>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-1 h-9 px-4 font-mono text-xs"
+        data-open-new-link
+      >
+        <LinkIcon class="size-4" />
+        <span>{t("actions.new")}</span>
+      </Button>
+    </div>
+  ) : (
+    <ul class="flex flex-col gap-2 sm:gap-1" data-public-list>
+      {links.map((l) => (
+        <li
+          class="public-row group rounded-xl border border-border/50 bg-muted/20 p-3 transition-all hover:border-border hover:bg-muted/40 sm:border-transparent sm:bg-transparent sm:p-2 sm:px-3 sm:py-2 sm:hover:border-border sm:hover:bg-muted/40"
+        >
+          {/* Mobile layout (base) */}
+          <div class="flex flex-col gap-2 sm:hidden">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="truncate font-mono text-sm font-bold text-primary">
+                    {buildShortUrl(origin, l.shortCode).replace(/^https?:\/\//, "")}
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        class="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                        aria-label={t("links.copyAria")}
+                        data-copy={buildShortUrl(origin, l.shortCode)}
+                      >
+                        <Copy class="size-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t("links.menu.copy")}</TooltipContent>
+                  </Tooltip>
+                </div>
+                <p
+                  class="mt-0.5 truncate font-mono text-[11px] text-muted-foreground/70"
+                  title={l.originalUrl}
+                >
+                  {l.originalUrl}
+                </p>
+              </div>
+              <div class="shrink-0 text-right">
+                <span class="font-display block text-base font-extrabold text-foreground tabular-nums">
+                  {l.clicks.toLocaleString()}
+                </span>
+                <span class="font-mono text-[10px] text-muted-foreground">
+                  {t("links.clicks")}
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 border-t border-border/50 pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-8 flex-1 justify-center gap-1.5 text-muted-foreground"
+                data-public-qr={buildShortUrl(origin, l.shortCode)}
+              >
+                <QrCode class="size-3.5" />
+                <span class="font-mono text-[11px]">{t("links.menu.qr")}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-8 flex-1 justify-center gap-1.5 text-muted-foreground"
+                data-public-open={buildShortUrl(origin, l.shortCode)}
+              >
+                <ExternalLink class="size-3.5" />
+                <span class="font-mono text-[11px]">{t("links.menu.open")}</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-8 flex-1 justify-center gap-1.5 text-muted-foreground"
+                data-copy={buildShortUrl(origin, l.shortCode)}
+              >
+                <Copy class="size-3.5" />
+                <span class="font-mono text-[11px]">{t("links.menu.copy")}</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Desktop layout */}
+          <div class="hidden flex-row items-center gap-3 sm:flex">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="truncate font-mono text-base font-bold text-primary">
+                  {buildShortUrl(origin, l.shortCode).replace(/^https?:\/\//, "")}
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      class="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary [&_svg]:size-3.5"
+                      aria-label={t("links.copyAria")}
+                      data-copy={buildShortUrl(origin, l.shortCode)}
+                    >
+                      <Copy />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("links.menu.copy")}</TooltipContent>
+                </Tooltip>
+              </div>
+              <p
+                class="mt-0.5 max-w-md truncate font-mono text-[11px] text-muted-foreground/70"
+                title={l.originalUrl}
+              >
+                {l.originalUrl}
+              </p>
+            </div>
+            <div class="flex shrink-0 items-center gap-2">
+              <div class="text-right">
+                <span class="font-display block text-base font-extrabold text-foreground tabular-nums">
+                  {l.clicks.toLocaleString()}
+                </span>
+                <span class="font-mono text-[10px] text-muted-foreground">
+                  {t("links.clicks")}
+                </span>
+              </div>
+              <Separator orientation="vertical" class="h-6" />
+              <div class="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      class="size-8 text-muted-foreground [&_svg]:size-4"
+                      data-public-qr={buildShortUrl(origin, l.shortCode)}
+                    >
+                      <QrCode />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("links.menu.qr")}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      class="size-8 text-muted-foreground [&_svg]:size-4"
+                      data-public-open={buildShortUrl(origin, l.shortCode)}
+                    >
+                      <ExternalLink />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("links.menu.open")}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      class="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground [&_svg]:size-4"
+                      aria-label={t("links.copyAria")}
+                      data-copy={buildShortUrl(origin, l.shortCode)}
+                    >
+                      <Copy />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("links.menu.copy")}</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+  <p class="hidden py-6 text-center text-sm text-muted-foreground" data-public-empty>
+    {t("public.empty")}
+  </p>
+</section>
+
+<script>
+  // Filtro en cliente sobre el catálogo servido en SSR.
+  const input = document.querySelector<HTMLInputElement>("#public-search");
+  const empty = document.querySelector<HTMLElement>("[data-public-empty]");
+  input?.addEventListener("input", (e) => {
+    const q = (e.target as HTMLInputElement).value.toLowerCase().trim();
+    let visible = 0;
+    document.querySelectorAll<HTMLElement>(".public-row").forEach((row) => {
+      const match = (row.textContent?.toLowerCase() ?? "").includes(q);
+      row.style.display = match ? "" : "none";
+      if (match) visible += 1;
+    });
+    if (empty) empty.classList.toggle("hidden", visible > 0);
+  });
+
+  // QR: pre-rellena el generador (evento que escucha PublicQrGenerator) y salta a
+  // su sección. Visitar abre la URL corta (cuenta el clic).
+  document.querySelectorAll<HTMLElement>("[data-public-qr]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const url = btn.getAttribute("data-public-qr") ?? "";
+      if (url) {
+        window.dispatchEvent(
+          new CustomEvent("roly:qr-generate", { detail: { url } }),
+        );
+      }
+      document
+        .getElementById("qr")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+  document.querySelectorAll<HTMLElement>("[data-public-open]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const url = btn.getAttribute("data-public-open");
+      if (url) window.open(url, "_blank", "noopener");
+    });
+  });
+</script>

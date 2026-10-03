@@ -1,0 +1,96 @@
+---
+import { Card, CardContent } from "@/components/starwind/card";
+import { Badge } from "@/components/starwind/badge";
+import LinkIcon from "@tabler/icons/outline/link.svg";
+import ChartLine from "@tabler/icons/outline/chart-line.svg";
+import Sparkles from "@tabler/icons/outline/sparkles.svg";
+import Hash from "@tabler/icons/outline/hash.svg";
+import type { TranslationKey } from "@/i18n/utils";
+
+interface Stat {
+  label: string;
+  value: string;
+  icon: "link" | "chart" | "spark" | "hash";
+  badge?: string;
+}
+
+interface Props {
+  t: (key: TranslationKey) => string;
+  totalUrls: number;
+  totalClicks: number;
+  clicks7d: number;
+  topShortCode: string | null;
+  dashboardHref: string;
+}
+
+const { t, totalUrls, totalClicks, clicks7d, topShortCode, dashboardHref } =
+  Astro.props;
+
+const fmt = (n: number) => n.toLocaleString();
+
+const stats: Stat[] = [
+  { label: t("stats.totalUrls"), value: fmt(totalUrls), icon: "link" },
+  { label: t("stats.totalClicks"), value: fmt(totalClicks), icon: "chart" },
+  { label: t("stats.clicks7d"), value: fmt(clicks7d), icon: "spark" },
+  {
+    label: t("stats.topLink"),
+    value: topShortCode ?? t("stats.topEmpty"),
+    icon: "hash",
+    badge: topShortCode ? t("stats.viewAll") : undefined,
+  },
+];
+---
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  {stats.map((s) => (
+    <Card class="relative overflow-hidden border-border/60">
+      <CardContent class="p-4">
+        {/* Patrón stat card (DESIGN_SYSTEM §7): label + icono, número, badge */}
+        <div class="mb-3 flex items-center justify-between">
+          <span
+            class="font-mono text-xs font-bold tracking-widest text-muted-foreground uppercase"
+          >
+            {s.label}
+          </span>
+          <div
+            class="flex size-7 items-center justify-center rounded-lg bg-primary/10"
+            aria-hidden="true"
+          >
+            {s.icon === "link" && <LinkIcon class="size-3.5 text-primary" />}
+            {s.icon === "chart" && <ChartLine class="size-3.5 text-primary" />}
+            {s.icon === "spark" && <Sparkles class="size-3.5 text-primary" />}
+            {s.icon === "hash" && <Hash class="size-3.5 text-primary" />}
+          </div>
+        </div>
+
+        <p
+          class="font-display truncate text-3xl leading-none font-extrabold tracking-tight text-foreground"
+          title={s.value}
+        >
+          {s.value}
+        </p>
+
+        <div class="mt-2.5 min-h-6">
+          {s.badge ? (
+            <a href={`${dashboardHref}#enlaces`}>
+              <Badge variant="default" class="gap-1">
+                <span class="size-1.5 animate-pulse rounded-full bg-primary-foreground" />
+                {s.badge}
+              </Badge>
+            </a>
+          ) : (
+            <Badge variant="secondary" class="gap-1">
+              <span class="size-1.5 rounded-full bg-primary" />
+              {t("stats.viewAll")}
+            </Badge>
+          )}
+        </div>
+      </CardContent>
+
+      <div
+        class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+        aria-hidden="true"
+      />
+    </Card>
+  ))}
+</div>

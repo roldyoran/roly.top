@@ -1,9 +1,0 @@
-# Configuración del test runner de Bun
-# Referencia: https://bun.com/docs/test
-[test]
-# Timeout por test en milisegundos (default: 5000)
-timeout = 5000
-# Número de reintentos para tests fallidos
-retry = 0
-# Directorio de cobertura
-coverageDir = "coverage"

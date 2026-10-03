@@ -1,0 +1,12 @@
+# roly.top
+
+> Acortador de URLs simple, rápido y gratis. Genera enlaces cortos, códigos QR con logo y estadísticas de clics. Construido sobre infraestructura Edge (Cloudflare Workers).
+
+- Sitio: https://roly.top
+- Idiomas: Español (`/es`, por defecto `/`) e Inglés (`/en`)
+- Páginas públicas: `/`, `/es`, `/en`, `/es/privacidad`, `/es/terminos`, `/en/privacy`, `/en/terms`
+- App privada (no indexar): `/es/dashboard`, `/en/dashboard`, `/es/login`, `/en/login`, `/es/admin`, `/en/admin`
+- API: `/api/v1/urls`, `/api/v1/public-links`, `/api/v1/dashboard/summary` (no indexar `/api/`)
+- Marca: verde lima `#a3e635` sobre negro `#09090b`, icono `/icon.svg`, OG `/og-image.png`
+- Contacto: roldyoran@gmail.com
+- Código: https://github.com/roldyoran/shorturl

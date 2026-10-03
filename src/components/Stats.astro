@@ -1,0 +1,85 @@
+---
+import type { TranslationKey } from "../i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+}
+
+const { t } = Astro.props;
+
+const stats = [
+  { value: "+40", label: "stats.links" },
+  { value: "+110", label: "stats.clicks" },
+  { value: "<40ms", label: "stats.latency" },
+  { value: "99.9%", label: "stats.uptime" },
+];
+---
+
+<div
+  class="grid grid-cols-2 justify-center border-y border-border bg-background md:flex"
+>
+  {
+    stats.map((stat, i) => (
+      <div
+        class:list={[
+          "flex flex-col items-center px-5 py-5 md:px-8 md:py-5",
+          i < 2 && "border-b border-border/50 md:border-b-0",
+          i === 0 && "border-r border-border/50 md:border-r",
+          i === 1 && "md:border-r md:border-r",
+          i === 2 && "border-r border-border/50 md:border-r",
+        ]}
+      >
+        <div
+          class="stat-item font-display mb-1 text-2xl leading-none font-extrabold text-primary tabular-nums md:text-3xl"
+          style={`animation-delay: ${i * 0.15}s`}
+        >
+          {stat.value}
+        </div>
+        <div class="font-mono text-[11px] tracking-wide text-muted-foreground">
+          {t(stat.label as TranslationKey)}
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .stat-item {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+    filter: blur(6px);
+    transition:
+      opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stat-item.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+</style>
+
+<script>
+  function initStatsAnimation() {
+    const statItems = document.querySelectorAll(".stat-item");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.7 },
+    );
+
+    statItems.forEach((el) => observer.observe(el));
+  }
+
+  document.addEventListener("astro:page-load", initStatsAnimation);
+  initStatsAnimation();
+</script>
