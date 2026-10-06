@@ -17,6 +17,11 @@ pnpm-debug.log*
 .env
 .env.production
 
+# cloudflare worker config: se genera en CI desde wrangler.example.jsonc
+# (nunca commitear valores reales)
+wrangler.jsonc
+.dev.vars
+
 # macOS-specific files
 .DS_Store
 

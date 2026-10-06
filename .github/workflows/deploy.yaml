@@ -1,0 +1,94 @@
+# CI/CD: verifica en cada push/PR y despliega a Cloudflare solo desde main.
+#
+# El deploy genera `wrangler.jsonc` (ignorado en git) desde
+# `wrangler.example.jsonc` sustituyendo cada YOUR_* con su secret.
+# Secrets requeridos en GitHub → Settings → Secrets → Actions:
+#   PUBLIC_SITE_URL, CLOUDFLARE_WORKER_NAME,
+#   CLOUDFLARE_D1_DATABASE_NAME, CLOUDFLARE_D1_DATABASE_ID,
+#   BETTER_AUTH_SECRET, BETTER_AUTH_URL,
+#   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ADMIN_EMAILS,
+#   CF_API_TOKEN, CLOUDFLARE_ACCOUNT_ID
+#
+# Las migraciones D1 NO se aplican solas: tras el deploy, si hay
+# migraciones nuevas en `drizzle/`, aplicar a mano con:
+#   pnpm db:migrate:remote
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Unit tests
+        run: pnpm test
+
+  deploy:
+    name: Deploy
+    needs: [verify]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site
+        run: pnpm build
+        env:
+          PUBLIC_SITE_URL: ${{ secrets.PUBLIC_SITE_URL }}
+
+      - name: Configure worker bindings and secrets
+        run: |
+          cp wrangler.example.jsonc wrangler.jsonc
+          sed -i "s|YOUR_WORKER_NAME|${{ secrets.CLOUDFLARE_WORKER_NAME }}|g" wrangler.jsonc
+          sed -i "s|YOUR_DATABASE_NAME|${{ secrets.CLOUDFLARE_D1_DATABASE_NAME }}|g" wrangler.jsonc
+          sed -i "s|YOUR_DATABASE_ID|${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}|g" wrangler.jsonc
+          sed -i "s|YOUR_BETTER_AUTH_SECRET|${{ secrets.BETTER_AUTH_SECRET }}|g" wrangler.jsonc
+          sed -i "s|YOUR_BETTER_AUTH_URL|${{ secrets.BETTER_AUTH_URL }}|g" wrangler.jsonc
+          sed -i "s|YOUR_GOOGLE_CLIENT_ID|${{ secrets.GOOGLE_CLIENT_ID }}|g" wrangler.jsonc
+          sed -i "s|YOUR_GOOGLE_CLIENT_SECRET|${{ secrets.GOOGLE_CLIENT_SECRET }}|g" wrangler.jsonc
+          sed -i "s|YOUR_ADMIN_EMAILS|${{ secrets.ADMIN_EMAILS }}|g" wrangler.jsonc
+
+      - name: Deploy to Cloudflare
+        run: pnpm exec wrangler deploy --config wrangler.jsonc --x-autoconfig false
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
