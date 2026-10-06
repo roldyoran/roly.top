@@ -23,6 +23,7 @@ describe("deploy config", () => {
 		const gitignore = read(".gitignore");
 		expect(gitignore).toMatch(/^wrangler\.jsonc$/m);
 		expect(gitignore).toMatch(/^\.dev\.vars$/m);
+		expect(gitignore).toMatch(/^drizzle\/$/m);
 		expect(existsSync(join(root, "wrangler.example.jsonc"))).toBe(true);
 	});
 

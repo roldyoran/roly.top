@@ -31,6 +31,10 @@ wrangler.jsonc
 # local sqlite db (dev)
 sqlite.db
 
+# drizzle migrations (se aplican a mano en local con db:migrate:*;
+# no viajan al repo: clones frescos y CI no tendran historial de schema)
+drizzle/
+
 # local agent config
 .agents/
 # jetbrains setting folder
