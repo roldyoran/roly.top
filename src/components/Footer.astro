@@ -1,0 +1,56 @@
+---
+import Badge from "@/components/starwind/badge/Badge.astro";
+import { getLangFromUrl, useTranslations } from "../i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<footer class="mt-auto border-t border-border bg-background">
+  <div
+    class="mx-auto flex max-w-[1100px] flex-col items-center gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7"
+  >
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <img
+          src="/icon.svg"
+          alt="roly.top"
+          class="size-6 shrink-0 rounded-md"
+        />
+        <span
+          class="font-display text-lg font-extrabold tracking-tight text-foreground"
+          >roly<span class="text-primary">.</span>top</span
+        >
+      </div>
+      <span class="font-mono text-[11px] text-muted-foreground"
+        >&copy; 2026 roldyoran</span
+      >
+    </div>
+    <div class="flex items-center gap-5">
+      <a
+        href="https://github.com/roldyoran/shorturl"
+        target="_blank"
+        class="font-mono text-[12px] text-muted-foreground transition-colors hover:text-primary"
+        >{t("footer.openSource")}</a
+      >
+      <a
+        href={lang === "en" ? "/en/privacy" : "/es/privacidad"}
+        class="font-mono text-[12px] text-muted-foreground transition-colors hover:text-primary"
+        >{t("footer.privacy")}</a
+      >
+      <a
+        href={lang === "en" ? "/en/terms" : "/es/terminos"}
+        class="font-mono text-[12px] text-muted-foreground transition-colors hover:text-primary"
+        >{t("footer.terms")}</a
+      >
+      <Badge
+        variant="outline"
+        size="sm"
+        class="hidden items-center gap-1.5 border-lime-400/30 text-lime-400 sm:inline-flex"
+      >
+        <span class="size-1 animate-pulse rounded-full bg-lime-400"></span>
+        {t("footer.status")}
+      </Badge>
+    </div>
+  </div>
+</footer>

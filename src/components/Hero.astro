@@ -1,0 +1,251 @@
+---
+import Badge from "@/components/starwind/badge/Badge.astro";
+import UrlShortenerCard from "./UrlShortenerCard.astro";
+import type { TranslationKey } from "../i18n/utils";
+
+const { t } = Astro.props as { t: (key: TranslationKey) => string };
+---
+
+<link rel="preload" href="/imgs/hero-bokeh.jpg" as="image" fetchpriority="high" />
+
+<section
+  class="relative flex flex-col items-center justify-center overflow-hidden px-5 pt-20 pb-14 sm:px-6 sm:pt-14 sm:pb-20"
+>
+  <!-- Solo imagen de fondo, sin grid -->
+  <div
+    class="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+    style="background-image: url('/imgs/hero-bokeh.jpg');"
+  >
+  </div>
+  <div
+    class="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 from-10% to-transparent"
+  >
+  </div>
+
+  <Badge
+    variant="outline"
+    size="md"
+    class="hero-badge animate-fade-in-up mb-5 sm:mb-8"
+    style="animation-delay: 0.05s;"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 231" preserveAspectRatio="xMidYMid" class="size-5 shrink-0" role="img" aria-label="Cloudflare Workers">
+        <defs>
+          <linearGradient id="cloudflare_workers__a" x1="50%" x2="25.7%" y1="100%" y2="8.7%">
+            <stop offset="0%" stop-color="#EB6F07" />
+            <stop offset="100%" stop-color="#FAB743" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__b" x1="81%" x2="40.5%" y1="83.7%" y2="29.5%">
+            <stop offset="0%" stop-color="#D96504" />
+            <stop offset="100%" stop-color="#D96504" stop-opacity="0" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__c" x1="42%" x2="84%" y1="8.7%" y2="79.9%">
+            <stop offset="0%" stop-color="#EB6F07" />
+            <stop offset="100%" stop-color="#EB720A" stop-opacity="0" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__d" x1="50%" x2="25.7%" y1="100%" y2="8.7%">
+            <stop offset="0%" stop-color="#EE6F05" />
+            <stop offset="100%" stop-color="#FAB743" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__e" x1="-33.2%" x2="91.7%" y1="100%" y2="0%">
+            <stop offset="0%" stop-color="#D96504" stop-opacity=".8" />
+            <stop offset="49.8%" stop-color="#D96504" stop-opacity=".2" />
+            <stop offset="100%" stop-color="#D96504" stop-opacity="0" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__f" x1="50%" x2="25.7%" y1="100%" y2="8.7%">
+            <stop offset="0%" stop-color="#FFA95F" />
+            <stop offset="100%" stop-color="#FFEBC8" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__g" x1="8.1%" x2="96.5%" y1="1.1%" y2="48.8%">
+            <stop offset="0%" stop-color="#FFF" stop-opacity=".5" />
+            <stop offset="100%" stop-color="#FFF" stop-opacity=".1" />
+          </linearGradient>
+          <linearGradient id="cloudflare_workers__h" x1="-13.7%" x2="100%" y1="104.2%" y2="46.2%">
+            <stop offset="0%" stop-color="#FFF" stop-opacity=".5" />
+            <stop offset="100%" stop-color="#FFF" stop-opacity=".1" />
+          </linearGradient>
+        </defs>
+        <path fill="url(#cloudflare_workers__a)" d="m65.82 3.324 30.161 54.411-27.698 49.857a16.003 16.003 0 0 0 0 15.573l27.698 49.98-30.16 54.411a32.007 32.007 0 0 1-13.542-12.74L4.27 131.412a32.13 32.13 0 0 1 0-32.007l48.01-83.403a32.007 32.007 0 0 1 13.542-12.68Z" />
+        <path fill="url(#cloudflare_workers__b)" d="M68.283 107.654a16.003 16.003 0 0 0 0 15.51l27.698 49.98-30.16 54.412a32.007 32.007 0 0 1-13.542-12.74L4.27 131.412c-3.816-6.586 17.542-14.465 64.014-23.698v-.061Z" opacity=".7" />
+        <path fill="url(#cloudflare_workers__c)" d="m68.898 8.802 27.083 48.933-4.493 7.818-23.882-40.44c-6.894-11.264-17.42-5.416-30.591 17.358l1.97-3.386 13.294-23.082a32.007 32.007 0 0 1 13.419-12.68l3.139 5.479h.061Z" opacity=".5" />
+        <path fill="url(#cloudflare_workers__d)" d="m203.696 16.003 48.01 83.403c5.725 9.848 5.725 22.159 0 32.007l-48.01 83.402a32.007 32.007 0 0 1-27.698 16.004h-48.01l59.705-107.654a16.003 16.003 0 0 0 0-15.511L127.988 0h48.01a32.007 32.007 0 0 1 27.698 16.003Z" />
+        <path fill="url(#cloudflare_workers__e)" d="m173.536 230.45-47.395.43 57.367-108.208a16.619 16.619 0 0 0 0-15.634L126.14 0h10.834l60.197 106.546a16.619 16.619 0 0 1-.062 16.496 9616.838 9616.838 0 0 0-38.592 67.707c-11.695 20.558-6.648 33.791 15.018 39.7Z" />
+        <path fill="url(#cloudflare_workers__f)" d="M79.978 230.819c-4.924 0-9.849-1.17-14.157-3.263l59.212-106.792a11.045 11.045 0 0 0 0-10.71L65.821 3.324A32.007 32.007 0 0 1 79.978 0h48.01l59.705 107.654a16.003 16.003 0 0 1 0 15.51L127.988 230.82h-48.01Z" />
+        <path fill="url(#cloudflare_workers__g)" d="M183.508 110.054 122.448 0h5.54l59.705 107.654a16.003 16.003 0 0 1 0 15.51L127.988 230.82h-5.54l61.06-110.055a11.045 11.045 0 0 0 0-10.71Z" opacity=".6" />
+        <path fill="url(#cloudflare_workers__h)" d="M125.033 110.054 65.821 3.324c1.846-.985 4.062-1.724 6.155-2.34 13.049 23.452 32.315 59.029 57.859 106.67a16.003 16.003 0 0 1 0 15.51L71.053 229.589c-2.093-.616-3.201-1.047-5.17-1.97l59.089-106.792a11.045 11.045 0 0 0 0-10.71l.061-.062Z" opacity=".6" />
+      </svg>
+    {t("hero.badge")}
+  </Badge>
+
+  <h1
+    class="animate-fade-in-up font-display mb-4 text-center text-[clamp(32px,8vw,80px)] leading-[0.9] font-extrabold tracking-[-0.04em] text-foreground sm:mb-6"
+    style="animation-delay: 0.12s;"
+  >
+    {t("hero.title")}<br />
+    <span
+      class="text-primary"
+      style="text-shadow: 0 0 40px oklch(0.7 0.18 130 / 0.45), 0 0 80px oklch(0.7 0.18 130 / 0.22);"
+      >{t("hero.titleHighlight")}</span
+    >
+  </h1>
+
+  <p
+    class="animate-fade-in-up mb-7 max-w-[580px] text-center text-sm leading-relaxed text-foreground/80 sm:mb-[52px] sm:text-[15px]"
+    style="animation-delay: 0.22s;"
+  >
+    {t("hero.subtitle")}
+  </p>
+
+  <UrlShortenerCard t={t} />
+</section>
+
+<style>
+  .hero-badge {
+    transition:
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+  }
+  .hero-badge:hover {
+    box-shadow:
+      0 0 0 1px rgba(163, 230, 53, 0.3),
+      0 0 16px rgba(163, 230, 53, 0.15);
+  }
+
+  /* Card con borde con glow sutil en hover, sin cambiar tamaño (evita reflow) */
+  .hero-card {
+    transition: box-shadow 0.35s ease;
+  }
+  .hero-card:hover {
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(163, 230, 53, 0.12);
+  }
+  .glow-border {
+    background: linear-gradient(
+      120deg,
+      transparent,
+      oklch(0.7 0.18 130 / 0.25),
+      transparent
+    );
+    background-size: 200% 200%;
+    transition: opacity 0.4s ease;
+  }
+  .hero-card:hover .glow-border {
+    opacity: 1;
+    animation: sweep 2.5s linear infinite;
+  }
+  @keyframes sweep {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 200% 0%;
+    }
+  }
+
+  /* --- CLAVE: animación sin salto usando grid-template-rows ---
+     max-height con valor fijo en px causa "jumps" y puede
+     recalcular el layout del padre (el hero centrado verticalmente).
+     grid-template-rows 0fr -> 1fr anima el alto real del contenido
+     sin necesidad de conocerlo de antemano y sin reflow brusco. */
+  .alias-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .alias-wrapper.is-open {
+    grid-template-rows: 1fr;
+  }
+  .alias-inner {
+    transition: opacity 0.25s ease;
+    opacity: 0;
+  }
+  .alias-wrapper.is-open .alias-inner {
+    opacity: 1;
+    transition-delay: 0.08s;
+  }
+
+  .url-btn {
+    position: relative;
+    overflow: hidden;
+    transition:
+      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .url-btn:hover {
+    box-shadow:
+      0 0 20px rgba(163, 230, 53, 0.35),
+      0 0 40px rgba(163, 230, 53, 0.15);
+  }
+  .url-btn:active {
+    transform: scale(0.97);
+  }
+  .url-btn.is-success {
+    background-color: oklch(0.7 0.18 130) !important;
+  }
+
+  #url-field.is-invalid {
+    animation: shake 0.3s ease;
+    border-color: rgb(239, 68, 68) !important;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14) !important;
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4px);
+    }
+    75% {
+      transform: translateX(4px);
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    // Toggle de alias — sin recalcular alturas en JS, todo vía CSS grid-rows
+    const toggle = document.getElementById(
+      "alias-toggle",
+    ) as HTMLButtonElement | null;
+    const wrapper = document.getElementById("alias-wrapper");
+
+    if (toggle && wrapper) {
+      toggle.addEventListener("click", () => {
+        const isChecked = toggle.getAttribute("aria-checked") === "true";
+        wrapper.classList.toggle("is-open", isChecked);
+      });
+    }
+
+    // Feedback visual al enviar la URL
+    const urlInput = document.getElementById(
+      "url-input",
+    ) as HTMLInputElement | null;
+    const urlField = document.getElementById("url-field");
+    const submitBtn = document.querySelector(
+      ".url-btn",
+    ) as HTMLButtonElement | null;
+
+    if (urlInput && urlField && submitBtn) {
+      submitBtn.addEventListener("click", (e) => {
+        const value = urlInput.value.trim();
+
+        if (!value) {
+          e.preventDefault();
+          urlField.classList.add("is-invalid");
+          urlInput.focus();
+          setTimeout(() => urlField.classList.remove("is-invalid"), 350);
+          return;
+        }
+
+        submitBtn.classList.add("is-success");
+        setTimeout(() => submitBtn.classList.remove("is-success"), 900);
+      });
+
+      urlInput.addEventListener("input", () => {
+        urlField.classList.remove("is-invalid");
+      });
+    }
+  })();
+</script>

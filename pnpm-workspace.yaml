@@ -1,0 +1,10 @@
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  sharp: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - "@astrojs/internal-helpers@0.10.3"
+  - "@astrojs/markdown-satteri@0.3.6"
+  - astro@7.2.3
+  - "@astrojs/cloudflare@14.2.5"

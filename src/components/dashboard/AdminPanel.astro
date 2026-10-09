@@ -1,0 +1,428 @@
+---
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/starwind/tabs";
+import { Input } from "@/components/starwind/input";
+import { Button } from "@/components/starwind/button";
+import Search from "@tabler/icons/outline/search.svg";
+import Shield from "@tabler/icons/outline/shield.svg";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/starwind/alert-dialog";
+import type { TranslationKey } from "@/i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+}
+
+const { t } = Astro.props;
+---
+
+<section
+  class="admin-panel mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-6 py-8"
+  data-admin-strings
+  data-tab-urls={t("admin.tab.urls")}
+  data-tab-users={t("admin.tab.users")}
+  data-search={t("admin.search")}
+  data-prev={t("admin.prev")}
+  data-next={t("admin.next")}
+  data-confirm-url={t("admin.confirm.deleteUrl")}
+  data-confirm-user={t("admin.confirm.deleteUser")}
+  data-ok-url={t("admin.ok.deletedUrl")}
+  data-ok-user={t("admin.ok.deletedUser")}
+  data-error={t("admin.error")}
+  data-visibility-ok={t("admin.visibility.ok")}
+  data-visibility-error={t("admin.visibility.error")}
+  data-make-public={t("links.menu.makePublic")}
+  data-make-private={t("links.menu.makePrivate")}
+  data-empty-urls={t("admin.empty.urls")}
+  data-empty-users={t("admin.empty.users")}
+>
+  <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-2">
+      <Shield class="size-4 text-primary" />
+      <h1 class="font-display text-2xl font-bold tracking-tight text-foreground">{t("admin.title")}</h1>
+    </div>
+    <div class="relative w-full sm:max-w-xs">
+      <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="search"
+        placeholder={t("admin.search")}
+        class="h-10 pl-9"
+        id="admin-search"
+      />
+    </div>
+  </header>
+
+  <Tabs defaultValue="urls">
+    <TabsList class="bg-transparent p-0 gap-5">
+      <TabsTrigger value="urls" class="bg-transparent shadow-none text-muted-foreground py-2 px-0.5 border-b border-transparent rounded-none h-5 border-t-0 border-l-0 border-r-0 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:border-b-foreground">{t("admin.tab.urls")}</TabsTrigger>
+      <TabsTrigger value="users" class="bg-transparent shadow-none text-muted-foreground py-2 px-0.5 border-b border-transparent rounded-none h-5 border-t-0 border-l-0 border-r-0 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:border-b-foreground">{t("admin.tab.users")}</TabsTrigger>
+    </TabsList>
+
+    <TabsContent value="urls" class="mt-4 flex flex-col gap-3">
+      <div class="flex items-center justify-between text-xs text-muted-foreground">
+        <span class="font-mono uppercase tracking-wider" data-count="urls"></span>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-border">
+        <table class="w-full text-sm" data-table="urls">
+          <thead class="bg-muted/30">
+            <tr>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.shortCode")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.originalUrl")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.owner")}</th>
+              <th class="px-4 py-2 text-right align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.clicks")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.visibility")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.createdAt")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground" aria-label="actions"></th>
+            </tr>
+          </thead>
+          <tbody data-tbody="urls"></tbody>
+        </table>
+        <p class="px-4 py-6 text-center text-sm text-muted-foreground" data-empty="urls" hidden>
+          {t("admin.empty.urls")}
+        </p>
+      </div>
+      <div class="flex items-center justify-between gap-2" data-pager="urls">
+        <Button variant="outline" size="sm" data-prev>← {t("admin.prev")}</Button>
+        <span class="font-mono text-xs text-muted-foreground" data-page-info></span>
+        <Button variant="outline" size="sm" data-next>{t("admin.next")} →</Button>
+      </div>
+    </TabsContent>
+
+    <TabsContent value="users" class="mt-4 flex flex-col gap-3">
+      <div class="flex items-center justify-between text-xs text-muted-foreground">
+        <span class="font-mono uppercase tracking-wider" data-count="users"></span>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-border">
+        <table class="w-full text-sm" data-table="users">
+          <thead class="bg-muted/30">
+            <tr>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.name")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.email")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.createdAt")}</th>
+              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground" aria-label="actions"></th>
+            </tr>
+          </thead>
+          <tbody data-tbody="users"></tbody>
+        </table>
+        <p class="px-4 py-6 text-center text-sm text-muted-foreground" data-empty="users" hidden>
+          {t("admin.empty.users")}
+        </p>
+      </div>
+      <div class="flex items-center justify-between gap-2" data-pager="users">
+        <Button variant="outline" size="sm" data-prev>← {t("admin.prev")}</Button>
+        <span class="font-mono text-xs text-muted-foreground" data-page-info></span>
+        <Button variant="outline" size="sm" data-next>{t("admin.next")} →</Button>
+      </div>
+    </TabsContent>
+  </Tabs>
+
+  {/* Confirmación de borrado con Starwind: las filas se pintan por JS, así
+      que hay un solo diálogo compartido que se abre con un click
+      programático al trigger oculto. */}
+  <AlertDialog id="admin-delete-dialog">
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{t("links.menu.delete")}</AlertDialogTitle>
+        <AlertDialogDescription>
+          <span data-admin-delete-label></span>
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel size="sm">{t("links.delete.cancel")}</AlertDialogCancel>
+        <AlertDialogAction size="sm" variant="error" data-admin-delete-confirm>
+          {t("links.menu.delete")}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+  <AlertDialogTrigger id="admin-delete-trigger" targetId="admin-delete-dialog" class="hidden" />
+</section>
+
+
+
+<script>
+  type Tab = "urls" | "users";
+
+  interface UrlRow {
+    id: string;
+    shortCode: string;
+    originalUrl: string;
+    visits: number;
+    createdAt: string;
+    userId: string | null;
+    isPublic: boolean;
+  }
+
+  interface UserRow {
+    id: string;
+    name: string;
+    email: string;
+    createdAt: string;
+  }
+
+  interface PageInfo {
+    page: number;
+    limit: number;
+    total?: number;
+    totalPages?: number;
+  }
+
+  const root = document.querySelector<HTMLElement>(".admin-panel");
+  if (!root) {
+    // nothing to wire
+  } else {
+    const state: Record<Tab, { rows: (UrlRow | UserRow)[]; page: number; totalPages: number }> = {
+      urls: { rows: [], page: 1, totalPages: 1 },
+      users: { rows: [], page: 1, totalPages: 1 },
+    };
+
+    function showToast(title: string, variant: "success" | "error" = "success") {
+      const manager = window.__starwindRuntime__?.toast;
+      if (manager) manager.add({ title, variant });
+    }
+
+    function formatDate(iso: string): string {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      return d.toISOString().slice(0, 10);
+    }
+
+    function escapeHtml(s: string): string {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderUrlRow(row: UrlRow): string {
+      const owner = row.userId ? "user" : "anon";
+      const makePublic = root?.dataset.makePublic ?? "Make public";
+      const makePrivate = root?.dataset.makePrivate ?? "Make private";
+      const visibilityLabel = row.isPublic ? makePrivate : makePublic;
+      return `
+        <tr data-row-id="${escapeHtml(row.id)}" data-kind="url">
+          <td><span class="code">${escapeHtml(row.shortCode)}</span></td>
+          <td><span class="truncate" title="${escapeHtml(row.originalUrl)}">${escapeHtml(row.originalUrl)}</span></td>
+          <td>${escapeHtml(owner)}</td>
+          <td class="num"><span class="clicks">${row.visits}</span></td>
+          <td>
+            <button class="admin-visibility-toggle" data-visibility-url="${escapeHtml(row.id)}" data-is-public="${row.isPublic ? "1" : "0"}" type="button" title="${escapeHtml(visibilityLabel)}">
+              ${escapeHtml(visibilityLabel)}
+            </button>
+          </td>
+          <td>${formatDate(row.createdAt)}</td>
+          <td class="num">
+            <button class="admin-row-delete" data-delete-url="${escapeHtml(row.id)}" type="button" aria-label="delete">
+              <span aria-hidden="true">×</span>
+            </button>
+          </td>
+        </tr>`;
+    }
+
+    function renderUserRow(row: UserRow): string {
+      return `
+        <tr data-row-id="${escapeHtml(row.id)}" data-kind="user">
+          <td>${escapeHtml(row.name || "")}</td>
+          <td>${escapeHtml(row.email)}</td>
+          <td>${formatDate(row.createdAt)}</td>
+          <td class="num">
+            <button class="admin-row-delete" data-delete-user="${escapeHtml(row.id)}" type="button" aria-label="delete">
+              <span aria-hidden="true">×</span>
+            </button>
+          </td>
+        </tr>`;
+    }
+
+    function paintTable(tab: Tab) {
+      const tbody = document.querySelector<HTMLElement>(`[data-tbody="${tab}"]`);
+      const empty = document.querySelector<HTMLElement>(`[data-empty="${tab}"]`);
+      const count = document.querySelector<HTMLElement>(`[data-count="${tab}"]`);
+      const pager = document.querySelector<HTMLElement>(`[data-pager="${tab}"]`);
+      const pageInfo = pager?.querySelector<HTMLElement>("[data-page-info]");
+      if (!tbody || !empty || !count || !pager || !pageInfo) return;
+
+      const rows = state[tab].rows;
+      if (rows.length === 0) {
+        tbody.innerHTML = "";
+        empty.hidden = false;
+      } else {
+        empty.hidden = true;
+        tbody.innerHTML = rows
+          .map((r) => (tab === "urls" ? renderUrlRow(r as UrlRow) : renderUserRow(r as UserRow)))
+          .join("");
+      }
+
+      const total = state[tab].totalPages;
+      const page = state[tab].page;
+      count.textContent = `${tab === "urls" ? root?.dataset.tabUrls : root?.dataset.tabUsers} · page ${page}/${total}`;
+      pageInfo.textContent = `${page} / ${total}`;
+    }
+
+    async function loadTab(tab: Tab) {
+      const page = state[tab].page;
+      const res = await fetch(`/api/v1/admin/${tab}?page=${page}&limit=20`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("load failed");
+      const json = (await res.json()) as {
+        data: (UrlRow | UserRow)[];
+        pagination: PageInfo;
+      };
+      state[tab].rows = json.data;
+      state[tab].page = json.pagination.page;
+      state[tab].totalPages = Math.max(1, json.pagination.totalPages ?? 1);
+      paintTable(tab);
+    }
+
+    async function deleteRow(tab: Tab, id: string) {
+      const endpoint =
+        tab === "urls"
+          ? `/api/v1/admin/urls/${id}`
+          : `/api/v1/admin/users/${id}`;
+      const res = await fetch(endpoint, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("delete failed");
+      state[tab].rows = state[tab].rows.filter((r) => (r as { id: string }).id !== id);
+      paintTable(tab);
+    }
+
+    function wirePager(tab: Tab) {
+      const pager = document.querySelector<HTMLElement>(`[data-pager="${tab}"]`);
+      if (!pager) return;
+      pager.querySelector<HTMLButtonElement>("[data-prev]")?.addEventListener("click", async () => {
+        if (state[tab].page <= 1) return;
+        state[tab].page -= 1;
+        try {
+          await loadTab(tab);
+        } catch {
+          showToast(root?.dataset.error ?? "Operation failed", "error");
+        }
+      });
+      pager.querySelector<HTMLButtonElement>("[data-next]")?.addEventListener("click", async () => {
+        if (state[tab].page >= state[tab].totalPages) return;
+        state[tab].page += 1;
+        try {
+          await loadTab(tab);
+        } catch {
+          showToast(root?.dataset.error ?? "Operation failed", "error");
+        }
+      });
+    }
+
+    function wireSearch(tab: Tab) {
+      const input = document.querySelector<HTMLInputElement>("#admin-search");
+      if (!input) return;
+      input.addEventListener("input", () => {
+        const q = input.value.toLowerCase();
+        const tbody = document.querySelector<HTMLElement>(`[data-tbody="${tab}"]`);
+        tbody?.querySelectorAll<HTMLTableRowElement>("tr").forEach((tr) => {
+          tr.style.display = tr.textContent?.toLowerCase().includes(q) ? "" : "none";
+        });
+      });
+    }
+
+    function wireDeletes(tab: Tab) {      const tbody = document.querySelector<HTMLElement>(`[data-tbody="${tab}"]`);
+      if (!tbody) return;
+      tbody.addEventListener("click", (e) => {
+        const target = e.target as HTMLElement;
+        const urlBtn = target.closest<HTMLElement>("[data-delete-url]");
+        if (urlBtn) {
+          const id = urlBtn.getAttribute("data-delete-url");
+          if (!id) return;
+          askDelete("urls", id, root?.dataset.confirmUrl ?? "");
+          return;
+        }
+        const userBtn = target.closest<HTMLElement>("[data-delete-user]");
+        if (userBtn) {
+          const id = userBtn.getAttribute("data-delete-user");
+          if (!id) return;
+          askDelete("users", id, root?.dataset.confirmUser ?? "");
+        }
+      });
+    }
+
+    // Diálogo compartido de borrado: guarda el pendiente, pinta el mensaje
+    // según el tipo y abre el AlertDialog vía el trigger oculto.
+    let pendingDelete: { tab: Tab; id: string } | null = null;
+
+    function askDelete(tab: Tab, id: string, message: string) {
+      pendingDelete = { tab, id };
+      const label = document.querySelector<HTMLElement>("[data-admin-delete-label]");
+      if (label) label.textContent = message;
+      document.getElementById("admin-delete-trigger")?.click();
+    }
+
+    document
+      .querySelector<HTMLElement>("[data-admin-delete-confirm]")
+      ?.addEventListener("click", async () => {
+        if (!pendingDelete) return;
+        const { tab, id } = pendingDelete;
+        pendingDelete = null;
+        try {
+          await deleteRow(tab, id);
+          showToast(
+            tab === "urls"
+              ? (root?.dataset.okUrl ?? "URL deleted")
+              : (root?.dataset.okUser ?? "User deleted"),
+            "success",
+          );
+        } catch {
+          showToast(root?.dataset.error ?? "Operation failed", "error");
+        }
+      });
+
+    // Toggle público/privado (solo admin): PATCH al endpoint admin real y
+    // recarga la pestaña para reflejar el cambio.
+    function wireVisibility() {
+      const tbody = document.querySelector<HTMLElement>(`[data-tbody="urls"]`);
+      if (!tbody) return;
+      tbody.addEventListener("click", async (e) => {
+        const target = e.target as HTMLElement;
+        const btn = target.closest<HTMLElement>("[data-visibility-url]");
+        if (!btn) return;
+        const id = btn.getAttribute("data-visibility-url");
+        if (!id) return;
+        const makePublic = btn.getAttribute("data-is-public") !== "1";
+        try {
+          const res = await fetch(`/api/v1/admin/urls/${id}`, {
+            method: "PATCH",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isPublic: makePublic }),
+          });
+          if (!res.ok) throw new Error("visibility failed");
+          showToast(root?.dataset.visibilityOk ?? "Visibility updated", "success");
+          await loadTab("urls");
+        } catch {
+          showToast(root?.dataset.visibilityError ?? root?.dataset.error ?? "Operation failed", "error");
+        }
+      });
+    }
+
+    (async () => {
+      for (const tab of ["urls", "users"] as Tab[]) {
+        wirePager(tab);
+        wireDeletes(tab);
+        try {
+          await loadTab(tab);
+        } catch {
+          showToast(root?.dataset.error ?? "Operation failed", "error");
+        }
+      }
+      wireVisibility();
+      wireSearch("urls");
+    })();
+  }
+</script>

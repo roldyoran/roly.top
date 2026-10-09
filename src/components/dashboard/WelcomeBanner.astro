@@ -1,0 +1,76 @@
+---
+import type { TranslationKey } from "@/i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+  displayName: string;
+  totalUrls: number;
+  clicks7d: number;
+}
+
+const { t, displayName, totalUrls, clicks7d } = Astro.props;
+
+// Saludo por defecto con la hora del servidor; el script lo corrige con
+// la hora local del navegador (el edge corre en UTC y el usuario puede
+// estar en otro huso horario).
+const hour = new Date().getHours();
+const fallbackKey =
+  hour < 12 ? "welcome.morning" : hour < 20 ? "welcome.afternoon" : "welcome.evening";
+---
+
+<section
+  class="relative overflow-hidden rounded-2xl border border-border/60 bg-card"
+  data-welcome
+  data-morning={t("welcome.morning")}
+  data-afternoon={t("welcome.afternoon")}
+  data-evening={t("welcome.evening")}
+>
+  <div class="relative z-10 flex items-center justify-between gap-4 p-5 sm:p-6">
+    <div class="min-w-0">
+      <p class="mb-1 font-mono text-xs tracking-wider text-muted-foreground">
+        <span data-welcome-greeting>{t(fallbackKey)}</span>
+      </p>
+      <h1 class="font-display truncate text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+        {displayName}
+      </h1>
+      <p class="mt-1.5 font-mono text-xs text-muted-foreground">
+        {totalUrls} {t("welcome.links")} · {clicks7d} {t("welcome.clicks7d")}
+      </p>
+    </div>
+    <div
+      class="hidden size-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 sm:flex"
+      aria-hidden="true"
+    >
+      <span class="font-display text-xl font-extrabold text-primary">
+        {(displayName.trim()[0] ?? "R").toUpperCase()}
+      </span>
+    </div>
+  </div>
+
+  {/* Brillos decorativos (patrón DESIGN_SYSTEM §9) */}
+  <div
+    class="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-primary/5 blur-3xl"
+    aria-hidden="true"
+  />
+  <div
+    class="pointer-events-none absolute -bottom-8 -left-8 size-32 rounded-full bg-primary/5 blur-2xl"
+    aria-hidden="true"
+  />
+</section>
+
+<script>
+  // Corrige el saludo con la hora local del navegador.
+  const section = document.querySelector<HTMLElement>("[data-welcome]");
+  if (section) {
+    const hour = new Date().getHours();
+    const key = hour < 12 ? "morning" : hour < 20 ? "afternoon" : "evening";
+    const text =
+      key === "morning"
+        ? section.dataset.morning
+        : key === "afternoon"
+          ? section.dataset.afternoon
+          : section.dataset.evening;
+    const target = section.querySelector("[data-welcome-greeting]");
+    if (text && target) target.textContent = text;
+  }
+</script>

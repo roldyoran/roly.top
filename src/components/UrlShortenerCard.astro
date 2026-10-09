@@ -1,0 +1,542 @@
+---
+import Button from "@/components/starwind/button/Button.astro";
+import Input from "@/components/starwind/input/Input.astro";
+import Label from "@/components/starwind/label/Label.astro";
+import Switch from "@/components/starwind/switch/Switch.astro";
+import Link from "@tabler/icons/outline/link.svg";
+import Sparkles from "@tabler/icons/outline/sparkles.svg";
+import ArrowRight from "@tabler/icons/outline/arrow-right.svg";
+import CopyIcon from "@tabler/icons/outline/copy.svg";
+import type { TranslationKey } from "../i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+}
+
+const { t } = Astro.props;
+---
+
+<div
+  id="shortener-card"
+  class="card-glow-wrapper animate-fade-in-up relative w-full max-w-[640px] rounded-2xl"
+  style="animation-delay: 0.38s;"
+  data-msg-creating={t("terminal.creating")}
+  data-msg-invalid={t("terminal.invalidUrl")}
+  data-msg-limit={t("terminal.limitReached")}
+  data-msg-error={t("terminal.genericError")}
+  data-msg-alias-invalid={t("terminal.aliasInvalid")}
+>
+  <div class="card-glow-border"></div>
+  <div class="card-glow-blur"></div>
+
+  <div class="relative rounded-2xl bg-card p-5 sm:p-6">
+    <div class="mb-5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="relative flex h-2 w-2">
+          <span
+            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60"
+          ></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-primary"
+          ></span>
+        </span>
+        <p class="font-mono text-[11px] tracking-wide text-muted-foreground/90">
+          {t("terminal.title")}
+        </p>
+      </div>
+      <span
+        class="flex items-center gap-1 font-mono text-[11px] text-muted-foreground/70"
+      >
+        <span id="links-counter" class="font-semibold text-foreground/80"
+          >0</span
+        > / 10 {t("terminal.linksUsed")}</span
+      >
+    </div>
+
+    <div>
+      <Label
+        for="url-input"
+        size="sm"
+        class="mb-2.5 block font-mono text-muted-foreground"
+      >
+        {t("terminal.inputLabel")}
+      </Label>
+
+      <!-- Mobile: stacked layout -->
+      <div class="flex flex-col gap-2 sm:hidden">
+        <div
+          id="url-field"
+          class="group flex items-center overflow-hidden rounded-xl border border-border bg-background/80 transition-[border-color,box-shadow] duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(163,230,53,0.14)]"
+        >
+          <span
+            class="flex shrink-0 items-center gap-1.5 border-r border-border bg-background px-3 font-mono text-sm font-bold text-primary select-none"
+          >
+            <Link class="size-3.5 opacity-70" />
+            {/* roly.top/ */}
+          </span>
+          <Input
+            id="url-input"
+            size="lg"
+            type="url"
+            placeholder={t("terminal.placeholder")}
+            autocomplete="off"
+            spellcheck="false"
+            class="h-12 flex-1 rounded-none border-none bg-background! px-3 font-mono text-[13px] placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+          />
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          class="url-btn font-display group/btn flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-extrabold tracking-wide"
+        >
+          <span class="btn-label flex items-center gap-1.5">
+            <span class="btn-text">{t("terminal.button")}</span>
+            <ArrowRight
+              class="btn-icon size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
+            />
+          </span>
+        </Button>
+      </div>
+
+      <!-- Desktop: horizontal layout -->
+      <div
+        id="url-field-desktop"
+        class="group hidden items-stretch overflow-hidden rounded-xl border border-border bg-background/80 transition-[border-color,box-shadow] duration-200 focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(163,230,53,0.14)] sm:flex"
+      >
+        <span
+          class="flex shrink-0 items-center gap-1.5 border-r border-border bg-background px-4 font-mono text-[14px] font-bold text-primary select-none"
+        >
+          <Link class="size-3.5 opacity-70" />
+          {/* roly.top/ */}
+        </span>
+        <Input
+          id="url-input-desktop"
+          size="lg"
+          type="url"
+          placeholder={t("terminal.placeholder")}
+          autocomplete="off"
+          spellcheck="false"
+          class="h-13 flex-1 rounded-none border-none bg-background! px-4 font-mono text-[14px] placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        <Button
+          variant="primary"
+          size="sm"
+          class="url-btn font-display group/btn h-auto shrink-0 rounded-none rounded-r-[11px] px-7 text-[15px] font-extrabold tracking-wide"
+        >
+          <span class="btn-label flex items-center gap-1.5">
+            <span class="btn-text">{t("terminal.button")}</span>
+            <ArrowRight
+              class="btn-icon size-4 transition-transform duration-200 group-hover/btn:translate-x-0.5"
+            />
+          </span>
+        </Button>
+      </div>
+    </div>
+
+    <div class="mt-5 flex items-center justify-between">
+      <label
+        for="alias-toggle"
+        class="flex cursor-pointer items-center gap-2.5 select-none"
+      >
+        <Switch id="alias-toggle" size="sm" variant="primary" />
+        <span
+          class="flex items-center gap-1.5 font-mono text-[12px] text-muted-foreground transition-colors group-hover:text-foreground"
+        >
+          <Sparkles class="size-3.5 opacity-70" />
+          {t("terminal.aliasLabel")}
+        </span>
+      </label>
+    </div>
+
+    <div id="alias-wrapper" class="alias-wrapper">
+      <div class="alias-inner min-h-0 overflow-hidden">
+        <div class="mt-2 border-t border-border pt-2">
+          <Label
+            for="alias-input"
+            size="sm"
+            class="mb-2 block font-mono text-muted-foreground"
+          >
+            {t("terminal.aliasInputLabel")}
+          </Label>
+          <div class="relative">
+            <span
+              class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 font-mono text-[13px] text-muted-foreground/50"
+              >/</span
+            >
+            <Input
+              id="alias-input"
+              size="md"
+              type="text"
+              placeholder={t("terminal.aliasPlaceholder")}
+              maxlength="9"
+              autocomplete="off"
+              spellcheck="false"
+              class="h-11 rounded-lg border-border bg-background! pr-3.5 pl-6 font-mono text-[13px] placeholder:text-muted-foreground/40"
+            />
+          </div>
+          <p class="mt-2 font-mono text-[11px] text-muted-foreground/80">
+            {t("terminal.aliasHelper")}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p
+      id="url-error"
+      class="mt-3 hidden font-mono text-[12px] text-red-500"
+      role="alert"
+    >
+    </p>
+
+    <div
+      id="url-result"
+      class="mt-3 hidden items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5 sm:px-4"
+    >
+      <a
+        id="result-link"
+        href="/"
+        target="_blank"
+        rel="noopener"
+        class="min-w-0 flex-1 truncate font-mono text-[13px] font-bold text-primary underline-offset-4 hover:underline sm:text-sm"
+      ></a>
+      <button
+        id="result-copy"
+        type="button"
+        aria-label="Copiar"
+        class="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 font-mono text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+      >
+        <CopyIcon class="size-3.5" />
+        <span data-copied hidden>✓</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  @property --border-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .card-glow-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-glow-border {
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--border-angle),
+      transparent 0%,
+      transparent 42%,
+      #a3e635 49%,
+      #a3e635 51%,
+      transparent 58%,
+      transparent 100%
+    );
+    animation: spin-border 16s linear infinite;
+  }
+
+  .card-glow-blur {
+    position: absolute;
+    inset: -1px;
+    z-index: -2;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--border-angle),
+      transparent 0%,
+      transparent 42%,
+      #a3e635 49%,
+      #a3e635 51%,
+      transparent 58%,
+      transparent 100%
+    );
+    filter: blur(16px);
+    opacity: 0.3;
+    animation: spin-border 16s linear infinite;
+  }
+
+  @keyframes spin-border {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-glow-border,
+    .card-glow-blur {
+      animation: none;
+    }
+  }
+
+  .alias-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .alias-wrapper.is-open {
+    grid-template-rows: 1fr;
+  }
+  .alias-inner {
+    transition: opacity 0.25s ease;
+    opacity: 0;
+  }
+  .alias-wrapper.is-open .alias-inner {
+    opacity: 1;
+    transition-delay: 0.08s;
+  }
+
+  .url-btn {
+    position: relative;
+    overflow: hidden;
+    opacity: 0.85;
+    transition:
+      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.25s ease;
+  }
+  .url-btn:hover {
+    opacity: 1;
+    box-shadow:
+      0 0 30px rgba(163, 230, 53, 0.5),
+      0 0 60px rgba(163, 230, 53, 0.25),
+      0 0 100px rgba(163, 230, 53, 0.1);
+  }
+  .url-btn:active {
+    transform: scale(0.97);
+  }
+  .url-btn.is-success {
+    background-color: oklch(0.7 0.18 130) !important;
+  }
+
+  #url-field.is-invalid,
+  #url-field-desktop.is-invalid {
+    animation: shake 0.3s ease;
+    border-color: rgb(239, 68, 68) !important;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14) !important;
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4px);
+    }
+    75% {
+      transform: translateX(4px);
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const STORAGE_KEY = "roly_short_urls";
+
+    interface StoredLink {
+      shortCode: string;
+      originalUrl: string;
+      createdAt: string;
+    }
+
+    const card = document.getElementById("shortener-card");
+    const toggle = document.getElementById(
+      "alias-toggle",
+    ) as HTMLButtonElement | null;
+    const wrapper = document.getElementById("alias-wrapper");
+    const aliasInput = document.getElementById(
+      "alias-input",
+    ) as HTMLInputElement | null;
+    const urlInput = document.getElementById(
+      "url-input",
+    ) as HTMLInputElement | null;
+    const urlField = document.getElementById("url-field");
+    const urlInputDesktop = document.getElementById(
+      "url-input-desktop",
+    ) as HTMLInputElement | null;
+    const urlFieldDesktop = document.getElementById("url-field-desktop");
+    const submitBtns = document.querySelectorAll<HTMLButtonElement>(".url-btn");
+    const errorEl = document.getElementById("url-error");
+    const resultEl = document.getElementById("url-result");
+    const resultLink = document.getElementById(
+      "result-link",
+    ) as HTMLAnchorElement | null;
+    const copyBtn = document.getElementById("result-copy");
+    const counterEl = document.getElementById("links-counter");
+
+    if (toggle && wrapper) {
+      toggle.addEventListener("click", () => {
+        const isChecked = toggle.getAttribute("aria-checked") === "true";
+        wrapper.classList.toggle("is-open", isChecked);
+      });
+    }
+
+    function getLinks(): StoredLink[] {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function updateCounter() {
+      if (counterEl) counterEl.textContent = String(getLinks().length);
+    }
+    updateCounter();
+
+    function showError(message: string) {
+      if (!errorEl) return;
+      errorEl.textContent = message;
+      errorEl.classList.remove("hidden");
+      resultEl?.classList.add("hidden");
+    }
+
+    function clearMessages() {
+      errorEl?.classList.add("hidden");
+    }
+
+    function markInvalid(activeField: Element | null) {
+      if (!activeField) return;
+      activeField.classList.add("is-invalid");
+      setTimeout(() => activeField.classList.remove("is-invalid"), 350);
+    }
+
+    function setLoading(loading: boolean) {
+      submitBtns.forEach((btn) => {
+        btn.disabled = loading;
+        const textEl = btn.querySelector(".btn-text");
+        const original = btn.dataset.originalLabel;
+        if (!original) btn.dataset.originalLabel = textEl?.textContent ?? "";
+        if (textEl) {
+          textEl.textContent = loading
+            ? (card?.dataset.msgCreating ?? "...")
+            : (btn.dataset.originalLabel ?? "");
+        }
+      });
+    }
+
+    async function shortenUrl(value: string, customAlias?: string) {
+      const body: Record<string, string> = { originalUrl: value };
+      if (customAlias) body.customAlias = customAlias;
+      const response = await fetch("/api/v1/urls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await response.json().catch(() => null) as {
+        success?: boolean;
+        data?: StoredLink;
+        error?: { message?: string };
+      } | null;
+      return { ok: response.ok, status: response.status, json };
+    }
+
+    function showResult(shortCode: string) {
+      if (!resultEl || !resultLink) return;
+      const shortUrl = `${window.location.origin}/${shortCode}`;
+      resultLink.href = shortUrl;
+      resultLink.textContent = shortUrl.replace(/^https?:\/\//, "");
+      resultLink.dataset.fullUrl = shortUrl;
+      resultEl.classList.remove("hidden");
+      resultEl.classList.add("flex");
+    }
+
+    async function handleSubmit(e: Event, btn: HTMLButtonElement) {
+      e.preventDefault();
+      const activeInput = window.innerWidth >= 640 ? urlInputDesktop : urlInput;
+      const activeField = window.innerWidth >= 640 ? urlFieldDesktop : urlField;
+
+      if (!activeInput || !activeField) return;
+      clearMessages();
+
+      const value = activeInput.value.trim();
+
+      if (!value || !/^https?:\/\/.+\..+/.test(value)) {
+        markInvalid(activeField);
+        showError(card?.dataset.msgInvalid ?? "");
+        activeInput.focus();
+        return;
+      }
+
+      const alias = aliasInput?.value.trim() || undefined;
+      if (alias && !/^[a-z0-9]{1,9}$/.test(alias)) {
+        showError(card?.dataset.msgAliasInvalid ?? "");
+        aliasInput?.focus();
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const { ok, status, json } = await shortenUrl(value, alias);
+
+        if (ok && json?.success) {
+          const data = json.data as StoredLink;
+          const links = getLinks();
+          if (!links.some((l) => l.shortCode === data.shortCode)) {
+            links.push(data);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+          }
+          updateCounter();
+          showResult(data.shortCode);
+          btn.classList.add("is-success");
+          setTimeout(() => btn.classList.remove("is-success"), 900);
+          activeInput.value = "";
+          if (aliasInput) aliasInput.value = "";
+          return;
+        }
+
+        if (status === 429) {
+          showError(card?.dataset.msgLimit ?? "");
+        } else if (status === 409 && json?.error?.message) {
+          showError(json.error.message!);
+        } else if (status === 400 && json?.error?.message) {
+          showError(json.error.message!);
+        } else {
+          showError(card?.dataset.msgError ?? "");
+        }
+      } catch {
+        showError(card?.dataset.msgError ?? "");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    submitBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => handleSubmit(e, btn));
+    });
+
+    [urlInput, urlInputDesktop].forEach((input) => {
+      if (!input) return;
+      input.addEventListener("input", () => {
+        urlField?.classList.remove("is-invalid");
+        urlFieldDesktop?.classList.remove("is-invalid");
+        clearMessages();
+      });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          submitBtns[0]?.click();
+        }
+      });
+    });
+
+    copyBtn?.addEventListener("click", async () => {
+      const fullUrl = resultLink?.dataset.fullUrl;
+      if (!fullUrl) return;
+      try {
+        await navigator.clipboard.writeText(fullUrl);
+        const copied = copyBtn.querySelector("[data-copied]") as HTMLElement | null;
+        if (copied) {
+          copied.hidden = false;
+          setTimeout(() => (copied.hidden = true), 1500);
+        }
+      } catch {
+        /* clipboard no disponible */
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,175 @@
+---
+import { Button } from "@/components/starwind/button";
+import { Separator } from "@/components/starwind/separator";
+import Logout from "@tabler/icons/outline/logout.svg";
+import UserIcon from "@tabler/icons/outline/user.svg";
+import LanguageIcon from "@tabler/icons/outline/language.svg";
+import type { TranslationKey } from "@/i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+  lang: string;
+  user: {
+    name: string;
+    email: string;
+    image?: string | null;
+    createdAt: string | Date;
+  };
+}
+
+const { t, lang, user } = Astro.props;
+const initial = (user.name.trim()[0] ?? "?").toUpperCase();
+// `createdAt` puede venir como Date (locals) o string: normalizar.
+const memberSince = new Date(user.createdAt).toLocaleDateString(
+  lang === "en" ? "en-US" : "es-MX",
+  { year: "numeric", month: "long", day: "numeric" },
+);
+---
+
+<section
+  id="config"
+  class="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-card p-5"
+>
+  <h2 class="text-lg font-semibold tracking-tight text-foreground">{t("config.title")}</h2>
+
+  {/* Perfil (solo lectura: viene de Google vía sesión) */}
+  <div class="flex flex-col gap-3 rounded-xl border border-border/60 bg-background/30 p-4">
+    <h3 class="flex items-center gap-2 text-xs font-semibold tracking-wider text-foreground uppercase">
+      <UserIcon class="size-4" />
+      <span>{t("config.profile")}</span>
+    </h3>
+    <div class="flex items-center gap-3">
+      {user.image ? (
+        <img
+          src={user.image}
+          alt={user.name}
+          class="size-11 shrink-0 rounded-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/20 font-mono text-base font-bold text-primary">
+          {initial}
+        </span>
+      )}
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold text-foreground">{user.name}</p>
+        <p class="truncate font-mono text-xs text-muted-foreground">{user.email}</p>
+        <p class="mt-0.5 font-mono text-[11px] text-muted-foreground/70">
+          {t("config.memberSince")} {memberSince}
+        </p>
+      </div>
+    </div>
+    {/* Nombre editable (endpoint built-in de Better-Auth, sin backend propio) */}
+    <form data-config-name-form class="flex gap-2">
+      <input
+        type="text"
+        name="name"
+        required
+        maxlength="60"
+        value={user.name}
+        placeholder={t("config.editName")}
+        aria-label={t("config.editName")}
+        class="h-9 min-w-0 flex-1 rounded-lg border border-input bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/60 focus-visible:border-primary/40"
+      />
+      <Button
+        type="submit"
+        variant="outline"
+        size="sm"
+        class="h-9 shrink-0 px-3 font-mono text-xs"
+      >
+        {t("config.saveName")}
+      </Button>
+    </form>
+    <p class="hidden text-xs text-success" data-config-name-ok>{t("config.nameUpdated")}</p>
+    <p class="hidden text-xs text-destructive" data-config-name-error>{t("config.nameError")}</p>
+  </div>
+
+  {/* Idioma: enlaza al mismo dashboard en el otro idioma */}
+  <div class="flex flex-col gap-3 rounded-xl border border-border/60 bg-background/30 p-4">
+    <h3 class="flex items-center gap-2 text-xs font-semibold tracking-wider text-foreground uppercase">
+      <LanguageIcon class="size-4" />
+      <span>{t("config.language")}</span>
+    </h3>
+    <div class="flex gap-2">
+      <Button
+        href="/es/dashboard"
+        variant={lang === "es" ? "default" : "outline"}
+        size="sm"
+        as="a"
+        class="h-9 flex-1 font-mono text-xs"
+      >
+        Español
+      </Button>
+      <Button
+        href="/en/dashboard"
+        variant={lang === "en" ? "default" : "outline"}
+        size="sm"
+        as="a"
+        class="h-9 flex-1 font-mono text-xs"
+      >
+        English
+      </Button>
+    </div>
+  </div>
+
+  {/* Sesión */}
+  <div class="flex flex-col gap-3 rounded-xl border border-border/60 bg-background/30 p-4">
+    <h3 class="text-xs font-semibold tracking-wider text-foreground uppercase">
+      {t("config.session")}
+    </h3>
+    <p class="truncate font-mono text-xs text-muted-foreground">{user.email}</p>
+    <Separator />
+    <div>
+      {/* `data-signout` llega al DOM (Button propaga el resto de attrs) */}
+      <Button
+        variant="outline"
+        size="sm"
+        data-signout
+        class="h-9 gap-2 font-mono text-xs text-destructive"
+      >
+        <Logout class="size-4" />
+        {t("config.signOut")}
+      </Button>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Cierre de sesión + edición de nombre (ambos built-in de Better-Auth,
+  // sin endpoints propios).
+  import { authClient } from "@/lib/auth-client";
+
+  document.querySelectorAll("[data-signout]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = "/";
+          },
+        },
+      });
+    });
+  });
+
+  const nameForm = document.querySelector<HTMLFormElement>(
+    "[data-config-name-form]",
+  );
+  nameForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = nameForm.querySelector<HTMLInputElement>("input[name='name']");
+    const name = input?.value.trim();
+    if (!name) return;
+    const ok = nameForm.parentElement?.querySelector("[data-config-name-ok]");
+    const err = nameForm.parentElement?.querySelector("[data-config-name-error]");
+    ok?.classList.add("hidden");
+    err?.classList.add("hidden");
+    const { error } = await authClient.updateUser({ name });
+    if (error) {
+      err?.classList.remove("hidden");
+      return;
+    }
+    ok?.classList.remove("hidden");
+    // Recarga para ver el nombre nuevo en header/sidebar.
+    setTimeout(() => window.location.reload(), 800);
+  });
+</script>

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# App privada y API: fuera del índice
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /*/dashboard
+Disallow: /*/login
+Disallow: /*/admin
+
+Sitemap: https://roly.top/sitemap.xml

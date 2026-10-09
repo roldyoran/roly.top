@@ -1,0 +1,142 @@
+---
+import Tabs from "@/components/starwind/tabs/Tabs.astro";
+import TabsList from "@/components/starwind/tabs/TabsList.astro";
+import TabsTrigger from "@/components/starwind/tabs/TabsTrigger.astro";
+import TabsContent from "@/components/starwind/tabs/TabsContent.astro";
+import PublicUrlsList from "@/components/PublicUrlsList.svelte";
+import PublicQrGenerator from "@/components/PublicQrGenerator.svelte";
+import List from "@tabler/icons/outline/list.svg";
+import QrCode from "@tabler/icons/outline/qrcode.svg";
+import { getLangFromUrl, type TranslationKey } from "../i18n/utils";
+
+interface Props {
+  t: (key: TranslationKey) => string;
+}
+
+const { t } = Astro.props;
+// Idioma para números/fechas de la isla (ver `PublicUrlsList`).
+const lang = getLangFromUrl(Astro.url);
+---
+
+<div
+  class="flex items-center justify-center border-b border-border bg-background"
+>
+  <Tabs
+    defaultValue="urls"
+    class="flex w-full max-w-250 flex-col items-center justify-center py-4"
+  >
+    <TabsList class="flex items-center justify-center">
+      <TabsTrigger value="urls">
+        <List class="size-3.5" />
+        {t("tabs.urls")}
+        <span
+          data-public-count
+          class="inline-flex h-4.5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1 py-0 font-mono text-[10px] font-bold text-primary"
+          >{t("tabs count")}</span
+        >
+      </TabsTrigger>
+      <TabsTrigger value="qr">
+        <QrCode class="size-3.5" />
+        {t("tabs.qr")}
+      </TabsTrigger>
+    </TabsList>
+
+    <TabsContent value="urls" class="w-full px-5 pt-6 pb-10 sm:px-7">
+      {/* Datos reales del backend (misma fuente que el dashboard): la isla
+          hidrata con `client:visible` y trae las URLs al entrar en viewport,
+          así el primer pintado del index no espera al D1. */}
+      <PublicUrlsList
+        client:visible
+        lang={lang}
+        labels={{
+          copy: t("url.copy"),
+          copied: t("url.copied"),
+          copyFailed: t("url.copyError"),
+          clicks: t("url.clicks"),
+          visit: t("url.visit"),
+          qr: t("tabs.qr"),
+          qrClose: t("qr.close"),
+          qrSave: t("qr.save"),
+          downloaded: t("qr.downloaded"),
+          failed: t("qr.failed"),
+          empty: t("url.empty"),
+          loadError: t("url.loadError"),
+          retry: t("url.retry"),
+        }}
+      />
+    </TabsContent>
+
+    <TabsContent value="qr" class="w-full px-5 pt-6 pb-10 sm:px-7">
+      {/* Generador público multitipo (100% anónimo, sin cuenta): la isla
+          hidrata con `client:visible` y la lib QR (~500KB) solo se descarga
+          al entrar en viewport, igual que la lista pública. */}
+      <PublicQrGenerator
+        client:visible
+        labels={{
+          title: t("qr.gen.title"),
+          desc: t("qr.gen.desc"),
+          typeLabel: t("qr.gen.typeLabel"),
+          typeUrl: t("qr.gen.type.url"),
+          typeText: t("qr.gen.type.text"),
+          typeWifi: t("qr.gen.type.wifi"),
+          typeVcard: t("qr.gen.type.vcard"),
+          typeEmail: t("qr.gen.type.email"),
+          typeSms: t("qr.gen.type.sms"),
+          typePhone: t("qr.gen.type.phone"),
+          typeWhatsapp: t("qr.gen.type.whatsapp"),
+          typeGeo: t("qr.gen.type.geo"),
+          fieldUrl: t("qr.gen.fieldUrl"),
+          fieldUrlPh: t("qr.gen.fieldUrlPh"),
+          fieldText: t("qr.gen.fieldText"),
+          fieldTextPh: t("qr.gen.fieldTextPh"),
+          fieldSsid: t("qr.gen.fieldSsid"),
+          fieldSsidPh: t("qr.gen.fieldSsidPh"),
+          fieldPassword: t("qr.gen.fieldPassword"),
+          fieldPasswordPh: t("qr.gen.fieldPasswordPh"),
+          fieldSecurity: t("qr.gen.fieldSecurity"),
+          secWpa: t("qr.gen.secWpa"),
+          secWep: t("qr.gen.secWep"),
+          secOpen: t("qr.gen.secOpen"),
+          fieldHidden: t("qr.gen.fieldHidden"),
+          fieldFirstName: t("qr.gen.fieldFirstName"),
+          fieldLastName: t("qr.gen.fieldLastName"),
+          fieldVcardPhone: t("qr.gen.fieldVcardPhone"),
+          fieldVcardEmail: t("qr.gen.fieldVcardEmail"),
+          fieldOrg: t("qr.gen.fieldOrg"),
+          fieldEmailTo: t("qr.gen.fieldEmailTo"),
+          fieldSubject: t("qr.gen.fieldSubject"),
+          fieldBody: t("qr.gen.fieldBody"),
+          fieldSmsNumber: t("qr.gen.fieldSmsNumber"),
+          fieldSmsMessage: t("qr.gen.fieldSmsMessage"),
+          fieldPhoneNumber: t("qr.gen.fieldPhoneNumber"),
+          fieldWaNumber: t("qr.gen.fieldWaNumber"),
+          fieldWaNumberPh: t("qr.gen.fieldWaNumberPh"),
+          fieldWaMessage: t("qr.gen.fieldWaMessage"),
+          fieldLat: t("qr.gen.fieldLat"),
+          fieldLng: t("qr.gen.fieldLng"),
+          logo: t("qr.gen.logo"),
+          invalid: t("qr.gen.invalid"),
+          current: t("qr.current"),
+          png: t("qr.png"),
+          svg: t("qr.svg"),
+          copy: t("qr.copy"),
+          copied: t("qr.copied"),
+          downloaded: t("qr.downloaded"),
+          failed: t("qr.failed"),
+          loading: t("qr.loading"),
+        }}
+      />
+    </TabsContent>
+  </Tabs>
+</div>
+
+<script>
+  // El badge de la pestaña muestra el total real cuando la isla termina
+  // de cargar (`roly:public-count`); antes queda el placeholder de i18n.
+  document.addEventListener("roly:public-count", (e) => {
+    const total = (e as CustomEvent<{ total: number }>).detail?.total;
+    if (typeof total !== "number") return;
+    const badge = document.querySelector<HTMLElement>("[data-public-count]");
+    if (badge) badge.textContent = total.toLocaleString();
+  });
+</script>

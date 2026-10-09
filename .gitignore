@@ -1,68 +1,41 @@
-# prod
+# build output
 dist/
-dist-ssr/
 
-# dev
-.yarn/
-!.yarn/releases
-.vscode/*
-!.vscode/launch.json
-!.vscode/*.code-snippets
-!.vscode/extensions.json
-.idea/workspace.xml
-.idea/usage.statistics.xml
-.idea/shelf
+# generated types
+.astro/
 
-# deps
+# dependencies
 node_modules/
-.wrangler
-backend/.wrangler
-
-# env
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-.dev.vars
-backend/.env
-backend/.env.local
-backend/.env.production
-backend/.dev.vars
-frontend/.env
-frontend/.env.local
-frontend/.env.development
-frontend/.env.production
-frontend/.env.test
 
 # logs
-logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# misc
+# environment variables
+.env
+.env.production
+
+# cloudflare worker config: se genera en CI desde wrangler.example.jsonc
+# (nunca commitear valores reales)
+wrangler.jsonc
+.dev.vars
+
+# macOS-specific files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
-# project specific
-stats.html
-frontend/stats.html
-frontend-new/
-.turbo/
-backend/wrangler.jsonc
-.unlighthouse
+# wrangler local state
+.wrangler/
 
-# editor
-.idea
-*.local
+# local sqlite db (dev)
+sqlite.db
 
-# scripts (local tooling, not committed)
-scripts/
+# drizzle migrations (se aplican a mano en local con db:migrate:*;
+# no viajan al repo: clones frescos y CI no tendran historial de schema)
+drizzle/
+
+# local agent config
+.agents/
+# jetbrains setting folder
+.idea/

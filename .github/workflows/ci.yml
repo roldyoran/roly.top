@@ -1,0 +1,35 @@
+# CI: verificación rápida en cada push/PR.
+#
+# Qué corre:
+# - `pnpm check` → `astro check` (tipos de .astro/.svelte/.ts).
+# - `pnpm test` → Vitest unitario (lógica de servidor, schemas, utils).
+#
+# Qué NO corre (y por qué):
+# - `pnpm test:e2e` necesita el dev server levantado (`astro dev
+#   --background`) más credenciales OAuth de Google, así que se ejecuta en
+#   local antes de mergear, no aquí.
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm test

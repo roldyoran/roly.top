@@ -1,0 +1,19 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AdminPanel from "@/components/dashboard/AdminPanel.astro";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/es/login");
+}
+if (!Astro.locals.isAdmin) {
+  return Astro.redirect("/es/dashboard");
+}
+---
+
+<Layout noindex={true}>
+  <AdminPanel t={t} />
+</Layout>

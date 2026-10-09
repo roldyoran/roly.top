@@ -1,0 +1,160 @@
+---
+import { Font } from "astro:assets";
+import { getLangFromUrl } from "../i18n/utils";
+import { Toaster } from "@/components/starwind/toast";
+import { getSiteUrl } from "@/lib/site";
+import "@/styles/starwind.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  noindex?: boolean;
+  ogImage?: string;
+  type?: "website" | "article";
+}
+
+const lang = getLangFromUrl(Astro.url);
+
+// Base pública (`PUBLIC_SITE_URL` del `.env`): un solo valor para
+// canonical, OG y JSON-LD. Si migras de dominio, cambia solo el `.env`.
+const SITE = getSiteUrl();
+const defaultTitle =
+  lang === "en"
+    ? "roly.top — Shorten your links instantly"
+    : "roly.top — Acorta tus enlaces al instante";
+const defaultDescription =
+  lang === "en"
+    ? "Shorten URLs fast and free. Generate QR codes with logo, get click stats and manage your short links on Edge infrastructure."
+    : "Acorta tus URLs de forma rápida y gratuita. Genera códigos QR con logo, obtén estadísticas de clics y gestiona tus enlaces sobre infraestructura Edge.";
+
+const {
+  title = defaultTitle,
+  description = defaultDescription,
+  canonical,
+  noindex = false,
+  ogImage = "/og-image.png",
+  type = "website",
+} = Astro.props as Props;
+
+// Canonical absoluta: prop explícita o URL actual sin query.
+const canonicalUrl =
+  canonical ?? new URL(Astro.url.pathname, SITE).toString();
+// OG image absoluta (public/og-image.png).
+const ogImageUrl = new URL(ogImage, SITE).toString();
+
+// Hreflang ES/EN: deriva la ruta alterna (/es/... <-> /en/...).
+const pathname = Astro.url.pathname;
+const altPath = pathname.startsWith("/en/")
+  ? pathname.replace(/^\/en/, "/es")
+  : pathname.startsWith("/es/")
+    ? pathname.replace(/^\/es/, "/en")
+    : lang === "en"
+      ? "/en"
+      : "/es";
+const altUrl = new URL(altPath === "/es" && pathname === "/" ? "/es" : altPath, SITE).toString();
+const robotsContent = noindex ? "noindex, nofollow" : "index, follow";
+---
+
+<!doctype html>
+<html lang={lang} class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robotsContent} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Idiomas alternos -->
+    <link rel="alternate" hreflang="es" href={lang === "es" ? canonicalUrl : altUrl} />
+    <link rel="alternate" hreflang="en" href={lang === "en" ? canonicalUrl : altUrl} />
+    <link rel="alternate" hreflang="x-default" href={new URL("/", SITE).toString()} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="roly.top" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="roly.top — acortador de URLs" />
+    <meta property="og:locale" content={lang === "en" ? "en_US" : "es_ES"} />
+    {lang === "en" ? <meta property="og:locale:alternate" content="es_ES" /> : <meta property="og:locale:alternate" content="en_US" />}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <meta name="theme-color" content="#a3e635" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="author" content="roly.top" />
+    <link rel="author" href="/humans.txt" />
+
+    <!-- Iconos + PWA (todo vive en /public) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/mask-icon.svg" color="#a3e635" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#09090b" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="roly.top" />
+
+    <Font cssVariable="--font-display" preload />
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-mono" />
+
+    <!-- Datos estructurados: Organization + WebSite -->
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": `${SITE}/#org`,
+            name: "roly.top",
+            url: SITE,
+            logo: new URL("/icon-512.png", SITE).toString(),
+            sameAs: ["https://github.com/roldyoran/shorturl"],
+          },
+          {
+            "@type": "WebSite",
+            "@id": `${SITE}/#site`,
+            url: SITE,
+            name: "roly.top",
+            description,
+            inLanguage: [lang, lang === "es" ? "en" : "es"],
+            publisher: { "@id": `${SITE}/#org` },
+          },
+        ],
+      })}
+    />
+  </head>
+  <body>
+    <slot />
+    <Toaster position="bottom-right" />
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>

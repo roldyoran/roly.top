@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Nombre del Worker en Cloudflare. Reutiliza el nombre del worker de
+  // producción existente para no cambiar la URL ni las rutas.
+  // En CI se sustituye con el secret CLOUDFLARE_WORKER_NAME.
+  "name": "YOUR_WORKER_NAME",
+  // Entrypoint único del adaptador de Astro: sirve tanto para `astro dev`
+  // (workerd vía @cloudflare/vite-plugin) como para `wrangler deploy`.
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Variables de runtime del worker (`env.*` en el código).
+  // En CI cada YOUR_* se sustituye con su secret de GitHub (ver deploy.yaml).
+  "vars": {
+    "BETTER_AUTH_SECRET": "YOUR_BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL": "YOUR_BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID": "YOUR_GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET": "YOUR_GOOGLE_CLIENT_SECRET",
+    "ADMIN_EMAILS": "YOUR_ADMIN_EMAILS"
+  },
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      // Binding accesible en runtime como env.DB
+      "binding": "DB",
+      // Nombre de la base de datos en Cloudflare D1.
+      // En CI se sustituye con el secret CLOUDFLARE_D1_DATABASE_NAME.
+      "database_name": "YOUR_DATABASE_NAME",
+      // ID obtenido al crear la DB con: pnpm wrangler d1 create <nombre>
+      // En CI se sustituye con el secret CLOUDFLARE_D1_DATABASE_ID.
+      "database_id": "YOUR_DATABASE_ID",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}
