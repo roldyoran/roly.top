@@ -30,16 +30,22 @@ describe("deploy config", () => {
 	it("el ejemplo declara worker, D1 y vars con placeholders", () => {
 		const parsed = JSON.parse(
 			stripFullLineComments(read("wrangler.example.jsonc")),
-		) as {
-			name: string;
-			vars?: Record<string, string>;
-			d1_databases?: Array<{
-				binding: string;
-				database_name: string;
-				database_id: string;
-			}>;
-		};
+	) as {
+		name: string;
+		main: string;
+		images?: { binding: string };
+		vars?: Record<string, string>;
+		d1_databases?: Array<{
+			binding: string;
+			database_name: string;
+			database_id: string;
+		}>;
+	};
 		expect(parsed.name).toBe("YOUR_WORKER_NAME");
+		// wrangler deploy no resuelve el subpath de paquete del adapter:
+		// main debe ser el archivo compilado por `astro build`.
+		expect(parsed.main).toBe("dist/server/entry.mjs");
+		expect(parsed.images).toEqual({ binding: "IMAGES" });
 		const db = parsed.d1_databases?.[0];
 		expect(db?.binding).toBe("DB");
 		expect(db?.database_name).toBe("YOUR_DATABASE_NAME");
