@@ -87,6 +87,18 @@ jobs:
           sed -i "s|YOUR_GOOGLE_CLIENT_SECRET|${{ secrets.GOOGLE_CLIENT_SECRET }}|g" wrangler.jsonc
           sed -i "s|YOUR_ADMIN_EMAILS|${{ secrets.ADMIN_EMAILS }}|g" wrangler.jsonc
 
+      - name: Verify worker config has no placeholders left
+        run: |
+          if grep -q 'YOUR_' wrangler.jsonc; then
+            echo "::error::wrangler.jsonc still contains YOUR_* placeholders. Missing GitHub secrets:"
+            grep -o 'YOUR_[A-Z_]*' wrangler.jsonc | sort -u
+            exit 1
+          fi
+          if [ -z "${{ secrets.PUBLIC_SITE_URL }}" ]; then
+            echo "::error::Missing secret PUBLIC_SITE_URL."
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare
         run: pnpm exec wrangler deploy --config wrangler.jsonc
         env:
