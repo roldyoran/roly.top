@@ -34,6 +34,7 @@ describe("deploy config", () => {
 		name: string;
 		main: string;
 		images?: { binding: string };
+		assets?: { directory: string };
 		vars?: Record<string, string>;
 		d1_databases?: Array<{
 			binding: string;
@@ -46,6 +47,7 @@ describe("deploy config", () => {
 		// main debe ser el archivo compilado por `astro build`.
 		expect(parsed.main).toBe("dist/server/entry.mjs");
 		expect(parsed.images).toEqual({ binding: "IMAGES" });
+		expect(parsed.assets?.directory).toBe("./dist/client");
 		const db = parsed.d1_databases?.[0];
 		expect(db?.binding).toBe("DB");
 		expect(db?.database_name).toBe("YOUR_DATABASE_NAME");

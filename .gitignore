@@ -39,3 +39,5 @@ drizzle/
 .agents/
 # jetbrains setting folder
 .idea/
+# playwright-cli tool artifacts (snapshots, console logs)
+.playwright-cli/

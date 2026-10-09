@@ -25,8 +25,9 @@
     "GOOGLE_CLIENT_SECRET": "YOUR_GOOGLE_CLIENT_SECRET",
     "ADMIN_EMAILS": "YOUR_ADMIN_EMAILS"
   },
+  // Estaticos: el adapter de Astro emite en dist/client/ (ver dist/server/wrangler.json).
   "assets": {
-    "directory": "./dist",
+    "directory": "./dist/client",
     "binding": "ASSETS"
   },
   "d1_databases": [
