@@ -89,9 +89,11 @@ jobs:
 
       - name: Verify worker config has no placeholders left
         run: |
-          if grep -q 'YOUR_' wrangler.jsonc; then
-            echo "::error::wrangler.jsonc still contains YOUR_* placeholders. Missing GitHub secrets:"
-            grep -o 'YOUR_[A-Z_]*' wrangler.jsonc | sort -u
+          # Solo importan los valores (se ignoran los comentarios // del ejemplo).
+          LEFT=$(grep -v '^\s*//' wrangler.jsonc | grep -Eo 'YOUR_[A-Z][A-Z_]*' | sort -u || true)
+          if [ -n "$LEFT" ]; then
+            echo "::error::wrangler.jsonc still contains placeholders. Missing GitHub secrets:"
+            echo "$LEFT"
             exit 1
           fi
           if [ -z "${{ secrets.PUBLIC_SITE_URL }}" ]; then
