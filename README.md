@@ -13,7 +13,7 @@
   <img alt="License" src="https://img.shields.io/badge/License-GPL--3.0-65a30d?style=flat-square" />
 </p>
 
-**Live site:** https://roly.top · **Source:** https://github.com/roldyoran/shorturl · **Contact:** roldyoran@gmail.com
+**Live site:** https://roly.top · **Source:** https://github.com/roldyoran/shorturl
 
 ---
 
