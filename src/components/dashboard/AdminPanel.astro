@@ -1,9 +1,24 @@
 ---
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/starwind/tabs";
-import { Input } from "@/components/starwind/input";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar.astro";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/starwind/sidebar";
+import { Card, CardContent } from "@/components/starwind/card";
+import { Badge } from "@/components/starwind/badge";
 import { Button } from "@/components/starwind/button";
-import Search from "@tabler/icons/outline/search.svg";
-import Shield from "@tabler/icons/outline/shield.svg";
+import { Input } from "@/components/starwind/input";
+import { Separator } from "@/components/starwind/separator";
+import { Skeleton } from "@/components/starwind/skeleton";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/starwind/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/starwind/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,138 +30,429 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/starwind/alert-dialog";
+import Shield from "@tabler/icons/outline/shield.svg";
+import Search from "@tabler/icons/outline/search.svg";
+import LinkIcon from "@tabler/icons/outline/link.svg";
+import Users from "@tabler/icons/outline/users.svg";
+import ChartLine from "@tabler/icons/outline/chart-line.svg";
+import Globe from "@tabler/icons/outline/world.svg";
+import LinkOff from "@tabler/icons/outline/unlink.svg";
+import UserOff from "@tabler/icons/outline/user-off.svg";
+import ChevronLeft from "@tabler/icons/outline/chevron-left.svg";
+import ChevronRight from "@tabler/icons/outline/chevron-right.svg";
+import Home from "@tabler/icons/outline/home.svg";
 import type { TranslationKey } from "@/i18n/utils";
+import type { ui } from "@/i18n/ui";
 
 interface Props {
+  lang: keyof typeof ui;
   t: (key: TranslationKey) => string;
+  activePath: string;
+  basePath: string;
 }
 
-const { t } = Astro.props;
+const { lang, t, activePath, basePath } = Astro.props;
+
+const user = Astro.locals.user;
+const displayName = user?.name?.trim() || user?.email || "";
+const avatarInitial = (displayName.trim()[0] ?? "?").toUpperCase();
+const homeHref = lang === "en" ? "/en" : "/";
+const prefix = `/${lang}`;
+const dashboardHref = `${prefix}/dashboard`;
 ---
 
-<section
-  class="admin-panel mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-6 py-8"
-  data-admin-strings
-  data-tab-urls={t("admin.tab.urls")}
-  data-tab-users={t("admin.tab.users")}
-  data-search={t("admin.search")}
-  data-prev={t("admin.prev")}
-  data-next={t("admin.next")}
-  data-confirm-url={t("admin.confirm.deleteUrl")}
-  data-confirm-user={t("admin.confirm.deleteUser")}
-  data-ok-url={t("admin.ok.deletedUrl")}
-  data-ok-user={t("admin.ok.deletedUser")}
-  data-error={t("admin.error")}
-  data-visibility-ok={t("admin.visibility.ok")}
-  data-visibility-error={t("admin.visibility.error")}
-  data-make-public={t("links.menu.makePublic")}
-  data-make-private={t("links.menu.makePrivate")}
-  data-empty-urls={t("admin.empty.urls")}
-  data-empty-users={t("admin.empty.users")}
->
-  <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <div class="flex items-center gap-2">
-      <Shield class="size-4 text-primary" />
-      <h1 class="font-display text-2xl font-bold tracking-tight text-foreground">{t("admin.title")}</h1>
-    </div>
-    <div class="relative w-full sm:max-w-xs">
-      <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type="search"
-        placeholder={t("admin.search")}
-        class="h-10 pl-9"
-        id="admin-search"
-      />
-    </div>
-  </header>
+<div class="bg-ambient"></div>
 
-  <Tabs defaultValue="urls">
-    <TabsList class="bg-transparent p-0 gap-5">
-      <TabsTrigger value="urls" class="bg-transparent shadow-none text-muted-foreground py-2 px-0.5 border-b border-transparent rounded-none h-5 border-t-0 border-l-0 border-r-0 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:border-b-foreground">{t("admin.tab.urls")}</TabsTrigger>
-      <TabsTrigger value="users" class="bg-transparent shadow-none text-muted-foreground py-2 px-0.5 border-b border-transparent rounded-none h-5 border-t-0 border-l-0 border-r-0 data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:border-b-foreground">{t("admin.tab.users")}</TabsTrigger>
-    </TabsList>
+<SidebarProvider class="min-h-svh w-full">
+  <DashboardSidebar
+    user={{
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      image: user?.image ?? null,
+    }}
+    activePath={activePath}
+    basePath={basePath}
+    lang={lang}
+    t={t}
+    isAdmin={true}
+  />
 
-    <TabsContent value="urls" class="mt-4 flex flex-col gap-3">
-      <div class="flex items-center justify-between text-xs text-muted-foreground">
-        <span class="font-mono uppercase tracking-wider" data-count="urls"></span>
+  <SidebarInset class="relative z-10 flex min-h-svh w-full flex-col">
+    {/* Header sticky (mismo patrón que DashboardIndex): trigger + título + acciones */}
+    <header
+      class="bg-background sticky top-0 z-20 flex h-14 items-center justify-between gap-4 border-b border-border/50 px-4 sm:px-6"
+    >
+      <div class="flex min-w-0 items-center gap-3">
+        <SidebarTrigger class="-ml-1" />
+        <div class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+          <Shield class="size-3.5 text-primary" />
+        </div>
+        <h1
+          class="font-display truncate text-base font-bold tracking-tight text-foreground"
+        >
+          {t("admin.title")}
+        </h1>
       </div>
-      <div class="overflow-x-auto rounded-xl border border-border">
-        <table class="w-full text-sm" data-table="urls">
-          <thead class="bg-muted/30">
-            <tr>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.shortCode")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.originalUrl")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.owner")}</th>
-              <th class="px-4 py-2 text-right align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.clicks")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.visibility")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.createdAt")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground" aria-label="actions"></th>
-            </tr>
-          </thead>
-          <tbody data-tbody="urls"></tbody>
-        </table>
-        <p class="px-4 py-6 text-center text-sm text-muted-foreground" data-empty="urls" hidden>
-          {t("admin.empty.urls")}
-        </p>
+      <div class="flex shrink-0 items-center gap-2">
+        <Button
+          as="a"
+          href={homeHref}
+          variant="outline"
+          size="sm"
+          class="h-8 shrink-0 px-2.5 font-mono text-xs sm:px-3"
+          title={t("nav.home")}
+        >
+          <Home class="size-3.5" data-icon="inline-start" />
+          <span class="hidden sm:inline">{t("nav.home")}</span>
+        </Button>
+        <a
+          href={`${basePath}#config`}
+          class="flex h-8 max-w-40 items-center gap-2 rounded-lg border border-border bg-card px-2 transition-colors hover:border-primary/30 sm:max-w-52"
+          title={displayName}
+        >
+          {
+            user?.image ? (
+              <img
+                src={user.image}
+                alt={displayName}
+                class="size-5 shrink-0 rounded-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary font-mono text-[10px] font-bold text-primary-foreground">
+                {avatarInitial}
+              </span>
+            )
+          }
+          <span class="truncate font-mono text-[11px] text-foreground">
+            {displayName}
+          </span>
+        </a>
       </div>
-      <div class="flex items-center justify-between gap-2" data-pager="urls">
-        <Button variant="outline" size="sm" data-prev>← {t("admin.prev")}</Button>
-        <span class="font-mono text-xs text-muted-foreground" data-page-info></span>
-        <Button variant="outline" size="sm" data-next>{t("admin.next")} →</Button>
-      </div>
-    </TabsContent>
+    </header>
 
-    <TabsContent value="users" class="mt-4 flex flex-col gap-3">
-      <div class="flex items-center justify-between text-xs text-muted-foreground">
-        <span class="font-mono uppercase tracking-wider" data-count="users"></span>
-      </div>
-      <div class="overflow-x-auto rounded-xl border border-border">
-        <table class="w-full text-sm" data-table="users">
-          <thead class="bg-muted/30">
-            <tr>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.name")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.email")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{t("admin.col.createdAt")}</th>
-              <th class="px-4 py-2 text-left align-middle font-mono text-[11px] uppercase tracking-wider text-muted-foreground" aria-label="actions"></th>
-            </tr>
-          </thead>
-          <tbody data-tbody="users"></tbody>
-        </table>
-        <p class="px-4 py-6 text-center text-sm text-muted-foreground" data-empty="users" hidden>
-          {t("admin.empty.users")}
-        </p>
-      </div>
-      <div class="flex items-center justify-between gap-2" data-pager="users">
-        <Button variant="outline" size="sm" data-prev>← {t("admin.prev")}</Button>
-        <span class="font-mono text-xs text-muted-foreground" data-page-info></span>
-        <Button variant="outline" size="sm" data-next>{t("admin.next")} →</Button>
-      </div>
-    </TabsContent>
-  </Tabs>
+    <main
+      class="admin-panel flex min-w-0 flex-1 flex-col gap-5 px-4 pt-5 pb-12 sm:px-6 sm:pt-7"
+      data-admin-strings
+      data-tab-urls={t("admin.tab.urls")}
+      data-tab-users={t("admin.tab.users")}
+      data-search={t("admin.search")}
+      data-prev={t("admin.prev")}
+      data-next={t("admin.next")}
+      data-confirm-url={t("admin.confirm.deleteUrl")}
+      data-confirm-user={t("admin.confirm.deleteUser")}
+      data-ok-url={t("admin.ok.deletedUrl")}
+      data-ok-user={t("admin.ok.deletedUser")}
+      data-error={t("admin.error")}
+      data-visibility-ok={t("admin.visibility.ok")}
+      data-visibility-error={t("admin.visibility.error")}
+      data-make-public={t("links.menu.makePublic")}
+      data-make-private={t("links.menu.makePrivate")}
+      data-empty-urls={t("admin.empty.urls")}
+      data-empty-users={t("admin.empty.users")}
+      data-copy-ok={t("qr.copied")}
+      data-copy-error={t("qr.failed")}
+      data-open-label={t("links.menu.open")}
+      data-delete-label={t("links.menu.delete")}
+      data-clicks-label={t("links.clicks")}
+      data-owner-user={lang === "en" ? "user" : "usuario"}
+      data-owner-anon={lang === "en" ? "anon" : "anónimo"}
+    >
+      {/* Banner de bienvenida (patrón DESIGN_SYSTEM §9) */}
+      <Card class="relative animate-fade-in-up overflow-hidden border-border/60">
+        <CardContent class="p-5 sm:p-6">
+          <div class="relative z-10 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <p
+                class="mb-1 flex items-center gap-1.5 font-mono text-xs tracking-wider text-muted-foreground"
+              >
+                <span class="size-1.5 animate-pulse rounded-full bg-primary" aria-hidden="true"></span>
+                {t("sidebar.admin")} · roly.top
+              </p>
+              <h2
+                class="font-display text-xl font-extrabold tracking-tight text-foreground sm:text-2xl"
+              >
+                {t("admin.title")}
+              </h2>
+              <p class="mt-1.5 font-mono text-xs text-muted-foreground">
+                {t("admin.tab.urls")} · {t("admin.tab.users")}
+              </p>
+            </div>
+            <div
+              class="hidden size-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 sm:flex"
+              aria-hidden="true"
+            >
+              <Shield class="size-6 text-primary" />
+            </div>
+          </div>
+          <div
+            class="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-primary/5 blur-3xl"
+            aria-hidden="true"
+          />
+          <div
+            class="pointer-events-none absolute -bottom-8 -left-8 size-32 rounded-full bg-primary/5 blur-2xl"
+            aria-hidden="true"
+          />
+        </CardContent>
+        <div
+          class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+          aria-hidden="true"
+        />
+      </Card>
 
-  {/* Confirmación de borrado con Starwind: las filas se pintan por JS, así
-      que hay un solo diálogo compartido que se abre con un click
-      programático al trigger oculto. */}
-  <AlertDialog id="admin-delete-dialog">
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>{t("links.menu.delete")}</AlertDialogTitle>
-        <AlertDialogDescription>
-          <span data-admin-delete-label></span>
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel size="sm">{t("links.delete.cancel")}</AlertDialogCancel>
-        <AlertDialogAction size="sm" variant="error" data-admin-delete-confirm>
-          {t("links.menu.delete")}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-  <AlertDialogTrigger id="admin-delete-trigger" targetId="admin-delete-dialog" class="hidden" />
-</section>
+      {/* Stat cards (patrón DESIGN_SYSTEM §7): valores los pinta el JS */}
+      <div class="grid animate-fade-in-up grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" style="animation-delay: 80ms">
+        <Card class="relative overflow-hidden border-border/60">
+          <CardContent class="p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <span class="font-mono text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                {t("admin.tab.urls")}
+              </span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10" aria-hidden="true">
+                <LinkIcon class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="font-display text-3xl leading-none font-extrabold tracking-tight text-foreground tabular-nums" data-stat="urls">—</p>
+            <div class="mt-2.5">
+              <Badge variant="default" class="gap-1">
+                <span class="size-1.5 animate-pulse rounded-full bg-primary-foreground" aria-hidden="true"></span>
+                <span data-stat-sub="urls">{t("admin.tab.urls")}</span>
+              </Badge>
+            </div>
+          </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true"></div>
+        </Card>
 
+        <Card class="relative overflow-hidden border-border/60">
+          <CardContent class="p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <span class="font-mono text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                {t("admin.tab.users")}
+              </span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10" aria-hidden="true">
+                <Users class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="font-display text-3xl leading-none font-extrabold tracking-tight text-foreground tabular-nums" data-stat="users">—</p>
+            <div class="mt-2.5">
+              <Badge variant="secondary" class="gap-1">
+                <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+                <span data-stat-sub="users">{t("admin.tab.users")}</span>
+              </Badge>
+            </div>
+          </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true"></div>
+        </Card>
 
+        <Card class="relative overflow-hidden border-border/60">
+          <CardContent class="p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <span class="font-mono text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                {t("admin.col.clicks")}
+              </span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10" aria-hidden="true">
+                <ChartLine class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="font-display text-3xl leading-none font-extrabold tracking-tight text-foreground tabular-nums" data-stat="clicks">—</p>
+            <div class="mt-2.5">
+              <Badge variant="secondary" class="gap-1">
+                <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+                <span data-stat-sub="clicks">{t("admin.tab.urls")}</span>
+              </Badge>
+            </div>
+          </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true"></div>
+        </Card>
+
+        <Card class="relative overflow-hidden border-border/60">
+          <CardContent class="p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <span class="font-mono text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                {t("admin.col.visibility")}
+              </span>
+              <div class="flex size-7 items-center justify-center rounded-lg bg-primary/10" aria-hidden="true">
+                <Globe class="size-3.5 text-primary" />
+              </div>
+            </div>
+            <p class="font-display text-3xl leading-none font-extrabold tracking-tight text-foreground tabular-nums" data-stat="public">—</p>
+            <div class="mt-2.5">
+              <Badge variant="outline" tone="success" appearance="soft" class="gap-1">
+                <span class="size-1.5 rounded-full bg-success" aria-hidden="true"></span>
+                <span data-stat-sub="public">{t("admin.col.visibility")}</span>
+              </Badge>
+            </div>
+          </CardContent>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true"></div>
+        </Card>
+      </div>
+
+      {/* Gestión: tabs + buscador + tablas (desktop) / cards (mobile) */}
+      <Card class="relative animate-fade-in-up overflow-hidden border-border/60" style="animation-delay: 160ms">
+        <CardContent class="p-4 sm:p-5">
+          <Tabs defaultValue="urls">
+            <TabsList class="w-full sm:w-fit">
+              <TabsTrigger value="urls" class="font-mono text-xs">
+                <LinkIcon class="size-3.5" data-icon="inline-start" />
+                {t("admin.tab.urls")}
+              </TabsTrigger>
+              <TabsTrigger value="users" class="font-mono text-xs">
+                <Users class="size-3.5" data-icon="inline-start" />
+                {t("admin.tab.users")}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Toolbar: buscador (patrón §12) + contador */}
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="relative w-full sm:max-w-xs">
+                <Search class="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={t("admin.search")}
+                  class="h-9 pl-9 font-mono text-xs focus:border-primary/40 focus:shadow-[0_0_0_3px_var(--lime-glow)]"
+                  id="admin-search"
+                />
+              </div>
+              <span class="font-mono text-[11px] tracking-wider text-muted-foreground uppercase" data-count-global></span>
+            </div>
+
+            <Separator class="my-4" />
+
+            <TabsContent value="urls" class="mt-0 flex flex-col gap-3">
+              <span class="font-mono text-[11px] tracking-wider text-muted-foreground uppercase" data-count="urls"></span>
+
+              {/* Loading skeletons (se ocultan al pintar) */}
+              <div class="flex flex-col gap-2" data-loading="urls">
+                <Skeleton class="h-12 w-full" />
+                <Skeleton class="h-12 w-full" />
+                <Skeleton class="h-12 w-full" />
+              </div>
+
+              {/* Desktop: tabla */}
+              <div class="hidden overflow-x-auto rounded-xl border border-border/60 sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.shortCode")}</TableHead>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.originalUrl")}</TableHead>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.owner")}</TableHead>
+                      <TableHead class="px-3 text-right font-mono text-[11px] tracking-wider uppercase">{t("admin.col.clicks")}</TableHead>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.visibility")}</TableHead>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.createdAt")}</TableHead>
+                      <TableHead class="px-3" aria-label="actions"><span class="sr-only">actions</span></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody data-tbody="urls"></TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile: cards apiladas (mobile-first) */}
+              <ul class="flex flex-col gap-3 sm:hidden" data-cards="urls"></ul>
+
+              {/* Empty state (patrón §10 adaptado sin componente Empty) */}
+              <div class="hidden flex-col items-center justify-center gap-3 py-10 text-center" data-empty="urls">
+                <div class="flex size-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10" aria-hidden="true">
+                  <LinkOff class="size-6 text-primary" />
+                </div>
+                <p class="font-display text-base font-bold tracking-tight text-foreground">{t("admin.empty.urls")}</p>
+                <p class="font-mono text-xs text-muted-foreground">{t("admin.tab.urls")}</p>
+              </div>
+
+              <div class="flex items-center justify-between gap-2" data-pager="urls">
+                <Button variant="outline" size="sm" class="h-8 font-mono text-xs" data-prev>
+                  <ChevronLeft class="size-3.5" data-icon="inline-start" />
+                  {t("admin.prev")}
+                </Button>
+                <span class="font-mono text-xs text-muted-foreground tabular-nums" data-page-info></span>
+                <Button variant="outline" size="sm" class="h-8 font-mono text-xs" data-next>
+                  {t("admin.next")}
+                  <ChevronRight class="size-3.5" data-icon="inline-end" />
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="users" class="mt-0 flex flex-col gap-3">
+              <span class="font-mono text-[11px] tracking-wider text-muted-foreground uppercase" data-count="users"></span>
+
+              <div class="flex flex-col gap-2" data-loading="users">
+                <Skeleton class="h-12 w-full" />
+                <Skeleton class="h-12 w-full" />
+                <Skeleton class="h-12 w-full" />
+              </div>
+
+              <div class="hidden overflow-x-auto rounded-xl border border-border/60 sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.name")}</TableHead>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.email")}</TableHead>
+                      <TableHead class="px-3 font-mono text-[11px] tracking-wider uppercase">{t("admin.col.createdAt")}</TableHead>
+                      <TableHead class="px-3" aria-label="actions"><span class="sr-only">actions</span></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody data-tbody="users"></TableBody>
+                </Table>
+              </div>
+
+              <ul class="flex flex-col gap-3 sm:hidden" data-cards="users"></ul>
+
+              <div class="hidden flex-col items-center justify-center gap-3 py-10 text-center" data-empty="users">
+                <div class="flex size-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10" aria-hidden="true">
+                  <UserOff class="size-6 text-primary" />
+                </div>
+                <p class="font-display text-base font-bold tracking-tight text-foreground">{t("admin.empty.users")}</p>
+                <p class="font-mono text-xs text-muted-foreground">{t("admin.tab.users")}</p>
+              </div>
+
+              <div class="flex items-center justify-between gap-2" data-pager="users">
+                <Button variant="outline" size="sm" class="h-8 font-mono text-xs" data-prev>
+                  <ChevronLeft class="size-3.5" data-icon="inline-start" />
+                  {t("admin.prev")}
+                </Button>
+                <span class="font-mono text-xs text-muted-foreground tabular-nums" data-page-info></span>
+                <Button variant="outline" size="sm" class="h-8 font-mono text-xs" data-next>
+                  {t("admin.next")}
+                  <ChevronRight class="size-3.5" data-icon="inline-end" />
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        <div
+          class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+          aria-hidden="true"
+        />
+      </Card>
+
+      {/* Volver al panel */}
+      <div class="flex justify-center">
+        <Button as="a" href={dashboardHref} variant="ghost" size="sm" class="font-mono text-xs text-muted-foreground">
+          <ChevronLeft class="size-3.5" data-icon="inline-start" />
+          {t("sidebar.panel")}
+        </Button>
+      </div>
+    </main>
+  </SidebarInset>
+</SidebarProvider>
+
+{/* Confirmación de borrado compartida (las filas las pinta el JS) */}
+<AlertDialog id="admin-delete-dialog">
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle class="font-display">{t("links.menu.delete")}</AlertDialogTitle>
+      <AlertDialogDescription>
+        <span data-admin-delete-label></span>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel size="sm">{t("links.delete.cancel")}</AlertDialogCancel>
+      <AlertDialogAction size="sm" variant="error" data-admin-delete-confirm>
+        {t("links.menu.delete")}
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+<AlertDialogTrigger id="admin-delete-trigger" targetId="admin-delete-dialog" class="hidden" />
 
 <script>
   type Tab = "urls" | "users";
@@ -166,6 +472,7 @@ const { t } = Astro.props;
     name: string;
     email: string;
     createdAt: string;
+    image?: string | null;
   }
 
   interface PageInfo {
@@ -175,13 +482,28 @@ const { t } = Astro.props;
     totalPages?: number;
   }
 
+  const ICONS = {
+    copy: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
+    trash:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+    external:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+    globe:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+    lock: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+  };
+
   const root = document.querySelector<HTMLElement>(".admin-panel");
   if (!root) {
     // nothing to wire
   } else {
-    const state: Record<Tab, { rows: (UrlRow | UserRow)[]; page: number; totalPages: number }> = {
-      urls: { rows: [], page: 1, totalPages: 1 },
-      users: { rows: [], page: 1, totalPages: 1 },
+    const ds = root.dataset;
+    const state: Record<
+      Tab,
+      { rows: (UrlRow | UserRow)[]; page: number; totalPages: number; total: number }
+    > = {
+      urls: { rows: [], page: 1, totalPages: 1, total: 0 },
+      users: { rows: [], page: 1, totalPages: 1, total: 0 },
     };
 
     function showToast(title: string, variant: "success" | "error" = "success") {
@@ -204,68 +526,220 @@ const { t } = Astro.props;
         .replace(/'/g, "&#39;");
     }
 
-    function renderUrlRow(row: UrlRow): string {
-      const owner = row.userId ? "user" : "anon";
-      const makePublic = root?.dataset.makePublic ?? "Make public";
-      const makePrivate = root?.dataset.makePrivate ?? "Make private";
-      const visibilityLabel = row.isPublic ? makePrivate : makePublic;
+    function fmt(n: number): string {
+      return n.toLocaleString();
+    }
+
+    function ownerBadge(userId: string | null): string {
+      const isUser = Boolean(userId);
+      const label = isUser ? (ds.ownerUser ?? "user") : (ds.ownerAnon ?? "anon");
+      return isUser
+        ? `<span class="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-0.5 font-mono text-[11px] font-medium text-secondary-foreground"><span class="size-1.5 rounded-full bg-primary"></span>${escapeHtml(label)}</span>`
+        : `<span class="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 font-mono text-[11px] font-medium text-muted-foreground">${escapeHtml(label)}</span>`;
+    }
+
+    function visibilityBadge(row: UrlRow): string {
+      const makePublic = ds.makePublic ?? "Make public";
+      const makePrivate = ds.makePrivate ?? "Make private";
+      const title = row.isPublic ? makePrivate : makePublic;
+      const inner = row.isPublic
+        ? `<span class="inline-flex items-center gap-1.5 rounded-full bg-success px-2.5 py-0.5 font-mono text-[11px] font-medium text-success-foreground"><span class="size-1.5 rounded-full bg-success-foreground"></span>${escapeHtml(makePrivate)}</span>`
+        : `<span class="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-0.5 font-mono text-[11px] font-medium text-secondary-foreground">${ICONS.lock}${escapeHtml(makePublic)}</span>`;
+      return `<button type="button" data-visibility-url="${escapeHtml(row.id)}" data-is-public="${row.isPublic ? "1" : "0"}" title="${escapeHtml(title)}" class="rounded-full transition-all hover:shadow-[0_0_12px_var(--lime-glow)] hover:brightness-110">${inner}</button>`;
+    }
+
+    const iconBtn =
+      "flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary";
+    const iconBtnDanger =
+      "flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-error/10 hover:text-error";
+
+    function renderUrlRowTable(row: UrlRow): string {
+      const shortUrl = `${window.location.origin}/${row.shortCode}`;
+      const host = (() => {
+        try {
+          return new URL(row.originalUrl).hostname;
+        } catch {
+          return row.originalUrl;
+        }
+      })();
       return `
-        <tr data-row-id="${escapeHtml(row.id)}" data-kind="url">
-          <td><span class="code">${escapeHtml(row.shortCode)}</span></td>
-          <td><span class="truncate" title="${escapeHtml(row.originalUrl)}">${escapeHtml(row.originalUrl)}</span></td>
-          <td>${escapeHtml(owner)}</td>
-          <td class="num"><span class="clicks">${row.visits}</span></td>
-          <td>
-            <button class="admin-visibility-toggle" data-visibility-url="${escapeHtml(row.id)}" data-is-public="${row.isPublic ? "1" : "0"}" type="button" title="${escapeHtml(visibilityLabel)}">
-              ${escapeHtml(visibilityLabel)}
-            </button>
+        <tr data-row-id="${escapeHtml(row.id)}" class="border-b transition-colors last:border-0 hover:bg-muted/50">
+          <td class="p-2 px-3 align-middle whitespace-nowrap">
+            <span class="font-mono text-[13px] font-bold text-primary">${escapeHtml(row.shortCode)}</span>
           </td>
-          <td>${formatDate(row.createdAt)}</td>
-          <td class="num">
-            <button class="admin-row-delete" data-delete-url="${escapeHtml(row.id)}" type="button" aria-label="delete">
-              <span aria-hidden="true">×</span>
-            </button>
+          <td class="max-w-56 px-3 py-2 align-middle">
+            <p class="truncate font-mono text-xs text-muted-foreground" title="${escapeHtml(row.originalUrl)}">${escapeHtml(host)}</p>
+          </td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap">${ownerBadge(row.userId)}</td>
+          <td class="px-3 py-2 text-right align-middle whitespace-nowrap">
+            <span class="font-display text-sm font-extrabold text-foreground tabular-nums">${fmt(row.visits)}</span>
+          </td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap">${visibilityBadge(row)}</td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap font-mono text-xs text-muted-foreground">${formatDate(row.createdAt)}</td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap">
+            <div class="flex items-center justify-end gap-0.5">
+              <button type="button" class="${iconBtn}" data-copy="${escapeHtml(shortUrl)}" title="copy" aria-label="copy">${ICONS.copy}</button>
+              <button type="button" class="${iconBtn}" data-open-url="${escapeHtml(row.originalUrl)}" title="open" aria-label="open">${ICONS.external}</button>
+              <button type="button" class="${iconBtnDanger}" data-delete-url="${escapeHtml(row.id)}" aria-label="delete">${ICONS.trash}</button>
+            </div>
           </td>
         </tr>`;
     }
 
-    function renderUserRow(row: UserRow): string {
+    function renderUrlRowCard(row: UrlRow): string {
+      const shortUrl = `${window.location.origin}/${row.shortCode}`;
+      const makePublic = ds.makePublic ?? "Make public";
+      const makePrivate = ds.makePrivate ?? "Make private";
+      const openLabel = ds.openLabel ?? "Open";
+      const deleteLabel = ds.deleteLabel ?? "Delete";
+      const clicksLabel = ds.clicksLabel ?? "clicks";
       return `
-        <tr data-row-id="${escapeHtml(row.id)}" data-kind="user">
-          <td>${escapeHtml(row.name || "")}</td>
-          <td>${escapeHtml(row.email)}</td>
-          <td>${formatDate(row.createdAt)}</td>
-          <td class="num">
-            <button class="admin-row-delete" data-delete-user="${escapeHtml(row.id)}" type="button" aria-label="delete">
-              <span aria-hidden="true">×</span>
+        <li data-row-id="${escapeHtml(row.id)}" class="relative overflow-hidden rounded-xl border border-border/60 bg-card p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="truncate font-mono text-sm font-bold text-primary">roly.top/${escapeHtml(row.shortCode)}</span>
+                <button type="button" class="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary" data-copy="${escapeHtml(shortUrl)}" aria-label="copy">${ICONS.copy}</button>
+              </div>
+              <p class="mt-1 truncate font-mono text-[11px] text-muted-foreground" title="${escapeHtml(row.originalUrl)}">${escapeHtml(row.originalUrl)}</p>
+            </div>
+            <div class="shrink-0 text-right">
+              <span class="font-display block text-xl leading-none font-extrabold text-foreground tabular-nums">${fmt(row.visits)}</span>
+              <span class="font-mono text-[10px] text-muted-foreground">${escapeHtml(clicksLabel)}</span>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap items-center gap-1.5">
+            ${ownerBadge(row.userId)}
+            ${visibilityBadge(row)}
+            <span class="font-mono text-[10px] text-muted-foreground">${formatDate(row.createdAt)}</span>
+          </div>
+          <div class="mt-3 grid grid-cols-3 gap-2 border-t border-border/50 pt-3">
+            <button type="button" data-visibility-url="${escapeHtml(row.id)}" data-is-public="${row.isPublic ? "1" : "0"}" class="flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-md border border-border/60 font-mono text-[11px] font-semibold text-foreground transition-colors hover:border-primary/30 hover:bg-primary/5">
+              ${ICONS.globe}<span class="truncate">${escapeHtml(row.isPublic ? makePrivate : makePublic)}</span>
             </button>
+            <button type="button" data-open-url="${escapeHtml(row.originalUrl)}" class="flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-md border border-border/60 font-mono text-[11px] font-semibold text-foreground transition-colors hover:border-primary/30 hover:bg-primary/5">
+              ${ICONS.external}<span class="truncate">${escapeHtml(openLabel)}</span>
+            </button>
+            <button type="button" data-delete-url="${escapeHtml(row.id)}" class="flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-md border border-border/60 font-mono text-[11px] font-semibold text-muted-foreground transition-colors hover:border-error/40 hover:bg-error/5 hover:text-error">
+              ${ICONS.trash}<span class="truncate">${escapeHtml(deleteLabel)}</span>
+            </button>
+          </div>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" aria-hidden="true"></div>
+        </li>`;
+    }
+
+    function renderUserRowTable(row: UserRow): string {
+      const initial = (row.name?.trim()[0] ?? row.email.trim()[0] ?? "?").toUpperCase();
+      return `
+        <tr data-row-id="${escapeHtml(row.id)}" class="border-b transition-colors last:border-0 hover:bg-muted/50">
+          <td class="px-3 py-2 align-middle whitespace-nowrap">
+            <div class="flex items-center gap-2.5">
+              <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-[11px] font-bold text-primary">${escapeHtml(initial)}</span>
+              <span class="text-sm font-medium text-foreground">${escapeHtml(row.name || "—")}</span>
+            </div>
+          </td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap font-mono text-xs text-muted-foreground">${escapeHtml(row.email)}</td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap font-mono text-xs text-muted-foreground">${formatDate(row.createdAt)}</td>
+          <td class="px-3 py-2 align-middle whitespace-nowrap">
+            <div class="flex items-center justify-end">
+              <button type="button" class="${iconBtnDanger}" data-delete-user="${escapeHtml(row.id)}" aria-label="delete">${ICONS.trash}</button>
+            </div>
           </td>
         </tr>`;
+    }
+
+    function renderUserRowCard(row: UserRow): string {
+      const deleteLabel = ds.deleteLabel ?? "Delete";
+      const initial = (row.name?.trim()[0] ?? row.email.trim()[0] ?? "?").toUpperCase();
+      return `
+        <li data-row-id="${escapeHtml(row.id)}" class="relative overflow-hidden rounded-xl border border-border/60 bg-card p-4">
+          <div class="flex items-center gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-sm font-bold text-primary">${escapeHtml(initial)}</span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold text-foreground">${escapeHtml(row.name || "—")}</p>
+              <p class="truncate font-mono text-[11px] text-muted-foreground">${escapeHtml(row.email)}</p>
+            </div>
+            <button type="button" data-delete-user="${escapeHtml(row.id)}" class="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border/60 px-2.5 font-mono text-[11px] font-semibold text-muted-foreground transition-colors hover:border-error/40 hover:bg-error/5 hover:text-error" aria-label="delete">
+              ${ICONS.trash}<span>${escapeHtml(deleteLabel)}</span>
+            </button>
+          </div>
+          <p class="mt-2.5 font-mono text-[10px] text-muted-foreground">${formatDate(row.createdAt)}</p>
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" aria-hidden="true"></div>
+        </li>`;
+    }
+
+    function paintStats() {
+      const urls = state.urls.rows as UrlRow[];
+      const clicks = urls.reduce((acc, r) => acc + (r.visits || 0), 0);
+      const pubCount = urls.filter((r) => r.isPublic).length;
+      const set = (key: string, value: string) => {
+        const el = root?.querySelector(`[data-stat="${key}"]`);
+        if (el) el.textContent = value;
+      };
+      set("urls", state.urls.total > 0 ? fmt(state.urls.total) : fmt(urls.length));
+      set("users", fmt(state.users.total));
+      set("clicks", fmt(clicks));
+      set("public", fmt(pubCount));
+      const setSub = (key: string, value: string) => {
+        const el = root?.querySelector(`[data-stat-sub="${key}"]`);
+        if (el) el.textContent = value;
+      };
+      const page = state.urls.page;
+      const totalPages = state.urls.totalPages;
+      setSub("urls", `page ${page}/${totalPages}`);
+      setSub("users", `page ${state.users.page}/${state.users.totalPages}`);
+      setSub("clicks", `page ${page}/${totalPages}`);
+      const pct = urls.length > 0 ? Math.round((pubCount / urls.length) * 100) : 0;
+      setSub("public", `${pct}%`);
     }
 
     function paintTable(tab: Tab) {
       const tbody = document.querySelector<HTMLElement>(`[data-tbody="${tab}"]`);
+      const cards = document.querySelector<HTMLElement>(`[data-cards="${tab}"]`);
       const empty = document.querySelector<HTMLElement>(`[data-empty="${tab}"]`);
+      const loading = document.querySelector<HTMLElement>(`[data-loading="${tab}"]`);
       const count = document.querySelector<HTMLElement>(`[data-count="${tab}"]`);
+      const countGlobal = document.querySelector<HTMLElement>(`[data-count-global]`);
       const pager = document.querySelector<HTMLElement>(`[data-pager="${tab}"]`);
       const pageInfo = pager?.querySelector<HTMLElement>("[data-page-info]");
-      if (!tbody || !empty || !count || !pager || !pageInfo) return;
+      if (!tbody || !cards || !empty || !pager || !pageInfo) return;
+      if (loading) loading.style.display = "none";
 
       const rows = state[tab].rows;
-      if (rows.length === 0) {
-        tbody.innerHTML = "";
-        empty.hidden = false;
-      } else {
-        empty.hidden = true;
-        tbody.innerHTML = rows
-          .map((r) => (tab === "urls" ? renderUrlRow(r as UrlRow) : renderUserRow(r as UserRow)))
-          .join("");
-      }
+      const isEmpty = rows.length === 0;
+      empty.classList.toggle("hidden", !isEmpty);
+      empty.classList.toggle("flex", isEmpty);
+
+      tbody.innerHTML = rows
+        .map((r) =>
+          tab === "urls"
+            ? renderUrlRowTable(r as UrlRow)
+            : renderUserRowTable(r as UserRow),
+        )
+        .join("");
+      cards.innerHTML = rows
+        .map((r) =>
+          tab === "urls"
+            ? renderUrlRowCard(r as UrlRow)
+            : renderUserRowCard(r as UserRow),
+        )
+        .join("");
 
       const total = state[tab].totalPages;
       const page = state[tab].page;
-      count.textContent = `${tab === "urls" ? root?.dataset.tabUrls : root?.dataset.tabUsers} · page ${page}/${total}`;
+      const label = tab === "urls" ? (ds.tabUrls ?? "URLs") : (ds.tabUsers ?? "Users");
+      const countText = `${label} · page ${page}/${total}`;
+      if (count) count.textContent = countText;
+      if (countGlobal) countGlobal.textContent = countText;
       pageInfo.textContent = `${page} / ${total}`;
+
+      const prev = pager.querySelector<HTMLButtonElement>("[data-prev]");
+      const next = pager.querySelector<HTMLButtonElement>("[data-next]");
+      if (prev) prev.disabled = page <= 1;
+      if (next) next.disabled = page >= total;
+
+      applySearch();
+      paintStats();
     }
 
     async function loadTab(tab: Tab) {
@@ -281,14 +755,13 @@ const { t } = Astro.props;
       state[tab].rows = json.data;
       state[tab].page = json.pagination.page;
       state[tab].totalPages = Math.max(1, json.pagination.totalPages ?? 1);
+      state[tab].total = json.pagination.total ?? json.data.length;
       paintTable(tab);
     }
 
     async function deleteRow(tab: Tab, id: string) {
       const endpoint =
-        tab === "urls"
-          ? `/api/v1/admin/urls/${id}`
-          : `/api/v1/admin/users/${id}`;
+        tab === "urls" ? `/api/v1/admin/urls/${id}` : `/api/v1/admin/users/${id}`;
       const res = await fetch(endpoint, {
         method: "DELETE",
         credentials: "include",
@@ -296,6 +769,14 @@ const { t } = Astro.props;
       if (!res.ok) throw new Error("delete failed");
       state[tab].rows = state[tab].rows.filter((r) => (r as { id: string }).id !== id);
       paintTable(tab);
+    }
+
+    function applySearch() {
+      const input = document.querySelector<HTMLInputElement>("#admin-search");
+      const q = (input?.value ?? "").toLowerCase().trim();
+      document.querySelectorAll<HTMLElement>("[data-tbody] tr, [data-cards] li").forEach((el) => {
+        el.style.display = !q || (el.textContent?.toLowerCase() ?? "").includes(q) ? "" : "none";
+      });
     }
 
     function wirePager(tab: Tab) {
@@ -307,7 +788,7 @@ const { t } = Astro.props;
         try {
           await loadTab(tab);
         } catch {
-          showToast(root?.dataset.error ?? "Operation failed", "error");
+          showToast(ds.error ?? "Operation failed", "error");
         }
       });
       pager.querySelector<HTMLButtonElement>("[data-next]")?.addEventListener("click", async () => {
@@ -316,45 +797,15 @@ const { t } = Astro.props;
         try {
           await loadTab(tab);
         } catch {
-          showToast(root?.dataset.error ?? "Operation failed", "error");
+          showToast(ds.error ?? "Operation failed", "error");
         }
       });
     }
 
-    function wireSearch(tab: Tab) {
-      const input = document.querySelector<HTMLInputElement>("#admin-search");
-      if (!input) return;
-      input.addEventListener("input", () => {
-        const q = input.value.toLowerCase();
-        const tbody = document.querySelector<HTMLElement>(`[data-tbody="${tab}"]`);
-        tbody?.querySelectorAll<HTMLTableRowElement>("tr").forEach((tr) => {
-          tr.style.display = tr.textContent?.toLowerCase().includes(q) ? "" : "none";
-        });
-      });
+    function wireSearch() {
+      document.querySelector<HTMLInputElement>("#admin-search")?.addEventListener("input", applySearch);
     }
 
-    function wireDeletes(tab: Tab) {      const tbody = document.querySelector<HTMLElement>(`[data-tbody="${tab}"]`);
-      if (!tbody) return;
-      tbody.addEventListener("click", (e) => {
-        const target = e.target as HTMLElement;
-        const urlBtn = target.closest<HTMLElement>("[data-delete-url]");
-        if (urlBtn) {
-          const id = urlBtn.getAttribute("data-delete-url");
-          if (!id) return;
-          askDelete("urls", id, root?.dataset.confirmUrl ?? "");
-          return;
-        }
-        const userBtn = target.closest<HTMLElement>("[data-delete-user]");
-        if (userBtn) {
-          const id = userBtn.getAttribute("data-delete-user");
-          if (!id) return;
-          askDelete("users", id, root?.dataset.confirmUser ?? "");
-        }
-      });
-    }
-
-    // Diálogo compartido de borrado: guarda el pendiente, pinta el mensaje
-    // según el tipo y abre el AlertDialog vía el trigger oculto.
     let pendingDelete: { tab: Tab; id: string } | null = null;
 
     function askDelete(tab: Tab, id: string, message: string) {
@@ -362,6 +813,66 @@ const { t } = Astro.props;
       const label = document.querySelector<HTMLElement>("[data-admin-delete-label]");
       if (label) label.textContent = message;
       document.getElementById("admin-delete-trigger")?.click();
+    }
+
+    function wireRowActions() {
+      root?.addEventListener("click", async (e) => {
+        const target = e.target as HTMLElement;
+
+        const copyBtn = target.closest<HTMLElement>("[data-copy]");
+        if (copyBtn) {
+          const value = copyBtn.getAttribute("data-copy") ?? "";
+          try {
+            await navigator.clipboard.writeText(value);
+            showToast(ds.copyOk ?? "Copied", "success");
+          } catch {
+            showToast(ds.copyError ?? ds.error ?? "Operation failed", "error");
+          }
+          return;
+        }
+
+        const openBtn = target.closest<HTMLElement>("[data-open-url]");
+        if (openBtn) {
+          const url = openBtn.getAttribute("data-open-url");
+          if (url) window.open(url, "_blank", "noopener");
+          return;
+        }
+
+        const visBtn = target.closest<HTMLElement>("[data-visibility-url]");
+        if (visBtn) {
+          const id = visBtn.getAttribute("data-visibility-url");
+          if (!id) return;
+          const makePublic = visBtn.getAttribute("data-is-public") !== "1";
+          try {
+            const res = await fetch(`/api/v1/admin/urls/${id}`, {
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ isPublic: makePublic }),
+            });
+            if (!res.ok) throw new Error("visibility failed");
+            showToast(ds.visibilityOk ?? "Visibility updated", "success");
+            await loadTab("urls");
+          } catch {
+            showToast(ds.visibilityError ?? ds.error ?? "Operation failed", "error");
+          }
+          return;
+        }
+
+        const urlBtn = target.closest<HTMLElement>("[data-delete-url]");
+        if (urlBtn) {
+          const id = urlBtn.getAttribute("data-delete-url");
+          if (!id) return;
+          askDelete("urls", id, ds.confirmUrl ?? "");
+          return;
+        }
+        const userBtn = target.closest<HTMLElement>("[data-delete-user]");
+        if (userBtn) {
+          const id = userBtn.getAttribute("data-delete-user");
+          if (!id) return;
+          askDelete("users", id, ds.confirmUser ?? "");
+        }
+      });
     }
 
     document
@@ -373,56 +884,26 @@ const { t } = Astro.props;
         try {
           await deleteRow(tab, id);
           showToast(
-            tab === "urls"
-              ? (root?.dataset.okUrl ?? "URL deleted")
-              : (root?.dataset.okUser ?? "User deleted"),
+            tab === "urls" ? (ds.okUrl ?? "URL deleted") : (ds.okUser ?? "User deleted"),
             "success",
           );
         } catch {
-          showToast(root?.dataset.error ?? "Operation failed", "error");
+          showToast(ds.error ?? "Operation failed", "error");
         }
       });
-
-    // Toggle público/privado (solo admin): PATCH al endpoint admin real y
-    // recarga la pestaña para reflejar el cambio.
-    function wireVisibility() {
-      const tbody = document.querySelector<HTMLElement>(`[data-tbody="urls"]`);
-      if (!tbody) return;
-      tbody.addEventListener("click", async (e) => {
-        const target = e.target as HTMLElement;
-        const btn = target.closest<HTMLElement>("[data-visibility-url]");
-        if (!btn) return;
-        const id = btn.getAttribute("data-visibility-url");
-        if (!id) return;
-        const makePublic = btn.getAttribute("data-is-public") !== "1";
-        try {
-          const res = await fetch(`/api/v1/admin/urls/${id}`, {
-            method: "PATCH",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isPublic: makePublic }),
-          });
-          if (!res.ok) throw new Error("visibility failed");
-          showToast(root?.dataset.visibilityOk ?? "Visibility updated", "success");
-          await loadTab("urls");
-        } catch {
-          showToast(root?.dataset.visibilityError ?? root?.dataset.error ?? "Operation failed", "error");
-        }
-      });
-    }
 
     (async () => {
       for (const tab of ["urls", "users"] as Tab[]) {
         wirePager(tab);
-        wireDeletes(tab);
         try {
           await loadTab(tab);
         } catch {
-          showToast(root?.dataset.error ?? "Operation failed", "error");
+          document.querySelector<HTMLElement>(`[data-loading="${tab}"]`)!.style.display = "none";
+          showToast(ds.error ?? "Operation failed", "error");
         }
       }
-      wireVisibility();
-      wireSearch("urls");
+      wireRowActions();
+      wireSearch();
     })();
   }
 </script>

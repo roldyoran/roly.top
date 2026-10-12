@@ -184,7 +184,7 @@ const initial = user.name?.trim()?.charAt(0)?.toUpperCase() ?? "U";
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton href={adminHref} tooltip={t("sidebar.admin")}>
+                  <SidebarMenuButton href={adminHref} isActive={activePath === adminHref} tooltip={t("sidebar.admin")}>
                     <Shield />
                     <span>{t("sidebar.admin")}</span>
                   </SidebarMenuButton>
