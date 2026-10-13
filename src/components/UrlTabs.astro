@@ -29,11 +29,6 @@ const lang = getLangFromUrl(Astro.url);
       <TabsTrigger value="urls">
         <List class="size-3.5" />
         {t("tabs.urls")}
-        <span
-          data-public-count
-          class="inline-flex h-4.5 min-w-5 items-center justify-center rounded-full bg-primary/10 px-1 py-0 font-mono text-[10px] font-bold text-primary"
-          >{t("tabs count")}</span
-        >
       </TabsTrigger>
       <TabsTrigger value="qr">
         <QrCode class="size-3.5" />
@@ -130,13 +125,3 @@ const lang = getLangFromUrl(Astro.url);
   </Tabs>
 </div>
 
-<script>
-  // El badge de la pestaña muestra el total real cuando la isla termina
-  // de cargar (`roly:public-count`); antes queda el placeholder de i18n.
-  document.addEventListener("roly:public-count", (e) => {
-    const total = (e as CustomEvent<{ total: number }>).detail?.total;
-    if (typeof total !== "number") return;
-    const badge = document.querySelector<HTMLElement>("[data-public-count]");
-    if (badge) badge.textContent = total.toLocaleString();
-  });
-</script>
