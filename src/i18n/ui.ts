@@ -131,6 +131,7 @@ export const ui = {
     "qr.scan.title": "Escanear QR",
     "qr.scan.desc": "Pega, arrastra o suelta una imagen con un QR para leerlo al instante.",
     "qr.scan.paste": "Pegar imagen y escanear",
+    "qr.scan.upload": "Cargar imagen",
     "qr.scan.clear": "Limpiar",
     "qr.scan.result": "Resultado",
     "qr.scan.copy": "Copiar resultado",
@@ -138,7 +139,7 @@ export const ui = {
     "qr.scan.openLink": "Abrir enlace ↗",
     "qr.scan.emptyResult": "—",
     "qr.scan.noImageYet": "Sin imagen todavía",
-    "qr.scan.dropHint": "Arrastra una imagen aquí",
+    "qr.scan.dropHint": "Arrastra una imagen aquí o haz clic para elegirla",
     "qr.scan.httpsNote":
       "El botón de pegar necesita HTTPS o localhost. Si no funciona, haz clic en la página y pulsa Ctrl+V.",
     "qr.scan.statusReady": "Listo para pegar una imagen.",
@@ -559,6 +560,7 @@ export const ui = {
     "qr.scan.title": "Scan QR",
     "qr.scan.desc": "Paste, drag or drop an image with a QR code to read it instantly.",
     "qr.scan.paste": "Paste image and scan",
+    "qr.scan.upload": "Upload image",
     "qr.scan.clear": "Clear",
     "qr.scan.result": "Result",
     "qr.scan.copy": "Copy result",
@@ -566,7 +568,7 @@ export const ui = {
     "qr.scan.openLink": "Open link ↗",
     "qr.scan.emptyResult": "—",
     "qr.scan.noImageYet": "No image yet",
-    "qr.scan.dropHint": "Drag an image here",
+    "qr.scan.dropHint": "Drag an image here or click to choose one",
     "qr.scan.httpsNote":
       "The paste button needs HTTPS or localhost. If it doesn't work, click the page and press Ctrl+V.",
     "qr.scan.statusReady": "Ready to paste an image.",

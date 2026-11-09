@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  firstImageIndex,
   isHttpUrl,
   isImageType,
   pickImageType,
@@ -45,6 +46,23 @@ describe("isHttpUrl", () => {
     expect(isHttpUrl("not a link")).toBe(false);
     expect(isHttpUrl("")).toBe(false);
     expect(isHttpUrl("ftp://files.example.com")).toBe(false);
+  });
+});
+
+describe("firstImageIndex", () => {
+  it("returns the index of the first image", () => {
+    expect(
+      firstImageIndex([
+        { type: "application/pdf" },
+        { type: "image/png" },
+        { type: "image/jpeg" },
+      ]),
+    ).toBe(1);
+  });
+
+  it("returns -1 when there is no image", () => {
+    expect(firstImageIndex([{ type: "text/plain" }])).toBe(-1);
+    expect(firstImageIndex([])).toBe(-1);
   });
 });
 

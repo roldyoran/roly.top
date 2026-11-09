@@ -20,6 +20,16 @@ export function pickImageType(types: readonly string[]): string | null {
 }
 
 /**
+ * Índice del primer archivo de imagen, o -1 si no hay ninguno.
+ * Sirve para `<input type="file">` y drag & drop con varios archivos.
+ */
+export function firstImageIndex(
+  files: readonly { type: string }[],
+): number {
+  return files.findIndex((f) => isImageType(f.type));
+}
+
+/**
  * `true` solo para URLs `http(s)` — lo que se pinta como enlace "Abrir".
  * Rechaza `javascript:`, `data:` y texto plano (anti-XSS).
  */
