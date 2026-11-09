@@ -108,6 +108,10 @@ export default defineConfig({
         'astro/zod',
         '@astrojs/cloudflare/handler',
       ],
+      // `@starwind-ui/astro` rompe el pre-bundling SSR de Vite
+      // (`deps_ssr/@starwind-ui_astro_*.js` inexistente): se sirve como
+      // fuente sin optimizar en vez de pre-empaquetarlo.
+      exclude: ['@starwind-ui/astro'],
     },
     server: {
       watch: {
