@@ -12,6 +12,7 @@ import Link from "@tabler/icons/outline/link.svg";
 import Globe from "@tabler/icons/outline/world.svg";
 import Lock from "@tabler/icons/outline/lock.svg";
 import QrCode from "@tabler/icons/outline/qrcode.svg";
+import ChartBar from "@tabler/icons/outline/chart-bar.svg";
 import ExternalLink from "@tabler/icons/outline/external-link.svg";
 import Calendar from "@tabler/icons/outline/calendar.svg";
 import {
@@ -25,6 +26,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/starwind/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/starwind/dialog";
 import type { TranslationKey } from "@/i18n/utils";
 // Tipo único de URL (ver `src/shared/dashboard.ts`): antes estaba copiado
 // en este archivo y en `DashboardIndex.astro`.
@@ -69,6 +78,13 @@ const rows = initialUrls.map((u) => ({
   data-visibility-error={t("links.visibility.error")}
   data-copy-ok={t("qr.copied")}
   data-copy-error={t("qr.failed")}
+  data-analytics-loading={t("links.analytics.loading")}
+  data-analytics-error={t("links.analytics.error")}
+  data-analytics-empty={t("links.analytics.empty")}
+  data-analytics-total={t("links.analytics.total")}
+  data-analytics-by-country={t("links.analytics.byCountry")}
+  data-analytics-by-device={t("links.analytics.byDevice")}
+  data-analytics-by-browser={t("links.analytics.byBrowser")}
 >
   <header class="flex items-center justify-between gap-3">
     <div class="flex min-w-0 items-center gap-2.5">
@@ -189,10 +205,11 @@ const rows = initialUrls.map((u) => ({
                     <span class="shrink-0 font-mono text-[10px]">{l.age}</span>
                   </div>
                   {l.title && <p class="truncate text-xs text-muted-foreground">{l.title}</p>}
-                  {/* Acciones en grilla 2x2 en móvil (4 botones con etiqueta
+                  {/* Acciones en grilla 2x2 en móvil (los botones con etiqueta
                       no caben en una sola fila de ~300px y el de borrar se
                       desbordaba). Este bloque solo existe en el layout móvil
-                      (`sm:hidden` del padre). */}
+                      (`sm:hidden` del padre). Analíticas es la 5ª acción y
+                      borrar ocupa la fila completa. */}
                   <div class="grid grid-cols-2 gap-2 border-t border-border/50 pt-3">
                     <Button
                       variant="ghost"
@@ -221,7 +238,19 @@ const rows = initialUrls.map((u) => ({
                       <Copy class="size-4 shrink-0" />
                       <span class="truncate font-mono text-[11px]">{t("links.menu.copy")}</span>
                     </Button>
-                    <AlertDialogTrigger targetId="links-delete-dialog" asChild class="min-w-0">
+                    <DialogTrigger targetId="links-analytics-dialog" asChild class="min-w-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="w-full min-w-0 justify-center gap-1.5 text-muted-foreground"
+                        data-analytics-id={l.id}
+                        data-analytics-code={l.shortCode}
+                      >
+                        <ChartBar class="size-4 shrink-0" />
+                        <span class="truncate font-mono text-[11px]">{t("links.menu.analytics")}</span>
+                      </Button>
+                    </DialogTrigger>
+                    <AlertDialogTrigger targetId="links-delete-dialog" asChild class="col-span-2 min-w-0">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -351,6 +380,22 @@ const rows = initialUrls.map((u) => ({
                         </TooltipTrigger>
                         <TooltipContent>{t("links.menu.copy")}</TooltipContent>
                       </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DialogTrigger targetId="links-analytics-dialog" asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              class="text-muted-foreground"
+                              data-analytics-id={l.id}
+                              data-analytics-code={l.shortCode}
+                            >
+                              <ChartBar class="size-5" />
+                            </Button>
+                          </DialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>{t("links.menu.analytics")}</TooltipContent>
+                      </Tooltip>
                       {isAdmin && (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -418,11 +463,32 @@ const rows = initialUrls.map((u) => ({
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
+
+  {/* Analíticas por enlace: un solo diálogo compartido; el JS lo rellena
+      con el breakdown país/dispositivo/navegador del endpoint
+      `GET /api/v1/analytics/[urlId]` (ver `src/lib/link-analytics.ts`). */}
+  <Dialog id="links-analytics-dialog">
+    <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>{t("links.analytics.title")}</DialogTitle>
+        <DialogDescription>
+          <span class="mt-1 block truncate font-mono font-bold" data-analytics-code-label></span>
+        </DialogDescription>
+      </DialogHeader>
+      <div data-analytics-body></div>
+    </DialogContent>
+  </Dialog>
 </section>
 
 
 
 <script>
+  import {
+    escapeHtml,
+    sharePercent,
+    topEntries,
+  } from "@/lib/link-analytics";
+
   function showToast(title: string, variant: "success" | "error" = "success") {
     const manager = window.__starwindRuntime__?.toast;
     if (manager) {
@@ -528,8 +594,7 @@ const rows = initialUrls.map((u) => ({
     });
   }
 
-  function initDeleteDialog(okMessage: string, errorMessage: string) {
-    // El diálogo lo abre cada `AlertDialogTrigger` de las filas; aquí solo
+  function initDeleteDialog(okMessage: string, errorMessage: string) {    // El diálogo lo abre cada `AlertDialogTrigger` de las filas; aquí solo
     // se guarda el id pendiente y se pinta el código en la descripción.
     // Al confirmar se borra vía API y se quita la fila sin recargar.
     let pendingId: string | null = null;
@@ -569,6 +634,134 @@ const rows = initialUrls.map((u) => ({
       });
   }
 
+  interface AnalyticsBreakdown {
+    totalClicks: number;
+    clicksByCountry: { country: string; count: number }[];
+    clicksByDevice: { device: string; count: number }[];
+    clicksByBrowser: { browser: string; count: number }[];
+  }
+
+  // Diálogo de analíticas por enlace: cada botón `[data-analytics-id]` abre
+  // el diálogo compartido y trae el breakdown del endpoint real; el render
+  // usa los helpers testeados de `@/lib/link-analytics`.
+  function initAnalyticsDialog() {
+    const panel = document.querySelector<HTMLElement>(".links-panel");
+    const body = document.querySelector<HTMLElement>("[data-analytics-body]");
+    const codeLabel = document.querySelector<HTMLElement>(
+      "[data-analytics-code-label]",
+    );
+    if (!panel || !body) return;
+
+    const loadingLabel =
+      panel.dataset.analyticsLoading ?? "Loading analytics…";
+    const errorLabel =
+      panel.dataset.analyticsError ?? "Could not load analytics";
+    const emptyLabel =
+      panel.dataset.analyticsEmpty ?? "No clicks on this link yet.";
+    const totalLabel = panel.dataset.analyticsTotal ?? "total clicks";
+    const groupLabels = [
+      panel.dataset.analyticsByCountry ?? "Countries",
+      panel.dataset.analyticsByDevice ?? "Devices",
+      panel.dataset.analyticsByBrowser ?? "Browsers",
+    ];
+
+    function renderGroup(
+      title: string,
+      items: { label: string; count: number }[],
+      total: number,
+    ): string {
+      const top = topEntries(items, 5);
+      const rows = top
+        .map(({ label, count }) => {
+          const pct = sharePercent(count, total);
+          return (
+            `<div class="flex items-center gap-3">` +
+            `<span class="w-24 shrink-0 truncate font-mono text-xs text-muted-foreground">${escapeHtml(label)}</span>` +
+            `<div class="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">` +
+            `<div class="h-full rounded-full bg-primary" style="width: ${pct}%"></div>` +
+            `</div>` +
+            `<span class="w-10 shrink-0 text-right font-mono text-xs tabular-nums text-foreground">${count.toLocaleString()}</span>` +
+            `</div>`
+          );
+        })
+        .join("");
+      return (
+        `<div class="flex flex-col gap-2">` +
+        `<p class="font-mono text-[11px] tracking-wider text-muted-foreground uppercase">${escapeHtml(title)}</p>` +
+        (rows ||
+          `<p class="font-mono text-xs text-muted-foreground">${escapeHtml(emptyLabel)}</p>`) +
+        `</div>`
+      );
+    }
+
+    document
+      .querySelectorAll<HTMLElement>("[data-analytics-id]")
+      .forEach((el) => {
+        el.addEventListener("click", async () => {
+          const id = el.getAttribute("data-analytics-id");
+          if (!id || !body) return;
+          if (codeLabel) {
+            codeLabel.textContent =
+              el.getAttribute("data-analytics-code") ?? "";
+          }
+          body.innerHTML =
+            `<p class="py-6 text-center font-mono text-xs text-muted-foreground">${escapeHtml(loadingLabel)}</p>`;
+          try {
+            const res = await fetch(`/api/v1/analytics/${id}`, {
+              credentials: "include",
+            });
+            if (!res.ok) throw new Error("analytics failed");
+            const json = (await res.json()) as {
+              data?: AnalyticsBreakdown;
+            };
+            const data = json.data;
+            if (!data) throw new Error("analytics empty");
+            const total = data.totalClicks ?? 0;
+            if (total === 0) {
+              body.innerHTML =
+                `<p class="py-6 text-center font-mono text-xs text-muted-foreground">${escapeHtml(emptyLabel)}</p>`;
+              return;
+            }
+            body.innerHTML =
+              `<div class="flex flex-col gap-5">` +
+              `<div class="flex items-baseline gap-2">` +
+              `<span class="font-display text-2xl font-extrabold tabular-nums text-foreground">${total.toLocaleString()}</span>` +
+              `<span class="font-mono text-xs text-muted-foreground">${escapeHtml(totalLabel)}</span>` +
+              `</div>` +
+              renderGroup(
+                groupLabels[0],
+                data.clicksByCountry.map((r) => ({
+                  label: r.country,
+                  count: r.count,
+                })),
+                total,
+              ) +
+              renderGroup(
+                groupLabels[1],
+                data.clicksByDevice.map((r) => ({
+                  label: r.device,
+                  count: r.count,
+                })),
+                total,
+              ) +
+              renderGroup(
+                groupLabels[2],
+                data.clicksByBrowser.map((r) => ({
+                  label: r.browser,
+                  count: r.count,
+                })),
+                total,
+              ) +
+              `</div>`;
+          } catch {
+            body.innerHTML =
+              `<p class="py-6 text-center font-mono text-xs text-error">${escapeHtml(errorLabel)}</p>`;
+            showToast(errorLabel, "error");
+          }
+        });
+      });
+  }
+
   const panel = document.querySelector<HTMLElement>(".links-panel");
   initDeleteDialog(
     panel?.dataset.linksOk ?? "Link deleted",
@@ -585,4 +778,5 @@ const rows = initialUrls.map((u) => ({
   );
   initSearch();
   initMenuActions();
+  initAnalyticsDialog();
 </script>

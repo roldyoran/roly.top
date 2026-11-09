@@ -126,6 +126,10 @@ export const ui = {
     "qr.gen.fieldLng": "Longitud",
     "qr.gen.logo": "Logo central",
     "qr.gen.invalid": "Completa los campos para generar el QR.",
+    "qr.gen.loadError": "No se pudo cargar el motor QR. Revisa tu conexión.",
+    "qr.gen.retry": "Reintentar",
+    "qr.gen.islandError":
+      "El generador no se pudo cargar. Revisa tu conexión e inténtalo de nuevo.",
 
     // Enlaces públicos (vista previa con datos de ejemplo)
     "public.title": "Enlaces Públicos",
@@ -186,6 +190,30 @@ export const ui = {
     "tabs.urls": "URLs públicas",
     "tabs.qr": "Generador QR",
     "tabs count": "40",
+
+    // Features
+    "features.eyebrow": "Todo incluido",
+    "features.title": "Más que un acortador",
+    "features.subtitle":
+      "Todo lo que necesitas para crear, compartir y medir tus enlaces.",
+    "features.alias.title": "Alias personalizado",
+    "features.alias.desc":
+      "Ponle nombre a tus enlaces para que sean fáciles de recordar y compartir, como roly.top/mi-marca. Tú eliges las letras y los números.",
+    "features.qr.title": "QR multitipo",
+    "features.qr.desc":
+      "Crea códigos QR de lo que necesites: una web, un texto, tu WiFi o tu contacto. Con tu logo y listos para descargar en PNG o SVG.",
+    "features.analytics.title": "Analíticas reales",
+    "features.analytics.desc":
+      "Descubre de qué país vienen tus visitas, qué dispositivo usan y con qué navegador te abren. Así siempre sabes qué está funcionando.",
+    "features.dashboard.title": "Dashboard completo",
+    "features.dashboard.desc":
+      "Cambia el destino de un enlace, bórralo o crea su código QR sin salir del panel. Todo tu historial, ordenado en un solo sitio.",
+    "features.speed.title": "Rápido y seguro",
+    "features.speed.desc":
+      "Tus enlaces se sirven desde la red Edge global en milisegundos, con protección contra abuso para que estén siempre disponibles.",
+    "features.free.title": "Código abierto",
+    "features.free.desc":
+      "El código del proyecto es público: puedes auditarlo, aprender de él o mejorarlo con nosotros en GitHub.",
 
     // URL list
     "url.copy": "Copiar",
@@ -306,6 +334,7 @@ export const ui = {
     "links.menu.copy": "Copiar enlace",
     "links.menu.open": "Abrir enlace",
     "links.menu.qr": "Generar QR",
+    "links.menu.analytics": "Ver analíticas",
     "links.menu.makePublic": "Hacer público",
     "links.menu.makePrivate": "Hacer privado",
     "links.menu.delete": "Eliminar",
@@ -318,6 +347,14 @@ export const ui = {
     "links.delete.cancel": "Cancelar",
     "links.delete.ok": "Enlace eliminado",
     "links.delete.error": "No se pudo eliminar",
+    "links.analytics.title": "Analíticas del enlace",
+    "links.analytics.total": "clics totales",
+    "links.analytics.byCountry": "Países",
+    "links.analytics.byDevice": "Dispositivos",
+    "links.analytics.byBrowser": "Navegadores",
+    "links.analytics.loading": "Cargando analíticas…",
+    "links.analytics.error": "No se pudieron cargar las analíticas",
+    "links.analytics.empty": "Aún no hay clics en este enlace.",
     "links.empty.title": "Aún no tienes enlaces",
     "links.empty.desc": "Crea tu primer enlace desde la página principal.",
     "links.loading": "Cargando…",
@@ -486,6 +523,10 @@ export const ui = {
     "qr.gen.fieldLng": "Longitude",
     "qr.gen.logo": "Center logo",
     "qr.gen.invalid": "Fill in the fields to generate the QR.",
+    "qr.gen.loadError": "Could not load the QR engine. Check your connection.",
+    "qr.gen.retry": "Retry",
+    "qr.gen.islandError":
+      "The generator failed to load. Check your connection and try again.",
 
     // Public links (preview with sample data)
     "public.title": "Public Links",
@@ -544,6 +585,30 @@ export const ui = {
     "tabs.urls": "Public URLs",
     "tabs.qr": "QR Generator",
     "tabs count": "40",
+
+    // Features
+    "features.eyebrow": "All included",
+    "features.title": "More than a shortener",
+    "features.subtitle":
+      "Everything you need to create, share and measure your links.",
+    "features.alias.title": "Custom alias",
+    "features.alias.desc":
+      "Name your links so they're easy to remember and share, like roly.top/my-brand. You pick the letters and numbers.",
+    "features.qr.title": "Multi-type QR",
+    "features.qr.desc":
+      "Create QR codes for whatever you need: a website, a text, your WiFi or your contact card. With your logo, ready to download as PNG or SVG.",
+    "features.analytics.title": "Real analytics",
+    "features.analytics.desc":
+      "See which country your visitors come from, what device they use and which browser they're on — so you always know what's working.",
+    "features.dashboard.title": "Full dashboard",
+    "features.dashboard.desc":
+      "Change a link's destination, delete it or create its QR code without leaving the panel. Your whole history, organized in one place.",
+    "features.speed.title": "Fast and secure",
+    "features.speed.desc":
+      "Your links are served from the global Edge network in milliseconds, with anti-abuse protection so they're always available.",
+    "features.free.title": "Open source",
+    "features.free.desc":
+      "The project's code is public: you can audit it, learn from it or improve it with us on GitHub.",
 
     // URL list
     "url.copy": "Copy",
@@ -664,6 +729,7 @@ export const ui = {
     "links.menu.copy": "Copy link",
     "links.menu.open": "Open link",
     "links.menu.qr": "Generate QR",
+    "links.menu.analytics": "View analytics",
     "links.menu.makePublic": "Make public",
     "links.menu.makePrivate": "Make private",
     "links.menu.delete": "Delete",
@@ -675,6 +741,14 @@ export const ui = {
     "links.delete.cancel": "Cancel",
     "links.delete.ok": "Link deleted",
     "links.delete.error": "Could not delete",
+    "links.analytics.title": "Link analytics",
+    "links.analytics.total": "total clicks",
+    "links.analytics.byCountry": "Countries",
+    "links.analytics.byDevice": "Devices",
+    "links.analytics.byBrowser": "Browsers",
+    "links.analytics.loading": "Loading analytics…",
+    "links.analytics.error": "Could not load analytics",
+    "links.analytics.empty": "No clicks on this link yet.",
     "links.empty.title": "You have no links yet",
     "links.empty.desc": "Create your first link from the homepage.",
     "links.loading": "Loading…",

@@ -19,6 +19,7 @@
     type QrType,
   } from "@/lib/qr-payload";
   import { buildBrandedQrOptions } from "@/lib/qr-style";
+  import { loadQrCtor } from "@/lib/qr-loader";
 
   interface Labels {
     title: string;
@@ -64,6 +65,8 @@
     fieldLng: string;
     logo: string;
     invalid: string;
+    loadError: string;
+    retry: string;
     current: string;
     png: string;
     svg: string;
@@ -105,8 +108,10 @@
   let qr = $state<QrInstance | null>(null);
   let QrCtor = $state<QrClass | null>(null);
   let ready = $state(false);
+  let loadError = $state(false);
   let busy = $state<"png" | "svg" | null>(null);
   let copied = $state(false);
+  let cancelled = false;
 
   const payload = $derived(buildQrPayload(qrType, fields));
   const valid = $derived(payload.length > 0);
@@ -124,8 +129,35 @@
     window.__starwindRuntime__?.toast?.add({ title, variant });
   }
 
+  // Motor QR (~500KB) con reintento: si la descarga falla (red caída,
+  // chunk corrupto) se muestra error + botón en vez del spinner infinito.
+  async function loadQr() {
+    loadError = false;
+    try {
+      const mod = await loadQrCtor(() => import("qr-code-styling"));
+      if (cancelled || !mountEl) return;
+      QrCtor = mod.default;
+      qr = new QrCtor(buildBrandedQrOptions(renderData, { withLogo: showLogo }));
+      qr.append(mountEl);
+      ready = true;
+    } catch {
+      if (!cancelled) loadError = true;
+    }
+  }
+
+  // Marca de vida para el fallback de `UrlTabs`: si la isla hidrata, el
+  // mensaje de "no se pudo cargar" nunca debe aparecer (y se oculta si
+  // la isla llega tarde).
+  function markMounted() {
+    document
+      .querySelector("[data-qr-island-fallback]")
+      ?.setAttribute("hidden", "");
+    document
+      .querySelector("[data-qr-generator]")
+      ?.setAttribute("data-qr-ready", "");
+  }
+
   onMount(() => {
-    let cancelled = false;
     // Las filas de "Mis enlaces" y "Enlaces Públicos" (dashboard)
     // pre-rellenan el generador disparando `roly:qr-generate` con la URL
     // corta: se mapea al tipo URL.
@@ -137,16 +169,8 @@
       }
     }
     window.addEventListener("roly:qr-generate", handleQrGenerate);
-    (async () => {
-      const { default: QRCodeStyling } = await import("qr-code-styling");
-      if (cancelled || !mountEl) return;
-      QrCtor = QRCodeStyling;
-      qr = new QRCodeStyling(buildBrandedQrOptions(renderData, { withLogo: showLogo }));
-      qr.append(mountEl);
-      ready = true;
-    })().catch(() => {
-      // Sin generador (bundle falló): se queda el loader + reintento.
-    });
+    markMounted();
+    void loadQr();
     return () => {
       cancelled = true;
       window.removeEventListener("roly:qr-generate", handleQrGenerate);
@@ -200,7 +224,7 @@
   }
 </script>
 
-<section aria-label={labels.title} class="mx-auto flex w-full max-w-3xl flex-col gap-5">
+<section aria-label={labels.title} data-qr-generator class="mx-auto flex w-full max-w-3xl flex-col gap-5">
   <div class="text-center">
     <h2 class="font-display text-lg font-bold tracking-tight text-foreground">{labels.title}</h2>
     <p class="mt-1 text-xs text-muted-foreground">{labels.desc}</p>
@@ -230,22 +254,35 @@
     <div class="flex flex-col items-center gap-2">
       <div class="mx-auto flex w-full max-w-80 items-center justify-center rounded-2xl border border-border/60 bg-white p-4 sm:mx-0 sm:w-72">
         {#if !ready}
-          <div class="flex flex-col items-center gap-3 py-10">
-            <svg
-              class="size-8 animate-spin text-primary"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-            </svg>
-            <p class="animate-pulse font-mono text-xs text-muted-foreground">{labels.loading}</p>
-          </div>
+          {#if loadError}
+            <div class="flex flex-col items-center gap-3 py-10 text-center">
+              <p class="max-w-60 font-mono text-xs text-error">{labels.loadError}</p>
+              <button
+                type="button"
+                onclick={() => void loadQr()}
+                class="inline-flex h-9 items-center rounded-lg border border-border/60 px-4 font-mono text-xs font-semibold text-foreground transition-colors hover:border-primary/30 hover:bg-primary/5"
+              >
+                {labels.retry}
+              </button>
+            </div>
+          {:else}
+            <div class="flex flex-col items-center gap-3 py-10">
+              <svg
+                class="size-8 animate-spin text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              <p class="animate-pulse font-mono text-xs text-muted-foreground">{labels.loading}</p>
+            </div>
+          {/if}
         {/if}
         <div bind:this={mountEl} class="flex w-full items-center justify-center [&>canvas]:h-auto [&>canvas]:w-full [&>canvas]:rounded-xl [&>svg]:h-auto [&>svg]:w-full [&>svg]:rounded-xl"></div>
       </div>

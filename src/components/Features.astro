@@ -1,0 +1,139 @@
+---
+import Card from "@/components/starwind/card/Card.astro";
+import Link from "@tabler/icons/outline/link.svg";
+import QrCode from "@tabler/icons/outline/qrcode.svg";
+import ChartBar from "@tabler/icons/outline/chart-bar.svg";
+import LayoutDashboard from "@tabler/icons/outline/layout-dashboard.svg";
+import Bolt from "@tabler/icons/outline/bolt.svg";
+import BrandGithub from "@tabler/icons/outline/brand-github.svg";
+import type { TranslationKey } from "../i18n/utils";
+
+const { t } = Astro.props as { t: (key: TranslationKey) => string };
+
+// Solo funciones que existen de verdad en roly.top (verificado en el
+// código: alias, QR multitipo, analíticas, dashboard, Edge+antiabuso,
+// cuota anónima y API REST). Nada de dominios propios ni contraseñas.
+const features = [
+  { Icon: Link, title: "features.alias.title", desc: "features.alias.desc" },
+  { Icon: QrCode, title: "features.qr.title", desc: "features.qr.desc" },
+  {
+    Icon: ChartBar,
+    title: "features.analytics.title",
+    desc: "features.analytics.desc",
+  },
+  {
+    Icon: LayoutDashboard,
+    title: "features.dashboard.title",
+    desc: "features.dashboard.desc",
+  },
+  { Icon: Bolt, title: "features.speed.title", desc: "features.speed.desc" },
+  {
+    Icon: BrandGithub,
+    title: "features.free.title",
+    desc: "features.free.desc",
+  },
+] as const;
+---
+
+<section class="border-t border-border bg-background px-5 py-14 sm:px-7 sm:py-20">
+  <div class="mx-auto w-full max-w-5xl">
+    <p
+      class="feature-item mb-3 text-center font-mono text-xs tracking-widest text-primary uppercase"
+    >
+      {t("features.eyebrow")}
+    </p>
+    <h2
+      class="feature-item font-display mb-3 text-center text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl"
+      style="transition-delay: 0.08s;"
+    >
+      {t("features.title")}
+    </h2>
+    <p
+      class="feature-item mx-auto mb-10 max-w-xl text-center text-sm leading-relaxed text-muted-foreground sm:mb-12 sm:text-base"
+      style="transition-delay: 0.16s;"
+    >
+      {t("features.subtitle")}
+    </p>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        features.map(({ Icon, title, desc }, i) => (
+          <Card
+            class="feature-item feature-card group p-6"
+            style={`transition-delay: ${0.05 + i * 0.06}s;`}
+          >
+            <div class="mb-4 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+              <Icon class="size-5" />
+            </div>
+            <h3 class="font-display mb-2 text-base font-bold tracking-tight text-foreground">
+              {t(title)}
+            </h3>
+            <p class="text-sm leading-relaxed text-muted-foreground">
+              {t(desc)}
+            </p>
+          </Card>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .feature-card {
+    transition:
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .feature-card:hover {
+    border-color: oklch(0.7 0.18 130 / 0.35);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.45),
+      0 0 0 1px oklch(0.7 0.18 130 / 0.12),
+      0 0 24px oklch(0.7 0.18 130 / 0.08);
+  }
+
+  .feature-item {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .feature-item.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-item {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initFeaturesAnimation() {
+    const items = document.querySelectorAll(".feature-item:not(.is-visible)");
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+    items.forEach((el) => observer.observe(el));
+  }
+
+  document.addEventListener("astro:page-load", initFeaturesAnimation);
+  initFeaturesAnimation();
+</script>

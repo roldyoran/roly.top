@@ -65,9 +65,10 @@ const lang = getLangFromUrl(Astro.url);
       {/* Generador público multitipo (100% anónimo, sin cuenta): la isla
           hidrata con `client:visible` y la lib QR (~500KB) solo se descarga
           al entrar en viewport, igual que la lista pública. */}
-      <PublicQrGenerator
-        client:visible
-        labels={{
+      <div data-qr-panel>
+        <PublicQrGenerator
+          client:visible
+          labels={{
           title: t("qr.gen.title"),
           desc: t("qr.gen.desc"),
           typeLabel: t("qr.gen.typeLabel"),
@@ -111,6 +112,8 @@ const lang = getLangFromUrl(Astro.url);
           fieldLng: t("qr.gen.fieldLng"),
           logo: t("qr.gen.logo"),
           invalid: t("qr.gen.invalid"),
+          loadError: t("qr.gen.loadError"),
+          retry: t("qr.gen.retry"),
           current: t("qr.current"),
           png: t("qr.png"),
           svg: t("qr.svg"),
@@ -121,7 +124,61 @@ const lang = getLangFromUrl(Astro.url);
           loading: t("qr.loading"),
         }}
       />
+      </div>
+      {/* Red de seguridad: si la isla del generador nunca hidrata (bundle
+          bloqueado por red/adblock), el tab quedaba muerto en silencio. Este
+          aviso solo aparece si el panel se vuelve visible y la isla no marca
+          `data-qr-ready` en 12s; si la isla llega tarde, ella misma lo oculta. */}
+      <p
+        hidden
+        data-qr-island-fallback
+        class="mx-auto mt-4 max-w-3xl rounded-xl border border-error/40 bg-error/5 px-4 py-3 text-center font-mono text-xs text-error"
+      >
+        {t("qr.gen.islandError")}{" "}
+        <button
+          type="button"
+          data-qr-island-reload
+          class="font-bold underline underline-offset-2"
+        >
+          {t("qr.gen.retry")}
+        </button>
+      </p>
     </TabsContent>
   </Tabs>
 </div>
+
+<script>
+  // Fallback del generador QR (ver comentario en el markup): se observa el
+  // panel del tab y solo cuando entra en viewport empieza a contar 12s.
+  // Así no salta en falso mientras el usuario está en el otro tab.
+  (function () {
+    const panel = document.querySelector<HTMLElement>("[data-qr-panel]");
+    const fallback = document.querySelector<HTMLElement>(
+      "[data-qr-island-fallback]",
+    );
+    if (!panel || !fallback) return;
+
+    document
+      .querySelector("[data-qr-island-reload]")
+      ?.addEventListener("click", () => window.location.reload());
+
+    if (!("IntersectionObserver" in window)) {
+      if (!document.querySelector("[data-qr-ready]")) {
+        fallback.removeAttribute("hidden");
+      }
+      return;
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      window.setTimeout(() => {
+        if (!document.querySelector("[data-qr-ready]")) {
+          fallback.removeAttribute("hidden");
+        }
+      }, 12000);
+    });
+    io.observe(panel);
+  })();
+</script>
 
