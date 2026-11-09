@@ -126,6 +126,36 @@ export const ui = {
     "qr.gen.fieldLng": "Longitud",
     "qr.gen.logo": "Logo central",
     "qr.gen.invalid": "Completa los campos para generar el QR.",
+
+    // Escáner QR (leer desde portapapeles / arrastrar)
+    "qr.scan.title": "Escanear QR",
+    "qr.scan.desc": "Pega, arrastra o suelta una imagen con un QR para leerlo al instante.",
+    "qr.scan.paste": "Pegar imagen y escanear",
+    "qr.scan.clear": "Limpiar",
+    "qr.scan.result": "Resultado",
+    "qr.scan.copy": "Copiar resultado",
+    "qr.scan.copied": "¡Copiado!",
+    "qr.scan.openLink": "Abrir enlace ↗",
+    "qr.scan.emptyResult": "—",
+    "qr.scan.noImageYet": "Sin imagen todavía",
+    "qr.scan.dropHint": "Arrastra una imagen aquí",
+    "qr.scan.httpsNote":
+      "El botón de pegar necesita HTTPS o localhost. Si no funciona, haz clic en la página y pulsa Ctrl+V.",
+    "qr.scan.statusReady": "Listo para pegar una imagen.",
+    "qr.scan.statusReading": "Leyendo el portapapeles…",
+    "qr.scan.statusAnalyzing": "Analizando imagen…",
+    "qr.scan.statusNoImage": "El portapapeles no contiene una imagen válida.",
+    "qr.scan.statusUnsupported":
+      "Tu navegador no permite leer el portapapeles con un botón. Usa Ctrl+V.",
+    "qr.scan.statusDenied":
+      "Permiso denegado para leer el portapapeles. Pulsa Ctrl+V sobre la página.",
+    "qr.scan.statusClipboardEmpty":
+      "No hay ninguna imagen en el portapapeles. Copia una imagen (no un archivo) e inténtalo de nuevo.",
+    "qr.scan.statusNoQr": "No se ha detectado ningún QR en la imagen.",
+    "qr.scan.statusDone": "QR detectado correctamente.",
+    "qr.scan.statusError": "Error al procesar la imagen.",
+    "qr.scan.statusReadError": "No se pudo leer el portapapeles.",
+    "qr.scan.statusCopyError": "No se pudo copiar el resultado.",
     "qr.gen.loadError": "No se pudo cargar el motor QR. Revisa tu conexión.",
     "qr.gen.retry": "Reintentar",
     "qr.gen.islandError":
@@ -189,6 +219,7 @@ export const ui = {
     // Tabs
     "tabs.urls": "URLs públicas",
     "tabs.qr": "Generador QR",
+    "tabs.scan": "Escanear QR",
     "tabs count": "40",
 
     // Features
@@ -523,6 +554,36 @@ export const ui = {
     "qr.gen.fieldLng": "Longitude",
     "qr.gen.logo": "Center logo",
     "qr.gen.invalid": "Fill in the fields to generate the QR.",
+
+    // QR scanner (read from clipboard / drag & drop)
+    "qr.scan.title": "Scan QR",
+    "qr.scan.desc": "Paste, drag or drop an image with a QR code to read it instantly.",
+    "qr.scan.paste": "Paste image and scan",
+    "qr.scan.clear": "Clear",
+    "qr.scan.result": "Result",
+    "qr.scan.copy": "Copy result",
+    "qr.scan.copied": "Copied!",
+    "qr.scan.openLink": "Open link ↗",
+    "qr.scan.emptyResult": "—",
+    "qr.scan.noImageYet": "No image yet",
+    "qr.scan.dropHint": "Drag an image here",
+    "qr.scan.httpsNote":
+      "The paste button needs HTTPS or localhost. If it doesn't work, click the page and press Ctrl+V.",
+    "qr.scan.statusReady": "Ready to paste an image.",
+    "qr.scan.statusReading": "Reading the clipboard…",
+    "qr.scan.statusAnalyzing": "Analyzing image…",
+    "qr.scan.statusNoImage": "The clipboard doesn't contain a valid image.",
+    "qr.scan.statusUnsupported":
+      "Your browser won't let a button read the clipboard. Use Ctrl+V.",
+    "qr.scan.statusDenied":
+      "Clipboard read permission denied. Press Ctrl+V on the page.",
+    "qr.scan.statusClipboardEmpty":
+      "No image in the clipboard. Copy an image (not a file) and try again.",
+    "qr.scan.statusNoQr": "No QR code detected in the image.",
+    "qr.scan.statusDone": "QR detected successfully.",
+    "qr.scan.statusError": "Error processing the image.",
+    "qr.scan.statusReadError": "Could not read the clipboard.",
+    "qr.scan.statusCopyError": "Could not copy the result.",
     "qr.gen.loadError": "Could not load the QR engine. Check your connection.",
     "qr.gen.retry": "Retry",
     "qr.gen.islandError":
@@ -584,6 +645,7 @@ export const ui = {
     // Tabs
     "tabs.urls": "Public URLs",
     "tabs.qr": "QR Generator",
+    "tabs.scan": "Scan QR",
     "tabs count": "40",
 
     // Features

@@ -32,6 +32,7 @@
     "astro": "^7.2.10",
     "better-auth": "^1.7.2",
     "drizzle-orm": "~0.45.2",
+    "jsqr": "^1.4.0",
     "qr-code-styling": "1.9.2",
     "svelte": "^5.57.0",
     "tailwind-merge": "^3.6.0",

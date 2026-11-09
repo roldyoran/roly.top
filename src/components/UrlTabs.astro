@@ -5,8 +5,10 @@ import TabsTrigger from "@/components/starwind/tabs/TabsTrigger.astro";
 import TabsContent from "@/components/starwind/tabs/TabsContent.astro";
 import PublicUrlsList from "@/components/PublicUrlsList.svelte";
 import PublicQrGenerator from "@/components/PublicQrGenerator.svelte";
+import PublicQrScanner from "@/components/PublicQrScanner.svelte";
 import List from "@tabler/icons/outline/list.svg";
 import QrCode from "@tabler/icons/outline/qrcode.svg";
+import Scan from "@tabler/icons/outline/scan.svg";
 import { getLangFromUrl, type TranslationKey } from "../i18n/utils";
 
 interface Props {
@@ -33,6 +35,10 @@ const lang = getLangFromUrl(Astro.url);
       <TabsTrigger value="qr">
         <QrCode class="size-3.5" />
         {t("tabs.qr")}
+      </TabsTrigger>
+      <TabsTrigger value="scan">
+        <Scan class="size-3.5" />
+        {t("tabs.scan")}
       </TabsTrigger>
     </TabsList>
 
@@ -143,6 +149,41 @@ const lang = getLangFromUrl(Astro.url);
           {t("qr.gen.retry")}
         </button>
       </p>
+    </TabsContent>
+
+    <TabsContent value="scan" class="w-full px-5 pt-6 pb-10 sm:px-7">
+      {/* Escáner QR público (100% anónimo, sin cuenta): misma estrategia
+          que el generador — isla con `client:visible`, `jsqr` se importa
+          de forma dinámica al primer escaneo. */}
+      <PublicQrScanner
+        client:visible
+        labels={{
+          title: t("qr.scan.title"),
+          desc: t("qr.scan.desc"),
+          paste: t("qr.scan.paste"),
+          clear: t("qr.scan.clear"),
+          result: t("qr.scan.result"),
+          copy: t("qr.scan.copy"),
+          copied: t("qr.scan.copied"),
+          openLink: t("qr.scan.openLink"),
+          emptyResult: t("qr.scan.emptyResult"),
+          noImageYet: t("qr.scan.noImageYet"),
+          dropHint: t("qr.scan.dropHint"),
+          httpsNote: t("qr.scan.httpsNote"),
+          statusReady: t("qr.scan.statusReady"),
+          statusReading: t("qr.scan.statusReading"),
+          statusAnalyzing: t("qr.scan.statusAnalyzing"),
+          statusNoImage: t("qr.scan.statusNoImage"),
+          statusUnsupported: t("qr.scan.statusUnsupported"),
+          statusDenied: t("qr.scan.statusDenied"),
+          statusClipboardEmpty: t("qr.scan.statusClipboardEmpty"),
+          statusNoQr: t("qr.scan.statusNoQr"),
+          statusDone: t("qr.scan.statusDone"),
+          statusError: t("qr.scan.statusError"),
+          statusReadError: t("qr.scan.statusReadError"),
+          statusCopyError: t("qr.scan.statusCopyError"),
+        }}
+      />
     </TabsContent>
   </Tabs>
 </div>
